@@ -1,0 +1,86 @@
+:root {
+  --browser-window-bg: #ebedf0;
+  --browser-window-link-bg: #ffffff;
+  --browser-window-color: #000;
+}
+
+[data-theme="dark"] {
+  --browser-window-bg: #444950;
+  --browser-window-link-bg: #1b1b1d;
+  --browser-window-color: #fff;
+}
+
+.container {
+  border: 3px solid var(--browser-window-bg);
+  border-radius: 10px;
+}
+
+.row {
+  padding: 5px 10px;
+  background: var(--browser-window-bg);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.left {
+  min-width: 40px;
+  white-space: nowrap;
+}
+
+.right {
+  min-width: 25px;
+}
+
+.middle {
+  flex: 1;
+  min-width: 50px;
+  margin: 0 10px;
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.middle input {
+  height: 30px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.dot {
+  margin-top: 4px;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+input[type="text"] {
+  width: 100%;
+  border-radius: 3px;
+  border: none;
+  background-color: var(--browser-window-link-bg);
+  margin-top: -8px;
+  height: 30px;
+  color: var(--browser-window-color);
+  padding-left: 15px;
+}
+
+.bar {
+  width: 17px;
+  height: 3px;
+  background-color: #aaa;
+  margin: 3px 0;
+  display: block;
+}
+
+.content {
+  padding: 10px;
+  min-height: 80px;
+}

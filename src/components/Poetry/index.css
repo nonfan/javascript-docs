@@ -1,0 +1,33 @@
+.poetry {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    padding-bottom: 5px;
+    position: relative;
+}
+
+.poetry .hitokoto,
+.poetry .from {
+    text-align: center;
+    color: rgb(153, 138, 138);
+}
+
+.poetry .from {
+    opacity: 0;
+    transition: opacity 0.3s;
+    position: absolute;
+    right: 50%;
+    transform: translateX(50%);
+    white-space: nowrap;
+}
+
+.poetry .from br {
+    display: none;
+}
+
+.poetry .hitokoto {
+    cursor: pointer;
+    margin-top: 5px;
+    position: relative;
+    z-index: 999;
+}
