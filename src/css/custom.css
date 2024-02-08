@@ -150,10 +150,6 @@
   align-items: center;
 }
 
-code {
-  padding: 0 5px;
-}
-
 .navbar__link,.navbar__item {
   white-space: nowrap;
 }
