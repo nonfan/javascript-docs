@@ -584,3 +584,117 @@ p1.then(value => console.log(value)); // logs success
 let p2 = Promise.reject('error');
 p2.catch(reason => console.log(reason)); // logs error
 ```
+
+### 拒绝期约与拒绝错误处理
+
+拒绝期约类似于 throw() 表达式，因为它们都代表一种程序状态，即需要中断或特殊处理。在期约的执行函数或处理程序中抛出错误会导致拒绝，对应应的错误对象会成为拒绝的理由。因此以下这些期约都会以一个错误对象为由被拒绝：
+
+```js
+let p1 = new Promise((resolve, reject) => reject(Error('error')));
+let p2 = new Promise((resolve, reject) => {
+  throw Error('error');
+});
+let p3 = Promise.resolve().then(() => {
+  throw Error('then() return error');
+});
+let p4 = Promise.reject(Error('error'));
+
+setTimeout(console.log, 0, p1); // Promise <rejected>: Error: error
+setTimeout(console.log, 0, p2); // Promise <rejected>: Error: error
+setTimeout(console.log, 0, p3); // Promise <rejected>: then() return error
+setTimeout(console.log, 0, p4); // Promise <rejected>: Error: error
+// 也会抛出 4 个未捕获错误
+```
+
+期约可以以任何理由拒绝，包括 undefined，但最好统一使用错误对象。这样做主要是因为创建错误对象可以让浏览器捕获错误对象中的栈追踪信息，而这些信息对调试是非常关键的。例如，前面例子中抛出的 4 个错误的栈追踪信息如下：
+
+![示例横幅](@site/static/doc-imgs/001.png)
+
+所有错误都是异步抛出且未处理的，通过错误对象捕获的栈追踪信息展示了错误发生的路径。注意错误的顺序：Promise.resolve().then()的错误最后才出现，这是因为它需要在运行时消息队列中添加处理程序；也就是说，在最终抛出未捕获错误之前它还会创建另一个期约。
+
+这个例子同样揭示了异步错误有意思的副作用。正常情况下，在通过 `throw()` 关键字抛出错误时，JavaScript 运行时的错误处理机制会停止执行抛出错误之后的任何指令：
+
+```js
+throw Error('foo');
+console.log('bar'); // 这一行不会执行
+// Uncaught Error: foo
+```
+
+但是，在期约中抛出错误时，因为错误实际上是从消息队列中异步抛出的，所以并不会阻止运行时继续执行同步指令：
+
+```js
+Promise.reject(Error('foo'));
+console.log('bar');
+// bar
+// Uncaught (in promise) Error: foo
+```
+
+Promise 异步错误只能通过异步的 onRejected 处理程序捕获：
+
+```js title="捕获异步错误"
+// 正确
+Promise.reject(Error('foo')).catch(e => {});
+
+// 不正确
+try {
+  Promise.reject(Error('foo'));
+} catch (e) {}
+```
+
+这不包括捕获执行函数中的错误，在解决或拒绝期约之前，仍然可以使用 try/catch 在执行函数中捕获错误：
+
+```js
+let p = new Promise((resolve, reject) => {
+  try {
+    throw Error('error');
+  } catch (e) {
+    console.log(e);
+  }
+  resolve('success');
+});
+
+// Error: error
+setTimeout(console.log, 0, p); // Promise <fulfilled>: error
+```
+
+`then()` 和 `catch()` 的 onRejected 处理程序在语义上相当于 try/catch。出发点都是捕获错误之后将其隔离，同时不影响正常逻辑执行。为此，_onRejected 处理程序的任务应该是在捕获异步错误之后返回一个解决的期约_。
+
+```js title="对比同步错误处理与异步错误处理"
+/**
+ * 同步错误
+ */
+console.log('begin synchronous execution');
+try {
+  throw Error('foo');
+} catch (e) {
+  console.log('caught error', e);
+}
+console.log('continue synchronous execution');
+
+// begin synchronous execution
+// caught error Error: foo
+// continue synchronous execution
+
+/**
+ * 异步错误
+ */
+new Promise((resolve, reject) => {
+  console.log('begin asynchronous execution');
+  reject(Error('bar'));
+})
+  .catch(e => {
+    console.log('caught error', e);
+  })
+  // .then() 之所以执行了,是因为 onRejected 处理程序返回了一个解决的期约
+  // highlight-start
+  .then(() => {
+    console.log('continue asynchronous execution');
+  });
+// highlight-end
+
+// begin asynchronous execution
+// caught error Error: bar
+// continue asynchronous execution
+```
+
+## 期约连锁与期约合成
