@@ -1,0 +1,475 @@
+# IndexedDB
+
+[Indexed Database API](https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API) 简称 IndexedDB，是浏览器中存储结构化数据的一个方案。IndexedDB 用于代替目前已废弃的 Web SQL Database API。IndexedDB 背后的思想是创造一套 API，该 API 使用索引实现对数据的高性能搜索。虽然 Web Storage 在存储较少量的数据很有用，但对于存储更大量的结构化数据来说力不从心。而 IndexedDB 提供了这种场景的解决方案。
+
+IndexedDB 是设计几乎完全是异步的。为此，大多数操作以请求的形式执行，这些请求会异步执行，产生成功的结果或错误。**绝大多数 IndexedDB 操作要求添加 `onerror` 和 `onsuccess` 事件处理程序来确定输出。**
+
+:::info
+2017年，新发布的主流浏览器（Chrome、Firefox、Opera、Safari）完全支持 IndexedDB. IE10/11 和 Edge 浏览器部分支持 IndexedDB。
+:::
+
+## 数据库
+
+IndexedDB 是类似于 MySQL 或 Web SQL Database 的数据库。与传统数据库最大的区别在于，IndexedDB 使用对象存储而不是表格保存数据。IndexedDB 数据库就是在一个公共命名空间下的一组对象存储，类似于 NoSQL 风格实现。
+
+使用 IndexedDB 数据库的第一步是调用 `indexedDB.open()` 方法，并传入一个要打开的数据库名称。如果给定名称的数据库已存在，则会发送一个打开它的请求；若不存在，则会发送创建并打开这个数据库的请求。这个方法会返回 IDBRequest 的实例，可以在这个实例上添加 `onerror` 和 `onsuccess` 事件处理程序。如下：
+
+```js title="代码演示"
+let request = indexedDB.open("student_db");
+let db;
+request.onerror = (event) => {
+  console.log(event.target.error);
+};
+
+request.onsuccess = (event) => {
+  db = event.target.result;
+};
+```
+
+`indexedDB.open()` 方法的第二个参数是指定数据库版本，可选。最好在创建数据库时指定版本，在《对象存储》小结会讲到原因。这个版本号使用整数，否则会被转换成 `unsigned long long` 数值。
+
+在两个事件处理程序中，`event.target` 都指向 `request`，因此使用哪个都行（`request === event.target`）。如果 `onsuccess` 事件处理程序被调用，说明可以通过 `event.target.result` 访问数据库（IDBDatabase）实例了，这个实例会保存到 `db` 变量中。之后，所有与数据库相关操作都要通过 `db` 对象本身来进行。如果打开数据库期间发生错误，`event.target.errorCode` 中就会存储表示问题的错误码。
+
+## 对象存储
+
+建立了数据库连接之后，下一步就是使用对象存储。如果数据库版本与期待的不一致，那可能需要创建对象存储也就是使用 `createObjectStore()` 方法。不过在创建对象存储前，有必要想一想存储什么类型的数据。
+
+假设要存储包含用户名、密码等内容的用户记录。可以用如下对象来表示一条记录：
+
+```js
+let user = {
+  username: "001",
+  firstname: "莫",
+  lastname: "凡",
+  password: "foo",
+};
+```
+
+观察这个对象，可以很容易看出最适合作为对象存储健的 `username` 属性。对象健必须全局唯一，它也是大多数情况下访问数据的凭证。这个键非常重要，在创建对象存储时，必须指定对象健。
+
+数据库的版本决定了数据库的模式，包括数据中的对象存储和这些对象存储的结构。如果数据库还不存在，`indexedDB.open() ` 操作会创建一个新数据库，然后触发 `onupgradeneeded` 事件。可以为这个事件设置处理程序，并在处理程序中创建数据库模式。如果数据库存在，而你指定了一个升级版的版本号，则会立即触发 `onupgradeneeded` 事件，因而可以在该事件处理程序中更新数据库模式。
+
+```js title="演示创建对象存储"
+let version = 2;
+let request = indexedDB.open("student_db", version);
+let db;
+
+request.onupgradeneeded = (event) => {
+  db = event.target.result;
+  /**
+   * 如果存在则删除当前 objectStore。测试的时候可以这样做
+   * 但这样会在每次执行事件处理程序时删除已有的数据
+   */
+  if (db.objectStoreNames.contains("users")) {
+    db.deleteObjectStore("users");
+  }
+
+  // keyPath 用作健的存储对象的属性名
+  db.createObjectStore("users", { keyPath: "username" });
+};
+```
+
+## 事务
+
+创建对象存储之后，剩下的所有操作都是通过**事务**完成的。事务要通过调用数据库对象的 `transaction()` 方法创建。任何时候，只要想要读取或修改数据，都要通过事务把所有修改操作组织起来。
+
+创建最简单的事务，如果不设置访问权限，则对数据库中所有的对象存储有只读权限。
+
+```js
+let transaction = db.transaction();
+```
+
+在事务期间只加载需要的对象存储，则给第一个参数传入存储对象名称的字符串。如果想要访问多个对象存储，可以给第一个参数传入一个字符串数组。
+
+```js
+let transaction = db.transaction("users");
+
+let transaction = db.transaction(["users", "students"]);
+```
+
+如前所述，每个事务都以只读方式访问数据。要修改访问模式，可以传入第二个参数。这个参数应该是下三个字符串之一：
+
+- [ ] `readonly`
+- [ ] `readwrite`
+- [ ] `versionchange`
+
+```js
+// 该事务可以对 users 对象进行存储读写
+let transaction = db.transaction("users", "readwrite");
+```
+
+通过事务的引用，就可以使用 `objectStore()` 方法传入对象存储的名称以访问特定的对象存储。有如下5个方法操作对象存储，它们都创建新的请求对象, 并挂载了 `onsuccess` 和 `onerror` 事件：
+
+- [ ] `add()`: 添加对象；
+- [ ] `put()`: 更新对象；
+- [ ] `get()`: 获取对象，接受对象健 `keyPath` 作为参数；
+- [ ] `delete()`: 删除对象，接受对象健 `keyPath` 作为参数；
+- [ ] `clear()`: 删除所有对象；
+
+```js title="代码演示"
+// 以获取对象为例，去获取该对象 { username: "001",firstname: "莫",lastname: "凡",password: "foo"}
+const transaction = db.transaction("users", "readwrite");
+const request = transaction.objectStore("users").get("001");
+request.onsuccess = (event) => {
+  // 获取到的对象记录
+  let data = event.target.result;
+};
+request.onerror = (event) => {
+  console.log(event.target.error);
+};
+```
+
+因为一个事务可以完成任意多个请求，所以事务对象本身也有事件处理程序：`onerror` 和 `oncomplete`。这两个事件可以用来获取事务级的状态信息：
+
+```js
+// 整个事务被取消触发
+transaction.onerror = (event) => {};
+
+// 整个事务完成触发
+transaction.oncomplete = (event) => {};
+```
+
+:::warning
+不能通过 `oncomplete` 事件处理程序的 `event` 对象访问 `get()` 请求返回的任何数据。因此，仍然需要通过这些请求的 `onsuccess` 事件处理程序来获取数据。
+:::
+
+## 插入对象
+
+拿到了对象存储的引用后，就可以使用 `add()` 和 `put()` 写入数据了。这两个方法都接收一个参数，即要存储的对象，并把对象保存到对象存储。这两个方法只在对象存储中已存在同名的键时有区别。这种情况下，`add()` 会导致报错，而 `put()` 会简单地重写该对象。更简单地说，可以把 `add()` 想象成插入新值，而把 `put()` 想象为更新值。
+
+```js title="初始化数据"
+// users 是一个用户数据的数组
+let users = [];
+
+const transaction = db.transaction("users", "readwrite");
+const store = transaction.objectStore("users");
+
+for (let user of users) {
+  /**
+   * 每次调用 add() 或 put() 都会创建对象存储的新更新请求。
+   * 如果想验证请求成功与否，可以把请求对象保存为 request 变量，然后为它 onerror 和 onsuccess 事件处理程序
+   */
+  const request = store.add(user);
+
+  request.onsuccess = (event) => {};
+  request.onerror = (event) => {};
+}
+```
+
+## 通过游标查询
+
+使用事务可以通过一个已知键取得一条记录，如果想取得多条数据，则需要在事务中创建**游标**。游标是一个指向结果集的指针，与传统数据库查询不同，游标不会事先收集所有结果。相反，游标指向第一个结果，并在接到指令前不会主动查找下一条数据。
+
+需要在对象存储上调用 `openCursor()` 方法创建游标。与其他 IndexedDB 操作一样，`openCursor()` 方法也返回一个请求，因此必须为它添加 `onsuccess` 和 `onerror` 事件处理程序。
+
+```js title="创建游标"
+const transaction = db.transaction("users");
+const store = transaction.objectStore("users");
+const request = store.openCursor();
+
+request.onsuccess = (event) => {};
+request.onerror = (event) => {};
+```
+
+在调用 onsuccess 事件处理程序时，可以通过 event.target.result 访问对象存储中的下一条记录。该属性保存这 IDBCursor 的实例（有下一条记录时）或 null （没有记录时）。IDBCursor 实例有如下几个属性：
+
+- [ ] `direction`: 字符串常量，表示游标的前进方向以及是否应该遍历所有重复的值。可能的值包括：`next`、`nextunique`、`prev`、`prevunique`
+- [ ] `key`: 对象的键。
+- [ ] `value`: 实际的对象，也就查询到的一条记录。
+- [ ] `primaryKey`： 游标使用的键。可能是对象键或索引键。
+
+```js title="演示onsuccess事件"
+// 续上面代码片段
+
+request.onsuccess = (event) => {
+  const cursor = event.target.result;
+
+  /**
+   * 上面提及过，cursor 是返回实例 IDBCursor，会存在null的值，因此必须检查 cursor
+   * */
+  if (cursor) {
+    // cursor.value 为对象存储的下一条记录
+    const user = cursor.value;
+  }
+};
+```
+
+游标可用于更新或删除个别记录。`update()` 方法使用指定的对象更新当前游标对应的值。`delete()` 方法删除游标位置的记录。与其他类似操作一样，会创建一个新的请求，因此如果想知道结果，需要为 `onsuccess` 和 `onerror` 赋值。
+
+```js title="演示update() 和 delete() 方法"
+request.onsuccess = (event) => {
+  const cursor = event.target.result;
+
+  if (cursor && cursor.key === "001") {
+    if (cursor.key === "001") {
+      const user = cursor.value;
+      user.password = "magic";
+      const request = cursor.update(value);
+
+      request.onsuccess = (event) => {
+        // 处理成功
+      };
+      request.onerror = (event) => {};
+    }
+
+    if (cursor.key === "002") {
+      const request = cursor.delete();
+
+      request.onsuccess = (event) => {
+        // 处理成功
+      };
+      request.onerror = (event) => {};
+    }
+
+    // continue() 方法是游标指定继续查询下去，若没有调用该方法，则只会查询一次。
+    cursor.continue();
+  }
+};
+```
+
+:::warning
+如果事务没有修改存储对象的权限，`update()` 和 `delete()` 都会抛出错误。因此需给事务传入权限：
+
+`db.transaction("users", "readwrite")`
+:::
+
+默认情况下，每个游标只会查询一次记录。要想查询多条数据，必须调用下列中的一个方法：
+
+- [ ] `continue(key)`: 移动到结果集中的下一条记录。参数 key 是可选的。如果没有指定 key，游标就移动到下一条记录；如果指定了，则游标移动到指定的键。
+- [ ] `advance(count)`: 游标向前移动指定的 count 条记录。
+
+这两个方法都会让游标重用相同的请求，因此也会重用 `onsuccess` 和 `onerror` 处理程序，直至不需要。如下:
+
+```js title="代码演示"
+request.onsuccess = (event) => {
+  const cursor = event.target.result;
+
+  if (cursor) {
+    // 一直查询记录，直至 cursor 为 null
+    cursor.continue();
+  }
+};
+```
+
+## 键范围
+
+使用游标会给人一种不太理想的感觉，因为获取数据的方式受到了限制。使用键范围（key range）可以让游标更容易管理。键范围对应 IDBKeyRange 的实例。有四种方式指定键范围。
+
+第一种是使用 only() 方法并传入想要获取的健：
+
+```js
+// 这个范围保证只获取健为 ”001“ 的值。类似于调用对象存储的 get("001") 方法
+const onlyRange = IDBKeyRange.only("001");
+```
+
+第二种键范围可以定义结果集的下限。下限表示游标开始的位置。
+
+```js
+// 从 ”001“记录开始，直到结束
+const lowerRange = IDBKeyRange.lowerBound("001");
+
+// 若从 ”001“ 后面开始记录，即不包含 ”001“ 这条记录，传入第二参数 true
+const lowerRange = IDBKeyRange.lowerBound("001", true);
+```
+
+第三种键范围可以定义结果集的上限。上限表示游标结束的位置。
+
+```js
+// 游标从头开始，记录到 "100"
+const upperRange = IDBKeyRange.upperBound("100");
+
+// 若要记录到 "100" 前一条记录，则传入第二参数 true
+const upperRange = IDBKeyRange.upperBound("100", true);
+```
+
+第四种键范围指定下限和上限，使用 bound() 方法。该方法接收四个参数：下限的键、上限的键、可选的布尔值(是否跳过下限键)、可选的布尔值(是否跳过上限键)
+
+```js
+// 从 "001" 记录到 "100", 且包含"001"和"100"
+const boundRange = IDBKeyRange.bound("001", "100");
+
+// 从 "001" 的下一条记录到 "100" 的上一条记录
+const boundRange = IDBKeyRange.bound("001", "100", true, true);
+```
+
+定义了键范围，把它传递给 `openCursor()` 方法的第一个参数，就可以得到位于该范围内的游标：
+
+```js title="演示定义键范围的游标"
+const range = IDBKeyRange.bound("001", "100");
+const store = db.transaction("users").objectStore("users");
+const request = store.openCursor(range);
+
+request.onsuccess = (event) => {
+  const cursor = event.target.result;
+
+  // 永远需要检查 cursor
+  if (cursor) {
+    cursor.continue();
+  } else {
+    console.log("done");
+  }
+};
+request.onerror = (event) => {};
+```
+
+## 设置游标方向
+
+`openCursor()` 方法实际上可以接收两个参数，第一个是 IDBKeyRange 的实例，第二个是表示方法的字符串。通常，游标都是从对象存储的第一条记录开始，每次调用 `continue()` 和 `advance()` 都会向最后一条记录前进。这样的游标其默认方向为 ”next“。如果对象存储有重复的记录，可能需要跳过那些重复的项。为此，可以给 `openCursor()` 的第二个参数传入 ”nextunique“:
+
+```js
+const transaction = db.transaction("users");
+const store = transaction.objectStore("users");
+// 第一个参数传入 null，表示默认的键范围是所有值。
+// 第二个参数传入 nextunique, 表示会跳过重复项
+const request = store.openCursor(null, "nextunique");
+
+request.onsuccess = (event) => {};
+```
+
+另外，也可以创建在对象存储中反向移动的游标，从最后一项开始向第一项移动。此时需要给 `openCursor()` 第二个参数传入 `prev` 或 `prevunique`。
+
+```js
+const request = store.openCursor(null, "prevunique");
+```
+
+## 索引
+
+**提高检索性能**: 索引允许你在对象存储空间中使用非主键字段进行高效的查询。没有索引时，查询可能需要扫描整个对象存储空间，而索引可以加速这个过程。
+
+**支持唯一性约束**: 你可以在索引上设置唯一性约束，确保索引字段的值在整个对象存储空间中是唯一的。
+
+在 IndexedDB 中，你可以在对象存储空间中使用 `createIndex()` 方法创建索引。通常，这是在数据库升级过程中的 `onupgradeneeded` 事件处理程序中完成的。
+
+```js title="创建索引"
+const store = db.createObjectStore("user", { keyPath: "uid" });
+store.createIndex("username", "username", { unique: false });
+```
+
+`createIndex()` 的第一个参数是索引名称，第二参数是索引属性的名称，第三个参数是包含键 unique 的 options 对象。对于该选项必须指定 unique，表示这个键是否在所有记录中唯一。因为 username 可能重复，不唯一。
+
+使用创建的索引。在 `objectStore` 上调用 `index` 方法，并返回 IDBIndex 实例。
+
+```js
+const index = db.transaction("users").objectStore("users").index("username");
+```
+
+索引非常像对象存储(objectStore)。可以在索引上使用 `openCursor()` 方法创建游标，这个游标与在对象存储上调用 `openCursor()` 创建的游标完全一样。只是其属性 `event.target.result.key` 属性中保存的是索引键，而不是主键。如下
+
+```js title="演示 openCursor 方法"
+const index = db.transaction("users").objectStore("users").index("username");
+
+const request = index.openCursor();
+
+request.onsuccess = (event) => {
+  // 处理成功
+};
+```
+
+使用 `openKeyCursor()` 方法在索引上创建特殊游标，用于打开一个只返回键（key）而不返回值（value）的游标（cursor）。这可以用于遍历对象存储中的键，而不需要获取与键关联的实际数据。
+
+```js title="演示 openKeyCursor 方法"
+const index = db.transaction("users").objectStore("users").index("username");
+
+const request = index.openKeyCursor();
+
+request.onsuccess = (event) => {
+  const cursor = event.target.result;
+  console.log("索引键：", cursor.key);
+  console.log("主键：", cursor.primaryKey);
+};
+```
+
+使用 `get()` 方法并传入索引键通过索引取得单条记录。使用 `getKey()` 可以只取得给定索引键的主键。
+
+```js title="演示 get 和 getKey 方法"
+const index = db.transaction("users").objectStore("users").index("username");
+
+const request = index.get("张三");
+
+request.onsuccess = (event) => {
+  const cursor = event.target.result;
+  console.log("张三对象", cursor);
+};
+
+const request2 = index.getKey("张三");
+
+request2.onsuccess = (event) => {
+  const cursor = event.target.result;
+  console.log("张三主键", cursor);
+};
+```
+
+任何时候，都可以使用 IDBIndex 对象的下列属性取得索引的相关信息。即通过 `index("username")` 获取到的 IDBIndex 对象。
+
+- [ ] `name`: 索引的名称;
+- [ ] `keyPath`: 调用 createIndex() 方法传入的第二个参数;
+- [ ] `objectStore`: 索引对应的对象存储;
+- [ ] `unique`: 表示索引键是否唯一的布尔值;
+
+```json title="如此结构的 IDBIndex 对象"
+{
+  "IDBIndex": {
+    "keyPath": "username",
+    "name": "username",
+    "objectStore": {},
+    "unique": false
+  }
+}
+```
+
+对象存储自身也有一个 indexNames 属性，保存着与这相关的索引名称。使用如下代码可以方便的获取到该存储对象的全部索引：
+
+```js title="获取全部索引"
+const store = db.transaction("users").objectStore("users");
+const indexNames = store.indexNames;
+
+for (let indexName of indexNames) {
+  const index = store.index(indexName);
+  console.log("索引名", index.keyPath);
+}
+```
+
+在对象存储上调用 deleteIndex() 方法并传入索引的名称可以删除索引：
+
+```js title="删除索引"
+const store = db.transaction("users").objectStore("users");
+store.deleteIndex("username");
+```
+
+:::info
+因为删除索引不会影响对象存储中的数据，所以这个操作没有回调。
+:::
+
+## 并发问题
+
+IndexedDB 虽然是网页中的异步 API，但仍存在并发问题。如果两个不同的浏览器标签页同时打开了同一个网页，则有可能出现一个网页尝试升级数据库而另一个尚未就绪的情形。有问题的操作是设置数据库版本，而版本变化只能在浏览器只有一个标签页使用数据库时才能完成。
+
+第一次打开数据库时，添加 `onversionchange` 事件处理程序非常重要。另一个同源标签页将数据库打开到新版本时，将执行此回调。对这个事件最好的回应是立即关闭数据库，以便完成版本升级。如下：
+
+```js title="代码演示"
+let db;
+const request = indexedDB.open("student_db", 1);
+request.onsuccess = (event) => {
+  db = event.target.result;
+
+  db.onversionchange = () => db.close();
+};
+```
+
+应该在每次成功打开数据库后都指定 `onversionchange` 事件处理程序。记住 `onversionchange` 有可能被其他标签页触发。
+
+通过始终都指定这些事件处理程序，可以保证 Web 应用程序能够更好地处理与 IndexedDB 相关的并发问题。
+
+## 限制
+
+首先，IndexedDB 数据库是与页面源（协议、域和端口）绑定的，因此信息不能跨域共享。这意味 `www.example.com` 和 `p2p.example.com` 会对应不同的数据存储。
+
+其次，每个源都有可以存储的空间限制，大多数浏览器存储空间限制是 50 MB。当存储空间超过配额时，浏览器通常会提示用户是否允许更大的配额。这确保了用户有控制权，可以决定是否允许网站使用更多的存储空间。
+
+:::info 总结
+`indexedDB` 和 `Web Storage`（例如 localStorage 和 sessionStorage）确实有一些相似之处，但它们也有一些重要的区别。IndexedDB是一种更强大、更灵活的客户端存储解决方案，允许你存储结构化的数据，并支持事务和索引等功能, 且有更大空间存储能力。 Web Storage 则是一种更简单的键值对存储，但没有 IndexedDB 强大。
+:::
+
+## 扩展
+
+在 JavaScript 中使用 IndexedDB 进行数据库操作时，使用 [localForage](https://github.com/localForage/localForage) 可以帮助简化 IndexedDB 的使用，并提供更方便的接口和功能。

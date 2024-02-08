@@ -16,6 +16,15 @@ const sidebars: SidebarsConfig = {
         "promise-and-async-function/async-function",
       ],
     },
+    {
+      type: "category",
+      label: "客户端存储",
+      items: [
+        "client-storage/cookie",
+        "client-storage/web-storage",
+        "client-storage/indexed-db",
+      ],
+    },
   ],
 };
 

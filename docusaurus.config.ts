@@ -113,6 +113,7 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      defaultLanguage: "javascript",
     },
   } satisfies Preset.ThemeConfig,
 };

@@ -1,0 +1,176 @@
+# Web Storage
+
+Web Storage 最早是网页超文本应用技术组在 Web Application1.0规范提出。这个规范中的草案最终成为了HTML5的一部分，后来又独立成为自己的规范。Web Storage 的目的是解决通过客户端存储不需要频繁发送服务器的数据时使用cookie的问题。
+
+Web Storage最新规范实现的两个目标：
+
+- [ ] 提供在cookie一外的存储会话数据途径；
+- [ ] 提供跨会话持久化存储大量数据的机制；
+
+Web Storage 定义了两个对象：[localStorage](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/localStorage) 和 [sessionStorage](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/sessionStorage)。`localStorage` 是永久存储机制，`sessionStorage` 是跨会话的存储机制。这两种浏览器存储 API 提供了在浏览器中不受页面刷新影响而存储数据的两种方式。
+
+:::warning
+
+Web Storage 第一版曾使用过 `globalStorage`，不过目前 `globalStorage` 已废弃
+:::
+
+## Storage 类型
+
+[Storage](https://developer.mozilla.org/zh-CN/docs/Web/API/Storage) 类型用于保存健(key)/值(value)对数据，直至存储空间上限（由浏览器决定）。Storage 的实例与其它对象一样，但增加了一下方法。
+
+- [ ] `clear()`: 删除所有存储数据。
+- [ ] `getItem(key)`: 删除所有存储数据。
+- [ ] `key(index)`: 根据索引，取得给定数值位置的key。
+- [ ] `removeItem(key)`: 删除健key的数据存储记录。
+- [ ] `setItem(key，value)`: 存储健/值对数据。
+
+`getItem()` 、`removeItem()` 和 `setItem()`方法可以直接或间接通过 Storage 对象调用。因为每个数据项都作为属性存储在该对象上，所以可以通过点或方括号操作符访问这些属性，通过同样的操作来设置值，也可以使用delete操作符删除属性。即便如此，通常还是建议使用方法而非属性来执行这些操作，以免意外重写某个已经存在的对象成员。
+
+通过`length`属性可以确定 Storage 对象保存了多少条数据。我们无法确定对象中所有数据占用的空间大小。
+
+```js title="演示代码"
+// 不建议的操作方法
+let storage = localStorage;
+storage.myEmail = "agoodbook@foxmail.com";
+delete storage.myEmail;
+
+// 推荐
+localStorage.setItem("my-email", "agoodbook@foxmail.com");
+localStorage.remove("my-email");
+
+// 查看存储数据条数
+localStorage.length;
+```
+
+:::warning
+
+Storage 类型只能存储字符串。非字符串数据在存储之前会自动转换为字符串。注意，这种转换不能在获取数据时撤销。
+
+:::
+
+## sessionStorage 对象
+
+`sessionStorage` 对象只存储在会话数据，这意味着数据只存储到浏览器关闭。这跟浏览器关闭时会消失cookie类似。存储在 `sessionStorage` 中的数据不受页面刷新影响，可以在浏览器崩溃并重启后恢复（取决于浏览器实现）
+
+因为 `sessionStorage` 对象中的数据与服务器会话紧密相关，所有运行在本地文件时不能使用。存储在 `sessionStorage` 对象中的数据只能由最初存储数据的页面使用，在多页应用程序中的用处有限。这是因为 `sessionStorage` 的作用范围限定在同一窗口或标签页内。
+
+> 由于 sessionStorage 的设计初衷是为了在浏览器会话期间保存数据，因此在本地文件系统上直接打开 HTML 文件时，它无法正常工作。这是出于安全和隐私方面的考虑，以防止在没有服务器支持的情况下滥用客户端存储。
+
+因为 `sessionStorage` 对象是 Storage 的实例，所以可以通过使用 `setItem()` 方法或直接属性赋值给它添加数据。如下两种方法：
+
+```js title="代码演示"
+// 使用方法存储数据
+sessionStorage.setItem("book", "agoodbook");
+
+// 使用属性存储数据
+sessionStorage.book = "agoodbook";
+```
+
+所有现代浏览器在实现存储写入时都使用了同步阻塞方法，因此数据会被立即提交到存储。具体 API 的实现可能不能立即把数据写入磁盘（而是使用某种不同的物理存储），但这个区别在 JavaScript 层面是不可见的。通过 Web Storage 写入的任何数据都可以立即被读取。
+
+对存在于 `sessionStorage` 上的数据，可以使用 `getItem()` 或直接访问属性名来取得。如下两种方法：
+
+```js title="代码演示"
+// 使用方法取得数据
+let book = sessionStorage.getItem("book");
+
+// 使用属性取得数据
+let book = sessionStorage.book;
+```
+
+可以结合 `sessionStorage` 的 `length` 属性和 `key()` 方法遍历所有的值：
+
+```js title="代码演示"
+for (let i = 0; i < sessionStorage.length; i++) {
+  let key = sessionStorage.key(i);
+  let value = sessionStorage.getItem(key);
+  console.log(`输出key: ${key}, value: ${value}`);
+}
+
+// 使用for-in循环迭代sessionStorage的值
+for (let key in sessionStorage) {
+  let value = sessionStorage.getItem(key);
+  console.log(`输出key: ${key}, value: ${value}`);
+}
+```
+
+要从 `sessionStorage` 中删除数据，可以使用 `delete` 操作符直接删除对象属性，也可以使用 `removeItem()` 方法。如下两种方法：
+
+```js title="代码演示"
+// 使用 delete 删除值
+delete sessionStorage.book;
+
+// 使用方法删除值
+sessionStorage.removeItem("book");
+```
+
+`sessionStorage` 对象应该主要用于存储只在会话期间有效的小块数据。如何需要跨会话持久存储数据，可以使用 `localStorage`。
+
+## localStorage 对象
+
+在修订的 HTML5 规范里，`localStorage` 对象取代了 `globalStorage`, 作为客户端持久存储数据的机制。要访问同一个 `localStorage` 对象，页面必须来自同一个域（子域不可以）、相同的端口上使用相同的协议。
+
+因为 `localStorage` 是 Storage 的实例，所以可以使用像 `sessionStorage` 一样使用 `localStorage`。如下几种方法：
+
+```js title="代码演示"
+// 使用方法存储数据
+localStorage.setItem("book", "agoodbook");
+
+// 使用属性存储数据
+localStorage.book = "agoodbook";
+
+// 使用方法取得数据
+let book = localStorage.getItem("book");
+
+// 使用属性取得数据
+let book = localStorage.book;
+```
+
+两种存储方法的区别在于，存储在 `localStorage` 中的数据会保留到通过 JavaScript 删除或者用户清除浏览器缓存。 `localStorage` 数据不受页面刷新影响，也不会因关闭窗口、标签页或重新启动浏览器而丢失。
+
+## 存储事件
+
+当前页面使用的 storage 被其他页面修改时会触发 StorageEvent 事件。
+
+> 事件在同一个域下的不同页面之间触发，即在 A 页面注册了 `storage` 的监听处理，只有在跟 A 同域名下的 B 页面操作 `storage` 对象，A 页面才会被触发 `storage` 事件
+
+每当 Storage 对象发生变化时，都会在文档上触发 `storage` 事件。使用属性或 `setItem()` 设置值、使用 `delete` 或 `removeItem()` 删除值，以及每次调用 `clear()` 时都会触发这个事件。这个事件的事件对象有如下6个属性：
+
+- [ ] `domain`: 存储变化对应的域。
+- [ ] `key`: 被修改的键名。当被 clear() 方法清除后该属性值为 `null`。
+- [ ] `newValue`: 健被设置的新值，若健被删除则为 `null`。
+- [ ] `oldValue`: 健变化之前的值。
+- [ ] `url`: 记录 Storage 时间发生时的源地址。
+- [ ] `storageArea`: 被操作的 Storage 对象。
+
+```js title="代码演示"
+// 监听 storage 事件
+window.addEventListener("storage", (event) => {
+  console.log(event.domain);
+});
+```
+
+:::info 触发 `storage` 事件
+
+在同一个窗口或标签页中修改 `localStorage` 数据是不会触发 `storage` 事件的。事件是在其他窗口或标签页上发生存储操作时才会触发的。
+
+:::
+
+:::danger 对于 `sessionStorage` 如何 `storage` 事件存疑
+
+`sessionStorage` 只在同一个窗口或标签页下共享数据，若要触发 `storage` 事件需要借助 `iframe` 标签，这样它们属于同源页面。
+
+:::
+
+对于 `sessionStorage` 和 `localStorage` 上的任何更改都会触发 `storage` 事件，但 `storage` 事件不会区分这两者。
+
+## 限制
+
+与其他客户端数据存储方案一样， Web Storage 也有限制。具体的限制取决于特定的浏览器。一般来说，客户端数据的大小限制是按照每个源（协议、域和端口）来设置的，因此每个源有固定大小的数据存储空间。分析存储数据的页面的源可以加强这一限制。
+
+不同浏览器给 `localStorage` 和 `sessionStorage` 设置了不同的空间限制，但大多数会限制为每个源 5MB。
+
+:::warning
+
+当 `localStorage` 或 `sessionStorage` 存储超过了浏览器的限制（通常为约 5MB），浏览器的行为可能因浏览器类型和版本而异。一般情况下，超出存储限制时可能会触发“QUOTA_EXCEEDED_ERR”错误。
+:::

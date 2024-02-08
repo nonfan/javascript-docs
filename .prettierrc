@@ -1,0 +1,17 @@
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "arrowParens": "avoid",
+  "printWidth": 80,
+  "overrides": [
+    {
+      "files": ["*.mdx"],
+      "options": {
+        "parser": "mdx",
+        "proseWrap": "preserve",
+        "embeddedLanguageFormatting": "auto"
+      }
+    }
+  ]
+}
