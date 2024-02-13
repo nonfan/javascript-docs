@@ -698,3 +698,231 @@ new Promise((resolve, reject) => {
 ```
 
 ## 期约连锁与期约合成
+
+多个期约组合在一起可以构成强大的代码逻辑。这种组合可以通过两种方式实现：期约连锁与期约合成。前者就是一个期约接一个期约地拼接，后者则是将多个期约组合为一个期约。
+
+### 期约连锁
+
+把期约逐个地串联起来是一种非常有用的编程模式。之所以可以这样做，是因为每个期约实例的方法（`then()`、`catch()` 和 `finally()`）都会返回一个新的期约对象，而这个新期约又有自己的实例方法。这样连缀方法调用就可以构成所谓的“期约连锁”。比如：
+
+```js
+let p = new Promise((resolve, reject) => {
+  console.log('first');
+  resolve();
+});
+
+p.then(() => console.log('second'))
+  .then(() => console.log('third'))
+  .then(() => console.log('fourth'));
+
+// first
+// second
+// third
+// fourth
+```
+
+这个实现最终执行了一连串同步任务。要真正执行异步任务，可以改写前面的例子，让每个执行器都返回一个期约实例。这样就可以让每个后续期约都等待之前的期约，也就是串行化异步任务。比如，可以像下面这样让每个期约在一定时间后解决：
+
+```js
+let p1 = new Promise((resolve, reject) => {
+  console.log('p1 executor');
+  setTimeout(resolve, 1000);
+});
+p1.then(
+  () =>
+    new Promise((resolve, reject) => {
+      console.log('p2 executor');
+      setTimeout(resolve, 1000);
+    }),
+)
+  .then(
+    () =>
+      new Promise((resolve, reject) => {
+        console.log('p3 executor');
+        setTimeout(resolve, 1000);
+      }),
+  )
+  .then(
+    () =>
+      new Promise((resolve, reject) => {
+        console.log('p4 executor');
+        setTimeout(resolve, 1000);
+      }),
+  );
+// p1 executor（1 秒后）
+// p2 executor（2 秒后）
+// p3 executor（3 秒后）
+// p4 executor（4 秒后）
+```
+
+### 期约图
+
+因为一个期约可以有任意多个处理程序，所以期约连锁可以构建有向非循环图的结构。这样，每个期约都是图中的一个节点，而使用实例方法添加的处理程序则是有向顶点。因为图中的每个节点都会等待前一个节点落定，所以图的方向就是期约的解决或拒绝顺序。
+
+下面的例子展示了一种期约有向图，也就是二叉树：
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    B-->E;
+    C-->F;
+    C-->G;
+```
+
+```js title="代码执行顺序如上图二叉树的层序遍历"
+let A = new Promise((resolve, reject) => {
+  console.log('A');
+  resolve();
+});
+
+let B = A.then(() => console.log('B'));
+let C = A.then(() => console.log('C'));
+B.then(() => console.log('D'));
+B.then(() => console.log('E'));
+C.then(() => console.log('F'));
+C.then(() => console.log('G'));
+```
+
+注意，日志的输出语句是对二叉树的层序遍历。如前所述，期约的处理程序是按照它们添加的顺序执行的。由于期约的处理程序是先添加到消息队列，然后才逐个执行，因此构成了层序遍历。
+
+树只是期约图的一种形式。考虑到根节点不一定唯一，且多个期约也可以组合成一个期约（通过下一节介绍的 Promise.all()和 Promise.race()），所以有向非循环图是体现期约连锁可能性的最准确表达。
+
+### Promise.all()和 Promise.race()
+
+Promise 类提供两个将多个期约实例组合成一个期约的静态方法：`Promise.all()` 和 `Promise.race()`。而合成后期约的行为取决于内部期约的行为。
+
+#### Promise.all()
+
+`Promise.all()` 静态方法创建的期约会在一组期约全部解决之后再解决。这个静态方法接收一个可迭代对象，返回一个新期约：
+
+```js
+let p1 = Promise.all([Promise.resolve(), Promise.resolve()]);
+
+// 可迭代对象中的元素会通过 Promise.resolve()转换为期约
+let p2 = Promise.all([3, 4]);
+
+// 空的可迭代对象等价于 Promise.resolve()
+let p3 = Promise.all([]);
+
+// 无效的语法，必须传入可迭代的对象
+let p4 = Promise.all();
+// TypeError: cannot read Symbol.iterator of undefined
+```
+
+合成的期约只会在每个元素的期约都解决之后才解决：
+
+```js
+let p = Promise.all([
+  Promise.resolve(),
+  new Promise((resolve, reject) => setTimeout(resolve, 1000)),
+]);
+
+setTimeout(console.log, 0, p); // Promise <pending>
+// 等待一秒后，合成期约兑现
+setTimeout(console.log, 1000, p); // Promise <fulfilled>
+```
+
+如果至少有一个包含的期约待定（即期约处于pending状态），则合成的期约也会待定。如果有一个包含的期约拒绝，则合成的期约也会拒绝：
+
+```js
+// 永远待定 pending状态
+let p1 = Promise.all([new Promise(() => {})]);
+setTimeout(console.log, 0, p1); // Promise <pending>
+
+// 一次拒绝会导致最终期约拒绝
+let p2 = Promise.all([
+  Promise.resolve(),
+  Promise.reject('error'),
+  Promise.resolve(),
+]);
+setTimeout(console.log, 0, p2); // Promise <rejected> error
+// Uncaught (in promise) error
+```
+
+如果所有期约都成功解决，则合成期约的解决值就是所有包含期约解决值的数组，按照迭代器顺序：
+
+```js
+let p = Promise.all([
+  Promise.resolve(3),
+  Promise.resolve(4),
+  Promise.resolve(5),
+]);
+p.then(values => setTimeout(console.log, 0, values)); // [3, 4, 5]
+```
+
+如果有期约拒绝，则第一个拒绝的期约会将自己的理由作为合成期约的拒绝理由。之后再拒绝的期约不会影响最终期约的拒绝理由。**合成的期约会静默处理所有包含期约的拒绝操作**，如下所示：
+
+```js
+// 虽然只有第一个期约的拒绝理由会进入
+// 拒绝处理程序，第二个期约的拒绝也
+// 会被静默处理，不会有错误跑掉
+let p = Promise.all([
+  Promise.reject(3),
+  new Promise((resolve, reject) => setTimeout(reject, 1000)),
+]);
+p.catch(reason => setTimeout(console.log, 0, reason)); // 3
+// 没有未处理的错误
+```
+
+#### Promise.race()
+
+`Promise.race()` 静态方法返回一个包装期约，是一组集合中最先解决或拒绝的期约的镜像。这个方法接收一个可迭代对象，返回一个新期约：
+
+### 期约合成
+
+```js
+let p1 = Promise.race([Promise.resolve(), Promise.resolve()]);
+
+// 可迭代对象中的元素会通过 Promise.resolve()转换为期约
+let p2 = Promise.race([3, 4]);
+
+// 空的可迭代对象等价于 new Promise(() => {})
+let p3 = Promise.race([]);
+
+// 无效的语法
+let p4 = Promise.race();
+// TypeError: cannot read Symbol.iterator of undefined
+```
+
+`Promise.race()` 不会对解决或拒绝的期约区别对待。无论是解决还是拒绝，只要是第一个落定的期约，`Promise.race()` 就会包装其解决值或拒绝理由并返回新期约：
+
+```js
+/*解决先发生，超时后的拒绝被忽略*/
+let p1 = Promise.race([
+  Promise.resolve('success01'),
+  new Promise((resolve, reject) => setTimeout(reject, 1000)),
+]);
+// 等待一秒打印，来证明结果并不会被后面的期约状态改变
+setTimeout(console.log, 1000, p1); // Promise <resolved>: success01
+
+/*拒绝先发生，超时后的解决被忽略*/
+let p2 = Promise.race([
+  Promise.reject('error02'),
+  new Promise((resolve, reject) => setTimeout(resolve, 1000)),
+]);
+setTimeout(console.log, 1000, p2); // Promise <rejected>: error02
+
+// 迭代顺序决定了落定顺序
+let p3 = Promise.race([
+  Promise.resolve(1),
+  Promise.resolve(2),
+  Promise.resolve(3),
+]);
+setTimeout(console.log, 0, p3); // Promise <resolved>: 1
+```
+
+如果有一个期约拒绝，只要它是第一个落定的，就会成为拒绝合成期约的理由。之后再拒绝的期约不会影响最终期约的拒绝理由。与 `Promise.all()` 类似，合成的期约会静默处理所有包含期约的拒绝操作，如下所示：
+
+```js
+let p = Promise.race([
+  Promise.reject('error'),
+  new Promise((resolve, reject) => setTimeout(reject, 1000)),
+]);
+
+p.catch(reason => setTimeout(console.log, 0, reason)); // error
+// 没有未处理的错误
+```
+
+### 串行期约的合成

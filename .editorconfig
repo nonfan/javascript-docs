@@ -1,4 +1,0 @@
-root = true
-
-[*.mdx]
-editorconfig = false
