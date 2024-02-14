@@ -926,3 +926,214 @@ p.catch(reason => setTimeout(console.log, 0, reason)); // error
 ```
 
 ### 串行期约的合成
+
+到目前为止，我们讨论期约连锁一直围绕期约的串行执行，忽略了期约的另一个主要特性：异步产生值并将其传给处理程序。基于后续期约使用之前期约的返回值来串联期约是期约的基本功能。
+
+这很像函数合成，即将多个函数合成为一个函数，渐进地消费一个值，并返回一个结果，如下代码：
+
+```js
+function addTwo(x) {
+  return x + 2;
+}
+function addThree(x) {
+  return x + 3;
+}
+function addFive(x) {
+  return x + 5;
+}
+function addTen(x) {
+  return addFive(addTwo(addThree(x)));
+}
+console.log(addTen(7)); // 17
+```
+
+使用期约的特性，来实现这一功能：多个函数基于一个值合成为一个函数。
+
+```js title="使用Promise特性合成函数"
+function addTwo(x) {
+  return x + 2;
+}
+function addThree(x) {
+  return x + 3;
+}
+function addFive(x) {
+  return x + 5;
+}
+
+function addTen(x) {
+  return Promise.resolve(x).then(addTwo).then(addThree).then(addFive);
+}
+
+addTen(10).then(console.log); // logs 20
+```
+
+使用 `Array.prototype.reduce()` 可以写成更简洁的形式：
+
+```js
+function addTen(x) {
+  return [addTwo, addThree, addFive].reduce(
+    (promise, fn) => promise.then(fn),
+    Promise.resolve(x),
+  );
+}
+addTen(10).then(console.log); // logs 20
+```
+
+这种模式可以提炼出一个通用函数，可以把任意多个函数作为处理程序合成一个连续传值的期约连锁。这个通用的合成函数可以这样实现：
+
+```js
+function compose(...fns) {
+  return x => fns.reduce((promise, fn) => promise.then(fn), Promise.resolve(x));
+}
+
+let addTen = compose(addTwo, addThree, addFive);
+addTen(10).then(console.log); // logs 20
+```
+
+## 期约扩展
+
+### 期约取消
+
+:::danger
+我觉得期约取消这个实现案例存在”脱裤子放屁“
+:::
+
+我们经常会遇到期约正在处理过程中，程序却不再需要其结果的情形。这时候如果能够取消期约就好了。某些第三方库，比如 Bluebird，就提供了这个特性。实际上，TC39 委员会也曾准备增加这个特性，但相关提案最终被撤回了。结果，ES6 期约被认为是“激进的”：只要期约的逻辑开始执行，就没有办法阻止它执行到完成。
+
+实际上，可以在现有实现基础上提供一种临时性的封装，以实现取消期约的功能。这可以用到 KevinSmith 提到的“取消令牌”（cancel token）。生成的令牌实例提供了一个接口，利用这个接口可以取消期约；同时也提供了一个期约的实例，可以用来触发取消后的操作并求值取消状态。
+
+```js title="CancelToken 类的一个基本实例"
+/**
+ * <button id="start">Start</button>
+ * <button id="cancel">Cancel</button>
+ */
+
+class CancelToken {
+  constructor(cancelFn) {
+    this.promise = new Promise((resolve, reject) => {
+      cancelFn(resolve);
+    });
+  }
+}
+
+const startButton = document.querySelector('#start');
+const cancelButton = document.querySelector('#cancel');
+
+function cancellableDelayedResolve(delay) {
+  setTimeout(console.log, 0, 'set delay');
+  // highlight-start
+  return new Promise((resolve, reject) => {
+    const id = setTimeout(() => {
+      setTimeout(console.log, 0, 'delayed resolve');
+      resolve();
+    }, delay);
+    // highlight-end
+
+    function cancelToken(id) {
+      clearTimeout(id);
+    }
+
+    cancelToken(id);
+  });
+}
+
+startButton.addEventListener('click', () => cancellableDelayedResolve(1000));
+```
+
+观察上面两处高亮的代码块，可以明显看出两处是不同的 Promise 实例，第二处功能只是在做清除定时器（掩耳盗铃，并非对原来的 Promise 进行取消，只是不触发），因此可以更简洁，如下：
+
+```js
+function cancelToken(id) {
+  clearTimeout(id);
+}
+
+cancelToken(id);
+```
+
+### 期约进度通知
+
+执行中的期约可能会有不少离散的“阶段”，在最终解决之前必须依次经过。某些情况下，监控期约的执行进度会很有用。ECMAScript 6 期约并不支持进度追踪，但是可以通过扩展来实现。
+
+一种实现方式是扩展 Promise 类，为它添加 notify()方法，如下所示：
+
+```js
+class TrackablePromise extends Promise {
+  constructor(executor) {
+    const notifyHandlers = [];
+    super((resolve, reject) => {
+      return executor(resolve, reject, status => {
+        notifyHandlers.map(handler => handler(status));
+      });
+    });
+    this.notifyHandlers = notifyHandlers;
+  }
+  notify(notifyHandler) {
+    this.notifyHandlers.push(notifyHandler);
+    return this;
+  }
+}
+```
+
+这样，TrackablePromise 就可以在执行函数中使用 notify()函数了。可以像下面这样使用这个函数来实例化一个期约：
+
+```js
+let p = new TrackablePromise((resolve, reject, notify) => {
+  function countdown(x) {
+    if (x > 0) {
+      notify(`${20 * x}% remaining`);
+      setTimeout(() => countdown(x - 1), 1000);
+    } else {
+      resolve();
+    }
+  }
+
+  countdown(5);
+});
+```
+
+这个期约会连续5次递归地设置1000毫秒的超时。每个超时回调都会调用notify()并传入状态值。假设通知处理程序简单地这样写：
+
+```js
+let p = new TrackablePromise((resolve, reject, notify) => {
+  function countdown(x) {
+    if (x > 0) {
+      notify(`${20 * x}% remaining`);
+      setTimeout(() => countdown(x - 1), 1000);
+    } else {
+      resolve();
+    }
+  }
+  countdown(5);
+});
+p.notify(x => setTimeout(console.log, 0, 'progress:', x));
+p.then(() => setTimeout(console.log, 0, 'completed'));
+// （约 1 秒后）80% remaining
+// （约 2 秒后）60% remaining
+// （约 3 秒后）40% remaining
+// （约 4 秒后）20% remaining
+// （约 5 秒后）completed
+```
+
+notify()函数会返回期约，所以可以连缀调用，连续添加处理程序。多个处理程序会针对收到的每条消息分别执行一遍，如下所示：
+
+```js
+p.notify(x => setTimeout(console.log, 0, 'a:', x)).notify(x =>
+  setTimeout(console.log, 0, 'b:', x),
+);
+p.then(() => setTimeout(console.log, 0, 'completed'));
+// （约 1 秒后） a: 80% remaining
+// （约 1 秒后） b: 80% remaining
+// （约 2 秒后） a: 60% remaining
+// （约 2 秒后） b: 60% remaining
+// （约 3 秒后） a: 40% remaining
+// （约 3 秒后） b: 40% remaining
+// （约 4 秒后） a: 20% remaining
+// （约 4 秒后） b: 20% remaining
+// （约 5 秒后） completed
+```
+
+总体来看，这还是一个比较粗糙的实现，但应该可以演示出如何使用通知报告进度了。
+
+:::warning
+ES6 不支持取消期约和进度通知，一个主要原因就是这样会导致期约连锁和期约合成过度复杂化。比如在一个期约连锁中，如果某个被其他期约依赖的期约被取消了或者发出了通知，那么接下来应该发生什么完全说不清楚。毕竟，如果取消了 Promise.all()中的一个期约，或者期约连锁中前面的期约发送了一个通知，那么接下来应该怎么办才比较合理呢？
+:::
