@@ -1,28 +1,44 @@
-import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   docs: [
     {
-      type: "doc",
-      label: "起步",
-      id: "index",
+      type: 'doc',
+      label: '起步',
+      id: 'index',
     },
     {
-      type: "category",
-      label: "期约与异步函数",
+      type: 'category',
+      label: '期约与异步函数',
       items: [
-        "promise-and-async-function/async-program",
-        "promise-and-async-function/promise",
-        "promise-and-async-function/async-function",
+        'promise-and-async-function/async-program',
+        'promise-and-async-function/promise',
+        'promise-and-async-function/async-function',
       ],
     },
     {
-      type: "category",
-      label: "客户端存储",
+      type: 'category',
+      label: 'BOM',
       items: [
-        "client-storage/cookie",
-        "client-storage/web-storage",
-        "client-storage/indexed-db",
+        'bom/window',
+        'bom/location',
+        'bom/navigator',
+        'bom/screen',
+        'bom/history',
+      ],
+    },
+    {
+      type: 'category',
+      label: 'JSON',
+      items: ['json/grammar', 'json/analysis-and-serialization'],
+    },
+    {
+      type: 'category',
+      label: '客户端存储',
+      items: [
+        'client-storage/cookie',
+        'client-storage/web-storage',
+        'client-storage/indexed-db',
       ],
     },
   ],

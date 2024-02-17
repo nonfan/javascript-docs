@@ -1,1 +1,208 @@
 # 异步函数
+
+异步函数，也称为 “async/await” (语法关键字，即 Promise 语法糖)，是 ES6 期约模式在 ECMAScript 函数中的应用。async/await 是 ES8 规范新增的。这个特性从行为和语法上都增强了 JavaScript，让以同步方式写的代码能够异步执行。
+
+```js
+/**
+ * Promise ES6语法在一定程度上是复杂的，如果需要获取解决值，则必须写入处理程序
+ * 如下代码演示：
+ */
+
+const p = new Promise((resolve, reject) => {
+  setTimeout(resolve, 1000, 'success');
+});
+
+p.then(value => console.log(value));
+// 1s后打印 success
+
+/**
+ * 改进一下，提前定义处理程序
+ */
+
+function resolveHandler(value) {
+  console.log(value);
+}
+
+p.then(resolveHandler);
+```
+
+这个改进其实也不大。这是因为任何需要访问这个期约所产生值的代码，都需要以处理程序的形式来接收这个值。也就是说，代码照样还是要放到处理程序里。ES8 为此提供了 async/await 关键字。
+
+## 异步函数
+
+ES8 的 async/await 旨在解决利用异步结构组织代码的问题。为此，ECMAScript 对函数进行了扩展，为其增加了两个新关键字：`async` 和 `await`。
+
+### async
+
+`async` 关键字用于声明异步函数。这个关键字可以用在函数声明、函数表达式、箭头函数和类方法上：
+
+```js
+async function name() {}
+
+let name2 = async function () {};
+
+let name3 = async () => {};
+
+class People {
+  async getName() {}
+}
+```
+
+异步函数如果使用 return 关键字返回了值（如果没有 return 则会返回 undefined），这个值会被 Promise.resolve()包装成一个期约对象。异步函数始终返回期约对象。在函数外部调用这个函数可以得到它返回的期约：
+
+```js
+async function foo() {
+  return 'success';
+
+  /**
+   * 直接返回一个期约对象也是一样的
+   * return Promise.resolve("success")
+   */
+}
+
+// 给返回的期约添加一个解决处理程序
+foo().then(console.log); // success
+```
+
+_异步函数的返回值期待_（但实际上并不要求）一个实现 thenable 接口的对象，但常规的值也可以。如果返回的是实现 thenable 接口的对象，则这个对象可以由提供给 then()的处理程序“解包”。如果不是，则返回值就被当作已经解决的期约。下面的代码演示了这些情况：
+
+```js
+/*返回一个原始值*/
+async function fn1() {
+  return 'fn1';
+}
+fn1().then(console.log); // fn1
+
+/*返回一个没有实现 thenable 接口的对象*/
+async function fn2() {
+  return ['fn2'];
+}
+fn2().then(console.log); // ['fn2']
+
+/*返回一个没有实现 thenable 接口的对象*/
+async function fn3() {
+  const thenable = {
+    then(callback) {
+      callback('fn3');
+    },
+  };
+  return thenable;
+}
+fn3().then(console.log); // fn3
+
+/*返回一个期约*/
+async function fn4() {
+  return Promise.resolve('fn4');
+}
+fn4().then(console.log); // fn4
+```
+
+与在期约处理程序中一样，在异步函数中抛出错误会返回拒绝的期约：
+
+```js
+async function fn() {
+  throw 'fn error';
+}
+
+// 给返回的期约添加一个拒绝处理程序
+fn1().catch(console.log); // fn error
+```
+
+不过，拒绝期约的错误不会被异步函数捕获：
+
+```js
+async function fn() {
+  Promise.reject('error');
+}
+
+fn().catch(console.log);
+// Uncaught (in promise) error
+```
+
+### await
+
+因为异步函数主要针对不会马上完成的任务，所以自然需要一种暂停和恢复执行的能力。使用 `await` 关键字可以暂停异步函数代码的执行，等待期约解决。
+
+```js
+async function fn() {
+  console.log(2);
+  const p = new Promise((resolve, reject) => setTimeout(resolve, 1000, 4));
+
+  console.log(await p);
+  console.log(5);
+}
+
+console.log(1);
+fn();
+console.log(3);
+// 打印顺序：1 2 3 4 5
+```
+
+注意，await 关键字会暂停执行异步函数后面的代码，让出 JavaScript 运行时的执行线程。这个行为与生成器函数中的 yield 关键字是一样的。await 关键字同样是尝试“解包”对象的值，然后将这个值传给表达式，再异步恢复异步函数的执行。
+
+await 关键字的用法与 JavaScript 的一元操作一样。它可以单独使用，也可以在表达式中使用，如下面的例子所示：
+
+```js
+(async () => {
+  console.log(await Promise.resolve('01'));
+
+  // await 解包获取解决值，赋值给value变量
+  const value1 = await Promise.resolve('02');
+
+  const value2 = await new Promise((resolve, reject) =>
+    setTimeout(resolve, 1000, 03),
+  );
+})();
+```
+
+await 关键字期待（但实际上并不要求）一个实现 thenable 接口的对象，但常规的值也可以。如果是实现 thenable 接口的对象，则这个对象可以由 await 来“解包”。如果不是，则这个值就被当作已经解决的期约。下面的代码演示了这些情况：
+
+```js
+(async () => {
+  // 等待一个原始值
+  console.log(await '01');
+
+  // 等待一个没有实现 thenable 接口的对象
+  console.log(await ['02']);
+
+  // 等待一个没有实现 thenable 接口的对象
+  const thenable = {
+    then(callback) {
+      callback('03');
+    },
+  };
+  console.log(await thenable);
+
+  // 等待一个期约
+  console.log(await Promise.resolve('04'));
+
+  // '01' '02' ['03'] '04'
+})();
+```
+
+### await 的限制
+
+`await` 关键字必须在通过 `async` 声明的异步函数中使用，不能在顶级上下文如 `script` 标签或模块中使用。不过，定义并立即调用异步函数是没问题的。下面两段代码实际是相同的：
+
+```js
+async function fn() {
+  console.log(await Promise.resolve('success'));
+}
+
+// 立即调用的异步函数
+(async () => {
+  console.log(await Promise.resolve('success'));
+})();
+```
+
+## 停止和恢复执行
+
+## 异步函数策略
+
+### 实现 sleep()
+
+### 利用平行执行
+
+### 串行执行期约
+
+### 栈追踪与内存管理
