@@ -1,1 +1,214 @@
-# 解析与系列化
+# 解析与序列化
+
+JSON 的迅速流行并不仅仅因为其语法与 JavaScript 类似，很大程度上还因为 JSON 可以直接被解析成可用的 JavaScript 对象。与解析为 DOM 文档的 XML 相比，这个优势非常明显。为此，JavaScript 开发者可以非常方便地使用 JSON 数据。
+
+## JSON 对象
+
+早期的 JSON 解析器基本上就相当于 JavaScript 的 `eval()` 函数。因为 JSON 是 JavaScript 语法的子集，所以 `eval()` 可以解析、解释，并将其作为 JavaScript 对象和数组返回。ECMAScript 5 增加了 JSON全局对象，正式引入解析 JSON 的能力。这个对象在所有主流浏览器中都得到了支持。
+
+JSON 对象有两个方法：`stringify()` 和 `parse()`。在简单的情况下，前者可以将 JavaScript序列化为JSON字符串，后者将JSON文本数据值解析为JavaScript值。例如：
+
+```js
+let obj = {
+  key: 'value',
+};
+
+let jsonText = JSON.stringify(obj);
+
+console.log(jsonText); // {"key":"value"}
+```
+
+这个例子使用 `JSON.stringify()` 把一个 JavaScript 对象序列化为一个 JSON 字符串，保存在变量 jsonText 中。默认情况下，`JSON.stringify()` 会输出不包含空格或缩进的 JSON 字符串。
+
+在序列化 JavaScript 对象时，所有函数和原型成员都会有意地在结果中省略。此外，值为 undefined的任何属性也会被跳过。最终得到的就是所有实例属性均为有效 JSON 数据类型的表示。
+
+JSON 字符串可以直接传给 `JSON.parse()`，然后得到相应的 JavaScript 值。比如，可以使用以下代码创建与原先对象类似的新对象：
+
+```js
+let obj = {
+  key: 'value',
+};
+
+let jsonText = JSON.stringify(obj);
+
+let objCopy = JSON.parse(jsonText);
+
+console.log(obj === objCopy); // false
+```
+
+:::warning
+两者是完全不同的对象，没有任何关系。但是它们拥有相同的属性和值。如果给 `JSON.parse()` 传入的 JSON 字符串无效，则会导致抛出错误。
+:::
+
+## JSON.stringify
+
+`JSON.stringify()` 可以接收三个参数，第一个参数是要序列化的对象，第二个参数是过滤器，可以是数组或函数，第三个参数是用于缩进结果 JSON 字符串的选项。单独或组合使用这些参数可以更好地控制 JSON 序列化。
+
+### 过滤器
+
+如果第二个参数是一个数组，那么 `JSON.stringify()` 放回的结果只会包含该数组中列出的对象属性，如下：
+
+```js
+let book = {
+  title: 'Professional JavaScript',
+  authors: ['Nicholas C. Zakas', 'Matt Frisbie'],
+  edition: 4,
+  year: 2017,
+};
+let jsonText = JSON.stringify(book, ['title', 'edition']);
+console.log(jsonText); // {"title":"Professional JavaScript","edition":4}
+```
+
+如果第二个参数是一个函数，则行为又有不同。提供的函数接收两个参数：属性名（key）和属性值（value）。可以根据这个 key 决定要对相应属性执行什么操作。这个 key 始终是字符串，只是在值不属于某个键/值对（属于简单值）时会是空字符串。
+
+为了改变对象的序列化结果，返回的值就是相应 key 应该包含的结果。注意，返回 `undefined` 会导致属性被忽略。下面看一个例子：
+
+```js
+let book = {……}
+let jsonText = JSON.stringify(book, (key, value) => {
+  switch (key) {
+    case 'authors':
+      return value.join(',');
+    default:
+      return undefined;
+  }
+});
+
+console.log(jsonText) // undefined
+```
+
+打印结果应该是 `{"authors":"Nicholas C. Zakas,Matt Frisbie"}` 但事实真的如此吗？
+
+这个函数基于键进行了过滤。如果键是"authors"，则将数组值转换为字符串。其他键返回 `undefined` 忽略该属性。但是，最后一定要提供默认返回值，否则会导致结果为 undefined。**第一次调用这个函数实际上会传入空字符串key，值是 book 对象**。
+
+```js title="如何能够忽略其他属性，除了 anthors 属性"
+/**
+ * 设计一个开关，只在函数第一次调用时才会执行
+ */
+let book = {……}
+
+function jsonFilter(key, value) {
+  /**
+  * 初始时，hasBeenCalled 属性不存在
+  * 第一次调用，将执行函数逻辑
+  */
+  if (!jsonFilter.hasBeenCalled) {
+    jsonFilter.hasBeenCalled = true;
+    return value;
+  }
+
+  if (key === "authors") {
+    return value.join(",");
+  }
+
+  return undefined;
+}
+
+let jsonText = JSON.stringify(book, jsonFilter);
+
+console.log(jsonText); // {"authors":"Nicholas C. Zakas,Matt Frisbie"}
+```
+
+### 字符串缩进
+
+`JSON.stringify()` 方法的第三个参数控制缩进和空格。在这个参数是数值时，表示每一级缩进的空格数。例如，每级缩进 4 个空格，可以这样：
+
+```js
+let book = {
+  title: 'Professional JavaScript',
+  authors: ['Nicholas C. Zakas', 'Matt Frisbie'],
+  edition: 4,
+  year: 2017,
+};
+let jsonText = JSON.stringify(book, null, 4);
+```
+
+```xjson title="展示 jsonText 结果"
+{
+    "title": "Professional JavaScript",
+    "authors": [
+        "Nicholas C. Zakas",
+        "Matt Frisbie"
+    ],
+    "edition": 4,
+    "year": 2017
+}
+```
+
+注意，除了缩进，`JSON.stringify()` 方法还为方便阅读插入了换行符。这个行为对于所有有效的缩进参数都会发生。（只缩进不换行也没什么用。）最大缩进值为 10，大于 10 的值会自动设置为 10。
+
+如果缩进参数是一个字符串而非数值，那么 JSON 字符串中就会使用这个字符串而不是空格来缩进。使用字符串，也可以将缩进字符设置为 Tab 或任意字符，如两个连字符：
+
+```js
+let book = {……}
+let jsonText = JSON.stringify(book, null, "--" );
+```
+
+```xjson title="jsonText 的值会变成如下格式"
+{
+--"title": "Professional JavaScript",
+--"authors": [
+----"Nicholas C. Zakas",
+----"Matt Frisbie"
+--],
+--"edition": 4,
+--"year": 2017
+}
+```
+
+使用字符串时同样有 10 个字符的长度限制。如果字符串长度超过 10，则会在第 10 个字符处截断。
+
+### toJSON
+
+有时候，对象需要在 `JSON.stringify()` 之上自定义 JSON 序列化。此时，可以在要序列化的对象中添加 `toJSON()` 方法，序列化时会基于这个方法返回适当的 JSON 表示。事实上，原生 Date 对象就有一个 `toJSON()` 方法，能够自动将 JavaScript 的 Date 对象转换为 ISO 8601 日期字符串（本质上与在Date 对象上调用 `toISOString()` 方法一样）。
+
+```js title="为自定义序列化而添加了一个 toJSON()方法"
+let book = {
+  title: 'Professional JavaScript',
+  authors: ['Nicholas C. Zakas', 'Matt Frisbie'],
+  edition: 4,
+  year: 2017,
+  toJSON: function () {
+    return this.title;
+  },
+};
+let jsonText = JSON.stringify(book);
+console.log(jsonText); // "Professional JavaScript"
+```
+
+箭头函数不能用来定义 `toJSON()` 方法。主要原因是箭头函数的词法作用域是全局作用域，在这种情况下不合适。`toJSON()` 方法可以返回任意序列化值，返回 undefined 会导致值被忽略，或者如果是顶
+级对象，则本身就是 undefined。
+
+`toJSON()` 方法可以与过滤函数一起使用，因此理解不同序列化流程的顺序非常重要。在把对象传给 `JSON.stringify()` 时会执行如下步骤。
+
+- [x] 第一步通过 `toJSON` 函数获取到实际的值。
+- [x] 第二步，`JSON.stringify` 如果提供了第二个参数 则应用过滤。过滤函数接收的（key/value） 由第一步获取到的实际值传入。
+- [x] 第三步进行序列化。
+- [x] 第四步，如果提供了第三个参数，则相应地进行缩进。
+
+## JSON.parse
+
+`JSON.parse()` 方法也可以接收一个额外的参数，这个函数会针对每个键/值对都调用一次。为区别于传给 `JSON.stringify()` 的起过滤作用的替代函数（replacer），这个函数被称为还原函数（reviver）。实际上它们的格式完全一样，即还原函数也接收两个参数，属性名（key）和属性值（value），另外也需要返回值。
+
+如果还原函数返回 undefined，则结果中就会删除相应的键。如果返回了其他任何值，则该值就会成为相应键的值插入到结果中。还原函数经常被用于把日期字符串转换为 Date 对象。例如：
+
+```js
+let people = {
+  name: 'AGoodBook',
+  year: 2024,
+  releaseDate: new Date(2024, 1, 10),
+};
+let jsonText = JSON.stringify(people);
+let peopleCopy = JSON.parse(jsonText, (key, value) =>
+  key == 'releaseDate' ? new Date(value) : value,
+);
+console.log(peopleCopy.releaseDate.getFullYear()); // 2024
+```
+
+以上代码在 people 对象中增加了 releaseDate 属性，是一个 Date 对象。这个对象在被序列化为 JSON 字符串后，又被重新解析为一个对象 peopleCopy。这里的还原函数会查找"releaseDate"键，如果找到就会根据它的日期字符串创建新的 Date 对象。得到的 bookCopy.releaseDate 属性又变回了Date 对象，因此可以调用其原型的方法。
+
+## 总结
+
+JSON 是一种轻量级数据格式，可以方便地表示复杂数据结构。这个格式使用 JavaScript 语法的一个子集表示对象、数组、字符串、数值、布尔值和 null。虽然 XML 也能胜任同样的角色，但 JSON 更简洁，JavaScript 支持也更好。更重要的是，所有浏览器都已经原生支持全局 JSON 对象。
+
+ECMAScript 5 定义了原生 JSON 对象，用于将 JavaScript 对象序列化为 JSON 字符串，以及将 JSON数组解析为 JavaScript 对象。JSON.stringify()和 JSON.parse()方法分别用于实现这两种操作。这两个方法都有一些选项可以用来改变默认的行为，以实现过滤或修改流程。

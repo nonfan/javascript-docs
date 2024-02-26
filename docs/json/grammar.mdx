@@ -1,1 +1,76 @@
 # 语法
+
+JSON 语法支持表示3种类型的值：
+
+- [ ] 简单值：字符串、数值、布尔值 和 `null` 可以在 JSON 中出现，就像 JavaScript 中一样。特殊值 `undefined` 不可以。
+- [ ] 对象：第一种复杂数据类型，对象表示有序键值对。每个值可以是简单值，也可以是复杂类型。
+- [ ] 数组：第二种复杂数据类型，数组表示可以通过数值索引访问的值的有序列表。数组的元素可以是简单值，也可以是复杂类型。
+
+## 简单值
+
+JavaScript 字符串与 JSON 字符串的主要区别是，JSON 字符串必须使用双引号（单引号会导致语法错误）。
+
+```json
+"hello world!"
+```
+
+```json
+false
+```
+
+```json
+5
+```
+
+```json
+null
+```
+
+## 对象
+
+JavaScript 不同，JSON 中的对象属性名必须始终带双引号。手动编写 JSON 时漏掉这些双引号或使用单引号是常见错误。
+
+```json title="演示JSON对象"
+{
+  "key": "value",
+  "one": [],
+  "two": {},
+  "three": "简单值"
+}
+```
+
+对象使用与 JavaScript 对象字面量略为不同的方式表示。以下是 JavaScript 中的对象字面量：
+
+```js
+let obj = {
+  key: 'value',
+  one: [],
+  two: {},
+  three: '任意值，包括 JSON 不能使用的 undefined',
+};
+```
+
+## 数组
+
+数组的每个元素可以是简单值，也可以是复杂类型。
+
+```json
+["简单值", 5, {}, []]
+```
+
+```json title="创建更为复杂的结构数据"
+[
+  {
+    "title": "Professional JavaScript",
+    "authors": ["Nicholas C. Zakas", "Matt Frisbie"],
+    "edition": 4,
+    "year": 2017
+  }
+]
+```
+
+## 溯源
+
+2006 年，Douglas Crockford 在国际互联网工程任务组（IETF，The Internet Engineering Task Force）制定了 JavaScript 对象简谱（JSON，JavaScript Object Notation）标准，即 RFC 4627。但实际上，JSON早在 2001 年就开始使用了。JSON 是 JavaScript 的**严格子集**，利用 JavaScript 中的几种模式来表示结构化数据。Crockford 将 JSON 作为替代 XML 的一个方案提出，因为 JSON 可以直接传给 `eval()` 而不需要创建 DOM。
+
+理解 JSON 最关键的一点是要把它当成一种数据格式，而不是编程语言。JSON 不属于 JavaScript，它们只是拥有相同的语法而已。JSON 也不是只能在 JavaScript 中使用，它是一种通用数据格式。很多语言都有解析和序列化 JSON 的内置能力。
