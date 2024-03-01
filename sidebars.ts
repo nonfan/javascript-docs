@@ -7,6 +7,7 @@ const sidebars: SidebarsConfig = {
       label: '起步',
       id: 'index',
     },
+    'function',
     {
       type: 'category',
       label: '期约与异步函数',
@@ -27,11 +28,7 @@ const sidebars: SidebarsConfig = {
         'bom/history',
       ],
     },
-    {
-      type: 'category',
-      label: 'JSON',
-      items: ['json/grammar', 'json/analysis-and-serialization'],
-    },
+    'json',
     {
       type: 'category',
       label: '客户端存储',

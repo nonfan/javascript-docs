@@ -1,6 +1,9 @@
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+
 const username: string = 'agoodbook';
 const repo: string = 'javascript';
 const title: string = 'JavaScript';
@@ -56,8 +59,10 @@ const config: Config = {
           editUrl: `https://github.com/${username}/${repo}/tree/main`,
           showLastUpdateTime: true,
           remarkPlugins: [
+            require('remark-math'),
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
           ],
+          rehypePlugins: [rehypeKatex],
         },
         theme: {
           customCss: './src/css/custom.css',
