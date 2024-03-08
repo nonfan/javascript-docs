@@ -7,6 +7,7 @@ const sidebars: SidebarsConfig = {
       label: '起步',
       id: 'index',
     },
+    'iterator-and-generator',
     'function',
     {
       type: 'category',
@@ -29,6 +30,16 @@ const sidebars: SidebarsConfig = {
       ],
     },
     'json',
+    {
+      type: 'category',
+      label: '网络请求与远程资源',
+      items: [
+        'network-requests-and-remote-resources/network-requests',
+        'network-requests-and-remote-resources/fetch-api',
+        'network-requests-and-remote-resources/beacon-api',
+        'network-requests-and-remote-resources/websocket',
+      ],
+    },
     {
       type: 'category',
       label: '客户端存储',

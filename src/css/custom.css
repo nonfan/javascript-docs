@@ -6,9 +6,6 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  /*通用变量*/
-  --nprogress-height: 3px;
-
   /*暗黑模式*/
   --ifm-color-primary: #2e8555;
   --ifm-color-primary-dark: #29784c;
@@ -19,58 +16,8 @@
   --ifm-color-primary-lightest: #3cad6e;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
-  --icon-color-svg: #000;
-  --color: #000;
-  --bg: #fff;
-  --nprogress-bg: var(--ifm-color-primary);
-  --code-block-bg: #f6f8fa;
-  --border: #d9d9d9;
-  --feedback-bg: #fff;
-  --feedback-border: #d9d9d9;
-  --feedback-caret-color: var(--ifm-color-primary);
-  --feedback-shadow: 0 0 1px 1px var(--ifm-color-primary);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
-[data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
-  --icon-color-svg: #fff;
-  --color: #fff;
-  --bg: #000;
-  --nprogress-bg: var(--ifm-color-primary);
-  --code-block-bg: #282a36;
-  --border: #686868;
-  --feedback-bg: #090a11;
-  --feedback-border: #242526;
-  --feedback-caret-color: #fff;
-  --feedback-shadow: 0 0 1px 1px #fff;
-}
-
-/* Antd组件变量 */
-.css-var-r1 {
-  --ant-color-bg-elevated: var(--code-block-bg) !important;
-  --ant-slider-rail-bg: var(--code-block-bg) !important;
-  --ant-slider-rail-hover-bg: var(--code-block-bg) !important;
-  --ant-color-text: var(--color) !important;
-  --ant-color-border: var(--border) !important;
-}
-
-#nprogress .bar {
-  background: var(--nprogress-bg) !important;
-  height: var(--nprogress-height) !important;
-
-}
-#nprogress .spinner-icon {
-  border-top-color: var(--nprogress-bg) !important;
-  border-left-color: var(--nprogress-bg) !important;
-}
 
 @media screen and (min-width: 768px) {
   .custom-search .DocSearch {
@@ -123,14 +70,6 @@
 /**
  通用样式
  */
-.navigation-item svg, .navbar-icon svg {
-  color: var(--icon-color-svg);
-}
-.navbar-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
 /*手式鼠标指示器*/
 .pointer {
   cursor: pointer;
@@ -152,123 +91,4 @@
 
 .navbar__link,.navbar__item {
   white-space: nowrap;
-}
-
-/*自定义反馈按钮*/
-.custom-feedback {
-  position: relative;
-}
-
-.custom-feedback button {
-  height: 35px;
-  cursor: pointer;
-  border-radius: 5px;
-  border: 1px solid var(--feedback-border);
-  padding: 0 10px;
-  background-color: var(--feedback-bg);
-  font-weight: bolder;
-}
-
-.custom-feedback .send-container {
-  display: none;
-  width: 300px;
-  min-height: 180px;
-  border: 1px solid var(--feedback-border);
-  position: absolute;
-  top: 45px;
-  border-radius: 10px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  background-color: var(--feedback-bg);
-}
-
-.custom-feedback .send-container .email,
-.custom-feedback .send-container .content {
-  height: 40px;
-  border-radius: 5px;
-  margin: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid var(--feedback-border);
-
-}
-
-.custom-feedback .send-container .email input,
-.custom-feedback .send-container .content textarea {
-  background-color: var(--feedback-bg);
-}
-
-.custom-feedback .send-container .email input {
-  width: 100%;
-  height: 100%;
-  outline: none;
-  border: none;
-  border-radius: 5px;
-  padding: 0 10px;
-}
-
-.custom-feedback .send-container .content {
-  height: 100px;
-}
-
-.custom-feedback .send-container .content textarea {
-  width: 100%;
-  height: 100%;
-  outline: none;
-  border: none;
-  border-radius: 5px;
-  padding: 10px;
-  resize: none;
-  font-family: "微软雅黑", Arial, sans-serif;
-}
-
-.custom-feedback .send-container .email input:focus,.custom-feedback .send-container .content textarea:focus {
-  box-shadow: var(--feedback-shadow);
-  caret-color: var(--feedback-caret-color);
-}
-
-.custom-feedback .send-container footer {
-  display: flex;
-  align-items: center;
-  height: 50px;
-  justify-content: space-between;
-  padding: 0 5px;
-  border-bottom-left-radius: 5px;
-  border-bottom-right-radius: 5px;
-}
-.custom-feedback .send-container footer .emoji-container {
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: red;
-}
-
-.custom-feedback .send-container footer .emoji-container img {
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-  padding: 3px;
-  border-radius: 50%;
-}
-
-.emoji-active {
-  background-color: var(--ifm-color-primary);
-}
-
-.custom-feedback .send-container footer .emoji-container img:hover {
-  background-color: var(--ifm-color-primary);
-}
-
-.custom-feedback .send-container footer button {
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.custom-feedback .tips {
-  font-size: 12px;
-  color: #f55b5b;
-  padding: 5px 10px;
 }
