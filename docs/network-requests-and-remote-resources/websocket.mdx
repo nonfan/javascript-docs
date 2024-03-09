@@ -6,6 +6,219 @@ Web Socket（套接字）的目标是通过一个长时连接实现与服务器�
 
 使用自定义协议而非 HTTP 协议的好处是，客户端与服务器之间可以发送非常少的数据，不会对HTTP 造成任何负担。使用更小的数据包让 Web Socket 非常适合带宽和延迟问题比较明显的移动应用。使用自定义协议的缺点是，定义协议的时间比定义 JavaScript API 要长。Web Socket 得到了所有主流浏览器支持。
 
-[全面学习 Web Socket](https://agoodbook.github.io/websocket/)
+## API
 
-[框架 Socket.io](https://agoodbook.github.io/socket.io/)
+要创建一个新的 Web Socket，就要实例化一个 WebSocket 对象并传入提供连接的 URL：
+
+```js
+let socket = new WebSocket('ws://127.0.0.1');
+```
+
+注意，必须给 WebSocket 构造函数传入一个绝对 URL。同源策略不适用于 Web Socket，因此可以打开到任意站点的连接。至于是否与来自特定源的页面通信，则完全取决于服务器。（在握手阶段就可以确定请求来自哪里。）
+
+浏览器会在初始化 WebSocket 对象之后立即创建连接。与 XHR 类似，WebSocket 也有一个`readyState` 属性表示当前状态。不过，这个值与 XHR 中相应的值不一样。
+
+WebSocket 构造函数原型携带如下属性，readyState 值与属性一一对应。
+
+- [ ] `WebSocket.OPENING(0)`: 连接正在建立。
+- [ ] `WebSocket.OPEN(1)`: 连接已经建立。
+- [ ] `WebSocket.CLOSING(2)`: 连接正在关闭。
+- [ ] `WebSocket.CLOSE(3)`: 连接已经关闭。
+
+WebSocket 对象没有 `readystatechange` 事件，而是有与上述不同状态对应的其他事件。`readyState` 值从 0 开始。
+
+任何时候都可以调用 close()方法关闭 Web Socket 连接：
+
+```js
+socket.close();
+```
+
+调用 close()之后，readyState 立即变为 2（连接正在关闭），并会在关闭后变为 3（连接已经关闭）。
+
+```js
+let socket = new WebSocket('ws://127.0.0.1');
+
+socket.addEventListener('open', () => {
+  console.log('WebSocket 建立连接', socket.readyState);
+});
+
+socket.addEventListener('close', event => {
+  console.log('WebSocket 断开连接', socket.readyState);
+});
+```
+
+## 发送和接收数据
+
+打开 Web Socket 之后，可以通过连接发送和接收数据。要向服务器发送数据，使用 send()方法并
+传入一个字符串、ArrayBuffer 或 Blob，如下所示：
+
+```js
+let socket = new WebSocket('ws://127.0.0.1');
+
+let stringData = 'Hello world!';
+let blobData = new Blob(['f', 'o', 'o']);
+
+function sendMessage() {
+  socket.send(stringData);
+  socket.send(blobData);
+}
+```
+
+服务器向客户端发送消息时，WebSocket 对象上会触发 message 事件。这个 message 事件与其他消息协议类似，可以通过 `event.data` 属性访问到有效载荷：
+
+```js
+socket.onmessage = function (event) {
+  let data = event.data;
+  // 对数据执行某些操作
+};
+```
+
+与通过 `send()` 方法发送的数据类似，`event.data` 返回的数据也可能是 ArrayBuffer 或 Blob。这由 WebSocket 对象的 binaryType 属性决定，该属性可能是"blob"或"arraybuffer"。
+
+### 通讯用例
+
+在前端通过 WebSocket 发送二进制数据到后端时，后端通常会将这些二进制数据存储为 Buffer 对象（在Node.js环境中），而在前端接收到后端返回的二进制数据时，会以 Blob 对象的形式表示。
+
+对于如何处理数据的转换十分重要！
+
+```html title="前端"
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Chat</title>
+  </head>
+  <body>
+    <ul id="client">
+      <li>其它客户端端发送的消息列表</li>
+    </ul>
+    <input type="text" autocomplete="off" /><button onclick="sendMessage()">
+      发送
+    </button>
+
+    <button onclick="closeSocket()">断开</button>
+    <script>
+      const socket = new WebSocket('ws://127.0.0.1:8080');
+
+      // 监听连接打开事件
+      socket.addEventListener('open', event => {
+        console.log('WebSocket connection opened');
+      });
+
+      // 监听接收到消息事件
+      socket.addEventListener('message', event => {
+        event.data.text().then(text => {
+          let li = document.createElement('li');
+          li.innerText = text;
+          document.querySelector('#client').appendChild(li);
+        });
+      });
+
+      // 监听发生错误事件
+      socket.addEventListener('error', event => {
+        console.error('WebSocket error:', event);
+      });
+
+      // 监听连接关闭事件
+      socket.addEventListener('close', event => {
+        console.log('WebSocket connection closed');
+      });
+
+      function sendMessage() {
+        let value = document.querySelector('input').value;
+
+        socket.send(value);
+      }
+
+      function closeSocket() {
+        socket.close();
+      }
+    </script>
+  </body>
+</html>
+```
+
+```js title="后端（NodeJS）"
+const WebSocket = require('ws');
+const http = require('http');
+const express = require('express');
+
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', ws => {
+  console.log('客户端已连接');
+
+  // 监听客户端发送的消息
+  ws.on('message', message => {
+    console.log('客户端收到消息:', message);
+
+    // 广播消息给所有连接的客户端
+    wss.clients.forEach(client => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  });
+
+  // 监听连接断开事件
+  ws.on('close', () => {
+    console.log('连接关闭');
+  });
+});
+
+server.listen(8080, () => {
+  console.log('Server is running on http://localhost:8080');
+});
+```
+
+## 属性
+
+### binaryType
+
+`WebSocket.binaryType` 返回 websocket 连接所传输二进制数据的类型。两种类型如下：
+
+- [ ] `blob`
+- [ ] `arraybuffer`
+
+### readyState
+
+返回当前 WebSocket 的连接状态，只读。值为 0 - 3，对应如下属性：
+
+- [ ] `WebSocket.OPENING(0)`: 连接正在建立。
+- [ ] `WebSocket.OPEN(1)`: 连接已经建立。
+- [ ] `WebSocket.CLOSING(2)`: 连接正在关闭。
+- [ ] `WebSocket.CLOSE(3)`: 连接已经关闭。
+
+### url
+
+`WebSocket.url` 是一个只读属性，返回值为当构造函数创建 WebSocket 实例对象时 URL 的绝对路径。
+
+## 事件
+
+WebSocket 对象在连接生命周期中有可能触发 3 个其他事件和 1 个通讯事件。
+
+- [ ] `open`: 在连接成功建立时触发。
+- [ ] `error`: 在发生错误时触发。连接无法存续。
+- [ ] `close`: 在连接关闭时触发。
+- [ ] `message`: 会在 WebSocket 接收到新消息时被触发。
+
+```js
+let socket = new WebSocket('ws://127.0.0.1');
+
+socket.addEventListener('open', () => console.log('连接建立'));
+socket.addEventListener('error', () => console.log('连接错误'));
+socket.addEventListener('close', () => console.log('连接关闭'));
+```
+
+在这些事件中，只有 `close` 事件的 event 对象上有额外信息。这个对象上有 3 个额外属性：`wasClean`、`code` 和 `reason`。其中，`wasClean` 是一个布尔值，表示连接是否干净地关闭；`code` 是一个来自服务器的数值状态码；`reason` 是一个字符串，包含服务器发来的消息。可以将这些信息显示给用户或记录到日志：
+
+```js
+socket.onclose = function (event) {
+  console.log(
+    `as clean? ${event.wasClean} Code=${event.code} Reason=${event.reason}`,
+  );
+};
+```
