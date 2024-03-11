@@ -31,3 +31,8 @@
     position: relative;
     z-index: 999;
 }
+
+.footer__copyright {
+    color: rgb(153, 138, 138);
+    font-size: 14px;
+}

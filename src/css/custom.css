@@ -1,10 +1,3 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
-
-/* You can override the default Infima variables here. */
 :root {
   /*暗黑模式*/
   --ifm-color-primary: #2e8555;
@@ -16,79 +9,26 @@
   --ifm-color-primary-lightest: #3cad6e;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-pre-padding: 10px;
 }
 
-
-@media screen and (min-width: 768px) {
-  .custom-search .DocSearch {
-    width: 200px;
-  }
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+  --ifm-color-primary: #25c2a0;
+  --ifm-color-primary-dark: #21af90;
+  --ifm-color-primary-darker: #1fa588;
+  --ifm-color-primary-darkest: #1a8870;
+  --ifm-color-primary-light: #29d5b0;
+  --ifm-color-primary-lighter: #32d8b4;
+  --ifm-color-primary-lightest: #4fddbf;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
-@media screen and (max-width: 997px) {
-  .custom-feedback {
-    display: none;
-  }
+.code-block-error-line {
+  background-color: #ff000020;
+  display: block;
+  margin: 0 calc(-1 * var(--ifm-pre-padding));
+  padding: 0 var(--ifm-pre-padding);
+  border-left: 3px solid #ff000080;
 }
 
-.navigation-item {
-  height: 80px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.navigation-item svg {
-  width: 100%;
-  height: 100%;
-  margin: auto;
-}
-
-.navigation-item .scale2 {
-  transform: scale(2);
-}
-
-.navigation-item .scale3 {
-  transform: scale(3);
-}
-
-.navigation-item .scale4 {
-  transform: scale(4);
-}
-
-.navigation-item .scale-0-5 {
-  transform: scale(0.5);
-}
-
-.footer__copyright {
-  color: rgb(153, 138, 138);
-  font-size: 14px;
-}
-
-/**
- 通用样式
- */
-/*手式鼠标指示器*/
-.pointer {
-  cursor: pointer;
-}
-/*省略号*/
-.ellipsis {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.navbar__link,.navbar__item {
-  white-space: nowrap;
-}

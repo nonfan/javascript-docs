@@ -57,7 +57,7 @@ const config: Config = {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           editUrl: `https://github.com/${username}/${repo}/tree/main`,
-          showLastUpdateTime: true,
+          showLastUpdateTime: false,
           remarkPlugins: [
             require('remark-math'),
             [require('@docusaurus/remark-plugin-npm2yarn'), { sync: true }],
@@ -127,6 +127,12 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
       defaultLanguage: 'javascript',
       additionalLanguages: ['json'],
+      magicComments: [
+        {
+          className: 'code-block-error-line',
+          line: 'highlight-error',
+        },
+      ],
     },
   } satisfies Preset.ThemeConfig,
 };

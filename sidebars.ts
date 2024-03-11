@@ -7,6 +7,7 @@ const sidebars: SidebarsConfig = {
       label: '起步',
       id: 'index',
     },
+    'collection-reference-type',
     'iterator-and-generator',
     'function',
     {
