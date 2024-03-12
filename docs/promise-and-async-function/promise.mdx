@@ -1,7 +1,9 @@
 # 期约 Promise
 
-:::info 由来
-期约是对尚不存在结果的一个替身。期约（promise）这个名字最早是由 Daniel Friedman 和 David Wise 在他们于 1976 年发表的论文“The Impact of Applicative Programming on Multiprocessing”中提出来的。但直到十几年以后，Barbara Liskov 和 Liuba Shrira 在 1988 年发表了论文“Promises: Linguistic Support for Efficient Asynchronous Procedure Calls in Distributed Systems”，这个概念才真正确立下来。同一时期的计算机科学家还使用了“终局”（eventual）、“期许”（future）、“延迟”（delay）和“迟付”（deferred）等术语指代同样的概念。所有这些概念描述的都是一种异步程序执行的机制。
+:::note 历史
+期约是对尚不存在结果的一个替身。期约（promise）这个名字最早是由 Daniel Friedman 和 David Wise 在他们于 1976 年发表的论文“The Impact of Applicative Programming on Multiprocessing”中提出来的。
+
+但直到十几年以后，Barbara Liskov 和 Liuba Shrira 在 1988 年发表了论文“Promises: Linguistic Support for Efficient Asynchronous Procedure Calls in Distributed Systems”，这个概念才真正确立下来。同一时期的计算机科学家还使用了“终局”（eventual）、“期许”（future）、“延迟”（delay）和“迟付”（deferred）等术语指代同样的概念。所有这些概念描述的都是一种异步程序执行的机制。
 :::
 
 ## Promises/A+规范
@@ -199,7 +201,7 @@ try {
 
 在前面的例子中，拒绝期约的错误并没有抛到执行同步代码的线程里，而是通过浏览器异步消息队列来处理的。因此，`try/catch` 块并不能捕获该错误。代码一旦开始以异步模式执行，则唯一与之交互的方式就是使用异步结构——更具体地说，就是期约的方法。
 
-## 期约的实例方法
+## 期约构造函数及实例方法
 
 期约实例的方法是连接外部同步代码与内部异步代码之间的桥梁。这些方法可以访问异步操作返回的数据，处理期约成功和失败的结果，连续对期约求值，或者添加只有期约进入终止状态时才会执行的代码。
 
@@ -474,6 +476,89 @@ setTimeout(console.log, 0, p2); // Promise <pending>
 setTimeout(() => setTimeout(console.log, 0, p2), 200);
 // 200 毫秒后：
 // Promise <resolved>: foo
+```
+
+### Promise.withResolvers()
+
+:::danger
+虽然 `Promise.withResolvers` 提供了很大的便利性，但由于它目前还处于 Stage 3 阶段，其兼容性和支持度成为开发者需要注意的问题。预计到 2024 年，这一特性将正式成为 ECMAScript 标准的一部分。
+:::
+
+`Promise.withResolvers()` 静态方法返回一个对象，其包含一个新的 Promise 对象和两个函数，用于解决或拒绝它，对应于传入给 Promise() 构造函数执行器的两个参数。
+
+```js title="语法"
+const { promise, resolve, reject } = Promise.withResolvers();
+```
+
+`Promise.withResolvers()` 完全等同于以下代码：
+
+```js
+let resolve, reject;
+const promise = new Promise((res, rej) => {
+  resolve = res;
+  reject = rej;
+});
+```
+
+使用 `Promise.withResolvers()` 关键的区别在于 `resolve` 和 `reject` 函数现在与 Promise 本身处于同一作用域，而不是在执行器中被创建和一次性使用。这可能使得一些更高级的用例成为可能，例如在重复事件中重用它们，特别是在处理流和队列时。这通常也意味着相比在执行器内包装大量逻辑，嵌套会更少。
+
+### Promise.allSettled()
+
+`Promise.allSettled()` 静态方法接受一个 Promise 可迭代对象，返回一个新的 Promise，该 Promise 在传入的所有 Promise 都已经完成（不论是成功还是失败）后才会被 resolve。
+
+与 `Promise.all()` 不同，`Promise.allSettled()` 不会在其中任何一个 Promise 被 reject 时立即返回。而是会等待所有的 Promise 都被 settle（完成）后才会返回。返回的 Promise 解析为一个数组，该数组中的每个元素都是一个对象，表示对应的 Promise 结果。这个对象包含两个属性:
+
+- [ ] `status`: 表示 Promise 的状态，可能值为 'fulfilled'（已完成）或者 'rejected'（已拒绝）。
+- [ ] `value`: 如果 Promise 成功，则为 Promise 的返回值；如果 Promise 失败，则为拒绝的原因。
+
+```js
+const promises = [
+  Promise.resolve(42),
+  Promise.reject('error'),
+  Promise.resolve('success'),
+];
+
+Promise.allSettled(promises).then(results => {
+  console.log(results);
+});
+/* 输出结果:
+[
+  { status: 'fulfilled', value: 42 },
+  { status: 'rejected', reason: 'error' },
+  { status: 'fulfilled', value: 'success' }
+]
+ */
+```
+
+### Promise.any()
+
+`Promise.any()` 静态方法接受一个 Promise 可迭代对象，并返回一个 Promise。当输入的任何一个 Promise 兑现时，这个返回的 Promise 将会兑现，并返回第一个兑现的值。当所有输入 Promise 都被拒绝（包括传递了空的可迭代对象）时，它会以一个包含拒绝原因数组的 AggregateError 拒绝。
+
+```js
+const promise1 = Promise.reject(0);
+const promise2 = new Promise(resolve => setTimeout(resolve, 100, 'quick'));
+const promise3 = new Promise(resolve => setTimeout(resolve, 500, 'slow'));
+
+const promises = [promise1, promise2, promise3];
+
+Promise.any(promises).then(value => console.log(value));
+```
+
+```js title="接受全拒绝的 promise 可迭代对象"
+const promise1 = Promise.reject('error reason 1');
+const promise2 = Promise.reject('error reason 2');
+const promise3 = Promise.reject('error reason 3');
+
+const promises = [promise1, promise2, promise3];
+
+Promise.any(promises).catch(err => {
+  console.log(err);
+});
+/* 错误输出：
+[AggregateError: All promises were rejected] {
+  [errors]: [ 'error reason 1', 'error reason 2', 'error reason 3' ]
+}
+ */
 ```
 
 ### 非重入期约方法

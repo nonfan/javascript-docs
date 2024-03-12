@@ -9,6 +9,7 @@ const sidebars: SidebarsConfig = {
     },
     'collection-reference-type',
     'iterator-and-generator',
+    'objects-classes-and-object-oriented-programming',
     'function',
     {
       type: 'category',

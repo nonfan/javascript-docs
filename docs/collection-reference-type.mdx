@@ -884,16 +884,16 @@ const m1 = new Map([
 console.log(m1); // Map(3) { 'key1' => 'val1', 'key2' => 'val2', 'key3' => 'val3' }
 ```
 
-Map 实例的原型链上有一系列方法，其原型链上的 `Map.prototype` 提供，用于创建和操作 Map 实例。以下是 Map 实例的主要方法：
+Map 实例上有一系列方法，用于创建和操作 Map 实例。以下是 Map 实例的主要方法：
 
-- [ ] `keys()`
-- [ ] `values()`
-- [ ] `entries()`
-- [ ] `set()`
-- [ ] `get()`
-- [ ] `has()`
-- [ ] `delete()`
-- [ ] `clear()`
+- [ ] `Map.prototype.keys()`
+- [ ] `Map.prototype.values()`
+- [ ] `Map.prototype.entries()`
+- [ ] `Map.prototype.set()`
+- [ ] `Map.prototype.get()`
+- [ ] `Map.prototype.has()`
+- [ ] `Map.prototype.delete()`
+- [ ] `Map.prototype.clear()`
 
 `Map.prototype.keys()`、`Map.prototype.values()`、`Map.prototype.entries()`, 这三个方法分别返回一个迭代器，用于遍历 Map 中的键、值、键值对。
 
@@ -1086,10 +1086,10 @@ const wm1 = new WeakMap([
 
 WeakMap 实例上有一系列方法，用于创建和操作 WeakMap 实例。以下是 WeakMap 实例的主要方法：
 
-- [ ] `set()`
-- [ ] `get()`
-- [ ] `has()`
-- [ ] `delete()`
+- [ ] `WeakMap.prototype.set()`
+- [ ] `WeakMap.prototype.get()`
+- [ ] `WeakMap.prototype.has()`
+- [ ] `WeakMap.prototype.delete()`
 
 `WeakMap.prototype.set(value)`： 向 WeakMap 中添加一个新元素，并返回修改后的 WeakMap 实例。相同的键，视作更新操作。
 
@@ -1308,12 +1308,12 @@ const setFromMap = new Set(map);
 console.log(setFromMap); // Set(2) { [ 'key1', 'value1' ], [ 'key2', 'value2' ] }
 ```
 
-Set 实例的原型链上有一系列方法，其原型链上的 `Set.prototype` 提供，用于创建和操作 Set 实例。以下是 Set 实例的主要方法：
+Set 实例上有一系列方法，用于创建和操作 Set 实例。以下是 Set 实例的主要方法：
 
-- [ ] `add()`
-- [ ] `has()`
-- [ ] `delete()`
-- [ ] `clear()`
+- [ ] `Set.prototype.add()`
+- [ ] `Set.prototype.has()`
+- [ ] `Set.prototype.delete()`
+- [ ] `Set.prototype.clear()`
 
 `Set.prototype.add(value)`： 向 Set 中添加一个新元素，并返回修改后的 Set。
 
@@ -1496,11 +1496,11 @@ const val1 = { id: 1 },
 const ws1 = new WeakSet([val1, val2, val3]);
 ```
 
-WeakSet 实例有一系列方法，用于创建和操作 WeakSet 实例。以下是 WeakSet 实例的主要方法：
+WeakSet 实例上有一系列方法，用于创建和操作 WeakSet 实例。以下是 WeakSet 实例的主要方法：
 
-- [ ] `add()`
-- [ ] `delete()`
-- [ ] `has()`
+- [ ] `WeakSet.prototype.add()`
+- [ ] `WeakSet.prototype.delete()`
+- [ ] `WeakSet.prototype.has()`
 
 `WeakSet.prototype.add(value)`： 向 WeakSet 实例中添加一个新元素。只能添加对象引用，不能添加基本数据类型。
 
