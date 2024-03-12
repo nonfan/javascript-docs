@@ -129,8 +129,25 @@ const config: Config = {
       additionalLanguages: ['json'],
       magicComments: [
         {
+          className: 'theme-code-block-highlighted-line',
+          line: 'highlight-next-line',
+          block: { start: 'highlight-start', end: 'highlight-end' },
+        },
+        {
           className: 'code-block-error-line',
           line: 'highlight-error',
+          block: {
+            start: 'highlight-error-start',
+            end: 'highlight-error-end',
+          },
+        },
+        {
+          className: 'code-block-success-line',
+          line: 'highlight-success',
+          block: {
+            start: 'highlight-success-start',
+            end: 'highlight-success-end',
+          },
         },
       ],
     },
