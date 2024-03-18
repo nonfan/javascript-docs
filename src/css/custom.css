@@ -25,7 +25,6 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --ifm-code-block-success: rgba(51, 124, 51, 0.45);
 }
-
 .code-block-error-line {
   background-color: #ff000020;
   display: block;

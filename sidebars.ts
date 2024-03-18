@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
     'collection-reference-type',
     'iterator-and-generator',
     'objects-classes-and-object-oriented-programming',
+    'proxy-and-reflection',
     'function',
     {
       type: 'category',
@@ -52,6 +53,7 @@ const sidebars: SidebarsConfig = {
       ],
     },
   ],
+  api: ['api/index', 'api/array'],
 };
 
 export default sidebars;

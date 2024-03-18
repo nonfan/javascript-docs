@@ -93,24 +93,17 @@ const config: Config = {
       },
       items: [
         {
+          type: 'docSidebar',
+          position: 'left',
+          sidebarId: 'api',
+          label: 'API',
+        },
+        {
           type: 'search',
           position: 'left',
           className: 'custom-search',
         },
-        {
-          type: 'localeDropdown',
-          position: 'right',
-          dropdownItemsAfter: [
-            {
-              type: 'html',
-              value: '<hr style="margin: 0.3rem 0;">',
-            },
-            {
-              href: `https://github.com/${username}/${repo}/issues/3526`,
-              label: '帮助我们翻译',
-            },
-          ],
-        },
+
         {
           href: `https://github.com/${username}/${repo}`,
           label: 'GitHub',
