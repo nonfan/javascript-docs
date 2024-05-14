@@ -1,22 +1,19 @@
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
-import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
-const username: string = 'agoodbook';
-const repo: string = 'javascript';
+const username: string = 'nonfan';
+const repo: string = 'javascript-docs';
 const title: string = 'JavaScript';
 
 const config: Config = {
   title: title, // 站点名称
-  tagline: '书山有路勤为径，学海无涯苦作舟', // slogan，标语
   favicon: 'img/favicon.ico',
   trailingSlash: true,
 
   // 配置网站站点url
-  url: `https://agoodbook.github.io/`,
-  // 仅agoodbook.github.io仓库使用 '/', 其它仓库页面一律使用 '/<projectName>/'
+  url: `https://${username}.github.io/`,
   baseUrl: `/${repo}`,
 
   // GitHub部署配置
