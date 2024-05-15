@@ -1,11 +1,10 @@
 
-<div style="text-align:center;">
-    <div>
-        <img src="./static/img/logo.svg" alt="logo">
-    </div>
+<div align="center">
+    <img src="./static/img/logo.svg" alt="logo"><br>
     <img alt="Static Badge" src="https://img.shields.io/badge/writer-nonfan-yellow">
     <img alt="Static Badge" src="https://img.shields.io/github/license/nonfan/javascript-docs">
 </div>
+
 
 ## 克隆项目
 
