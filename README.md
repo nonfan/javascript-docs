@@ -1,6 +1,6 @@
 
 <div align="center">
-    <img src="./static/img/logo.svg" alt="logo"><br>
+    <img src="./static/logo.png" alt="logo" style='border-radius: 10px'><br>
     <img alt="Static Badge" src="https://img.shields.io/badge/writer-nonfan-yellow">
     <img alt="Static Badge" src="https://img.shields.io/github/license/nonfan/javascript-docs">
 </div>
