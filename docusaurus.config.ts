@@ -76,17 +76,16 @@ const config: Config = {
     },
     themes: ['@docusaurus/theme-search-algolia'],
     algolia: {
-      appId: 'X1Z85QJPUV',
-      apiKey: 'bf7211c161e8205da2f933a02534105a',
-      indexName: 'docusaurus-2',
+      appId: 'C1HXARAKD1',
+      apiKey: '7e20992320c607589d0eb3154903b8c5',
+      indexName: 'javascript-docs',
     },
-    // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
       title: title, // 导航上站点名称
       logo: {
         alt: title, //  站点 logo 文字替换
-        src: 'img/logo.svg', //   站点 logo  链接
+        src: 'img/javascript.svg', //   站点 logo  链接
       },
       items: [
         {
@@ -110,7 +109,7 @@ const config: Config = {
     },
     footer: {
       style: 'light',
-      copyright: `Copyright © ${new Date().getFullYear()} AGoodBook.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Nonfan.`,
     },
     prism: {
       theme: prismThemes.github,
