@@ -74,11 +74,13 @@ const config: Config = {
         autoCollapseCategories: true,
       },
     },
-    themes: ['@docusaurus/theme-search-algolia'],
     algolia: {
       appId: 'TJDGZS0YDF',
       apiKey: '3a9c1e1a7464c5668826b00f10a47bad',
       indexName: 'nonfanio',
+      searchParameters: {
+        facetFilters: ['language:zh-CN'],
+      },
     },
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
@@ -109,7 +111,7 @@ const config: Config = {
     },
     footer: {
       style: 'light',
-      copyright: `Copyright © ${new Date().getFullYear()} Nonfan.`,
+      copyright: `DocScript © 2024 by Nonfan is licensed under CC BY-NC 4.0 `,
     },
     prism: {
       theme: prismThemes.github,
