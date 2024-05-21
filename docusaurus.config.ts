@@ -28,7 +28,7 @@ const config: Config = {
     mermaid: true,
   },
 
-  themes: ['@docusaurus/theme-mermaid'],
+  themes: ['@docusaurus/theme-mermaid', '@docusaurus/theme-search-algolia'],
 
   i18n: {
     defaultLocale: 'zh-CN',
