@@ -76,9 +76,9 @@ const config: Config = {
     },
     themes: ['@docusaurus/theme-search-algolia'],
     algolia: {
-      appId: 'C1HXARAKD1',
-      apiKey: '7e20992320c607589d0eb3154903b8c5',
-      indexName: 'javascript-docs',
+      appId: 'TJDGZS0YDF',
+      apiKey: '3a9c1e1a7464c5668826b00f10a47bad',
+      indexName: 'nonfanio',
     },
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
