@@ -4,7 +4,7 @@
   <ShortName>JavaScript</ShortName>
   <Description>Search JavaScript</Description>
   <InputEncoding>UTF-8</InputEncoding>
-  <Image width="16" height="16" type="image/x-icon">https://nonfan.github.io/javascript-docs/en/img/favicon.ico</Image>
+  <Image width="16" height="16" type="image/x-icon">https://nonfan.github.io/javascript-docs/en/./images/favicon.ico</Image>
   <Url type="text/html" method="get" template="https://nonfan.github.io/javascript-docs/en/search?q={searchTerms}"/>
   <Url type="application/opensearchdescription+xml" rel="self" template="https://nonfan.github.io/javascript-docs/en/opensearch.xml" />
   <moz:SearchForm>https://nonfan.github.io/javascript-docs/en/</moz:SearchForm>
