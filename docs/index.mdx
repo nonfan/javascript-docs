@@ -1,6 +1,118 @@
-# 开始
+# 什么是 JavaScript
 
-```js
-// highlight-error
-console.log('error');
+## 简短的历史回顾
+
+1995 年，JavaScript 问世。当时，它的主要用途是代替 Perl 等服务器端语言处理输入验证。在此之前，要验证某个必填字段是否已填写，或者某个输入的值是否有效，需要与服务器的一次往返通信。网景公司希望通过在其 Navigator 浏览器中加入 JavaScript 来改变这个局面。在那个普遍通过电话拨号上网的年代，由客户端处理某些基本的验证是让人兴奋的新功能。缓慢的网速让页面每次刷新都考验着人们的耐心。
+
+随着Web的日益流行，客户端脚本语言的需求也日益强烈。用户通常使用28.8kbit/s的调制解调器上网，网页越来越大、越来越复杂。为了简单的数据验证，频繁的服务器往返通信成为用户的痛点。
+
+网景公司在技术革新中处于领先地位，计划开发一种客户端脚本语言来处理简单的数据验证。1995年，工程师Brendan Eich开始为Netscape Navigator 2开发一种叫Mocha的脚本语言，后改名为LiveScript，并最终定名为JavaScript。
+
+1996 年 8 月，微软重磅进入 Web 浏览器领域，并在 IE3 使用了 JScript（叫这个名字是为了 避免与网景发生许可纠纷）的 JavaScript 实现。
+
+1997 年，JavaScript 1.1 作为提案被提交给欧洲计算机制造商协会(Ecma)。第 39 技术委员会(TC39) 承担了“标准化一门通用、跨平台、厂商中立的脚本语言的语法和语义”的任务(参见 TC39-ECMAScript)。 TC39 委员会由来自网景、Sun、微软、Borland、Nombas 和其他对这门脚本语言有兴趣的公司的工程师组成。他们花了数月时间打造出 ECMA-262，也就是 ECMAScript(发音为“ek-ma-script”)这个新的脚本语言标准。
+
+## JavaScript实现
+
+虽然 JavaScript 和 ECMAScript 基本上是同义词，但 JavaScript 远远不限于 ECMA-262 所定义的那样。 没错，完整的 JavaScript 实现包含以下几个部分:
+
+- [ ] 核心(ECMAScript)
+- [ ] 文档对象模型(DOM)
+- [ ] 浏览器对象模型(BOM)
+
+### ECMAScript
+
+#### 简介
+
+由ECMA-262标准定义的脚本语言，不局限于Web浏览器使用。它没有输入和输出的方法，是一种基准语言，用于构建更复杂的脚本语言。Web浏览器是其中一种宿主环境，其他宿主环境包括 Node.js 和 Deno。
+
+#### 发展历史
+
+- ECMA-262 第1版（1997年）：基于网景的JavaScript 1.1，删除了浏览器特定的代码，要求支持Unicode标准和平台无关的对象。
+- ECMA-262 第2版：主要是编辑修订以符合ISO/IEC-16262，没有增减特性。
+- ECMA-262 第3版（1999年）：大规模更新，包括字符串处理、错误定义、数值输出、正则表达式、新的控制语句、try/catch异常处理等。
+- ECMA-262 第4版：本来计划是彻底修订，但因改动太大被放弃，代之以ECMA-262 第5版。
+- ECMA-262 第5版（2009年）：增加JSON对象、严格模式等，2011年发布了维护修订版。
+- ECMA-262 第6版（2015年）：又称ES6或ES2015，包含类、模块、迭代器、生成器、箭头函数、Promise、反射、代理等大量新特性。
+
+后续每年都会发布一个新版本：
+
+- ECMA-262 第7版（2016年）：包括`Array.prototype.includes`和指数操作符等。
+- ECMA-262 第8版（2017年）：引入异步函数、`SharedArrayBuffer`和`Object`方法等。
+- ECMA-262 第9版（2018年）：增加异步迭代、剩余和扩展属性、新的正则表达式特性等。
+- ECMA-262 第10版（2019年）：新增`Array.prototype.flat()`/`flatMap()`、`String.prototype.trimStart()`/`trimEnd()`等。
+
+通过标准化，ECMAScript解决了早期版本的混乱问题，成为一种通用、跨平台的脚本语言，推动了现代Web的发展。
+
+### DOM
+
+文档对象模型(DOM，Document Object Model)是一个应用编程接口(API)，用于在 HTML 中使 用扩展的 XML。DOM 将整个页面抽象为一组分层节点。HTML 或 XML 页面的每个组成部分都是一种 节点，包含不同的数据。
+
+```html title="HTML页面结构"
+<html lang="en">
+  <head>
+    <title>Sample Page</title>
+  </head>
+  <body>
+    <p>Hello World!</p>
+  </body>
+</html>
 ```
+
+DOM 通过创建表示文档的树，让开发者可以随心所欲地控制网页的内容和结构。使用 DOM API，可以轻松地删除、添加、替换、修改节点。
+
+#### 为什么 DOM 是必需的
+
+_IE4 和 Netscape Navigator 4 支持不同形式的动态 HTML(DHTML)的情况下，开发者首先可以做到不刷新页面而修改页面外观和内容_。这代表了 Web 技术的一个巨大进步，但也暴露了很大的问题。 由于网景和微软采用不同思路开发 DHTML，开发者写一个 HTML 页面就可以在任何浏览器中运行的好日子就此终结。
+
+为了保持 Web 跨平台的本性，必须要做点什么。人们担心如果无法控制网景和微软各行其是，那么 Web 就会发生分裂，导致人们面向浏览器开发网页。就在这时，万维网联盟(W3C，World Wide Web Consortium)开始了制定 DOM 标准的进程。
+
+#### DOM 级别
+
+1998 年 10 月，DOM Level 1 成为 W3C 的推荐标准。这个规范由两个模块组成:DOM Core 和 DOM HTML。前者提供了一种映射 XML 文档，从而方便访问和操作文档任意部分的方式;后者扩展了前者，并增加了特定于 HTML 的对象和方法。
+
+:::note 扩展
+DOM 并非只能通过 JavaScript 访问，而且确实被其他很多语言实现了。不过对于浏 览器来说，DOM 就是使用 ECMAScript 实现的，如今已经成为 JavaScript 语言的一大组成部分。
+:::
+
+DOM Level 1 发布于1998年, 提供了基本的文档结构访问和操作能力，如节点的创建、删除、替换和添加。
+
+DOM Level 2 发布于2000年，新增模块如下：
+
+- [ ] Events：引入事件模型，允许注册事件监听器并处理各种事件。
+- [ ] Views：支持多视图文档（如不同的CSS样式表）。
+- [ ] Style：提供对CSS样式的访问和操作。
+- [ ] Traversal and Range：引入遍历和范围接口，简化文档节点的遍历和选择。
+- [ ] HTML：扩展了HTML模块，增加了更多HTML特定的功能。
+
+DOM Level 3 发布于2004年，新增模块如下：
+
+- [ ] Core：进一步扩展了基础功能，改进了命名空间支持和文档加载。
+- [ ] Load and Save：定义了文档的加载和保存机制。
+- [ ] Validation：提供了文档验证功能，确保文档的正确性。
+- [ ] XPath：引入XPath模块，允许通过XPath表达式查询和选择文档节点。
+
+DOM Level 4 发布于2015年，主要变化有：
+
+- 模块合并：将先前分散的多个模块进行合并和简化，形成更一致的API。
+- 简化接口：简化了事件处理和文档遍历的接口，使其更易于使用。
+
+目前，W3C 不再按照 Level 来维护 DOM 了，而是作为 DOM Living Standard 来维护，其快照称为 DOM4。DOM4 新增的内容包括替代 Mutation Events 的 Mutation Observers。
+
+_Living Standard 发布于2012年（持续更新中），主要改进和新增特性:_
+
+- Shadow DOM：引入Web组件和Shadow DOM，使得开发者可以创建封装和重用的组件。
+- MutationObserver：提供了观察DOM树变化的能力，替代旧的Mutation Events。
+- IntersectionObserver：简化了元素是否在视口内的检测。
+- Custom Elements：允许开发者定义和使用自定义的HTML元素。
+- Template 和 Slot：增强了HTML模板的支持，使得动态内容插入更加灵活。
+
+_HTML5 DOM 发布于2014年，主要变化有：_
+
+- 全面集成：将HTML和DOM的规范集成到一起，提供统一的文档处理模型。
+- 新增API：引入了许多新的API，如querySelector和querySelectorAll，简化了文档元素的选择。
+- 功能：增强了文档操作的简便性和一致性。
+
+### BOM
+
+IE3 和 Netscape Navigator 3 提供了浏览器对象模型(BOM) API，用于支持访问和操作浏览器的窗口。使用 BOM，开发者可以操控浏览器显示页面之外的部分。而 BOM 真正独一无二的地方，当然也是问题最多的地方，就是它是唯一一个没有相关标准的 JavaScript 实现。HTML5 改变了这个局面，这个版本的 HTML 以正式规范的形式涵盖了尽可能多的 BOM 特性。由于 HTML5 的出现，之前很多与 BOM 有关的问题都迎刃而解了。

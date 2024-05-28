@@ -28,7 +28,7 @@ const config: Config = {
     mermaid: true,
   },
 
-  themes: ['@docusaurus/theme-mermaid', '@docusaurus/theme-search-algolia'],
+  themes: ['@docusaurus/theme-mermaid'],
 
   i18n: {
     defaultLocale: 'zh-CN',
@@ -76,18 +76,14 @@ const config: Config = {
     },
     algolia: {
       appId: 'TJDGZS0YDF',
-      apiKey: '3a9c1e1a7464c5668826b00f10a47bad',
+      apiKey: '0e9dcbffe637972ccd07915e4c776d88',
       indexName: 'nonfanio',
-      searchParameters: {
-        facetFilters: ['language:zh-CN'],
-      },
     },
-    image: 'img/docusaurus-social-card.jpg',
     navbar: {
       title: title, // 导航上站点名称
       logo: {
         alt: title, //  站点 logo 文字替换
-        src: 'img/javascript.svg', //   站点 logo  链接
+        src: 'img/logo.png', //   站点 logo  链接
       },
       items: [
         {
@@ -111,7 +107,7 @@ const config: Config = {
     },
     footer: {
       style: 'light',
-      copyright: `DocScript © 2024 by Nonfan is licensed under CC BY-NC 4.0 `,
+      copyright: `Copyright © 2024 by Nonfan. Licensed under CC BY-NC 4.0.`,
     },
     prism: {
       theme: prismThemes.github,

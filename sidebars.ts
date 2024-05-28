@@ -2,11 +2,8 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   docs: [
-    {
-      type: 'doc',
-      label: '起步',
-      id: 'index',
-    },
+    'index',
+    'javascript-in-html',
     'collection-reference-type',
     'iterator-and-generator',
     'objects-classes-and-object-oriented-programming',
