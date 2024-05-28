@@ -6,10 +6,12 @@ import rehypeKatex from 'rehype-katex';
 const username: string = 'nonfan';
 const repo: string = 'javascript-docs';
 const title: string = 'JavaScript';
+const logoImageSrc: string = './images/logo.png';
+const favicon: string = './images/favicon.ico';
 
 const config: Config = {
-  title: title, // 站点名称
-  favicon: 'img/favicon.ico',
+  title,
+  favicon,
   trailingSlash: true,
 
   // 配置网站站点url
@@ -83,7 +85,7 @@ const config: Config = {
       title: title, // 导航上站点名称
       logo: {
         alt: title, //  站点 logo 文字替换
-        src: 'img/logo.png', //   站点 logo  链接
+        src: logoImageSrc, //   站点 logo  链接
       },
       items: [
         {

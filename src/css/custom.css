@@ -25,6 +25,8 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --ifm-code-block-success: rgba(51, 124, 51, 0.45);
 }
+
+/*代码块警醒*/
 .code-block-error-line {
   background-color: #ff000020;
   display: block;
@@ -32,7 +34,6 @@
   padding: 0 var(--ifm-pre-padding);
   border-left: 3px solid #ff000080;
 }
-
 .code-block-success-line {
   background-color: var(--ifm-code-block-success);
   display: block;
@@ -41,7 +42,14 @@
   border-left: 3px solid #009400;
 }
 
+/*段落警醒*/
 em {
   color: var(--ifm-color-primary);
   font-weight: bolder;
+}
+
+/*底部声明*/
+.footer__copyright {
+  color: rgb(153, 138, 138);
+  font-size: 16px;
 }
