@@ -34,19 +34,7 @@ const config: Config = {
 
   i18n: {
     defaultLocale: 'zh-CN',
-    locales: ['en', 'zh-CN'],
-    localeConfigs: {
-      'zh-CN': {
-        label: '中文',
-        direction: 'ltr',
-        htmlLang: 'zh-CN',
-      },
-      en: {
-        label: 'English',
-        direction: 'ltr',
-        htmlLang: 'en',
-      },
-    },
+    locales: ['zh-CN'],
   },
   presets: [
     [
@@ -66,9 +54,14 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+        },
       } satisfies Preset.Options,
     ],
   ],
+
   themeConfig: {
     docs: {
       sidebar: {
@@ -80,6 +73,7 @@ const config: Config = {
       appId: 'TJDGZS0YDF',
       apiKey: '3a9c1e1a7464c5668826b00f10a47bad',
       indexName: 'nonfanio',
+      contextualSearch: true,
     },
     navbar: {
       title: title, // 导航上站点名称
