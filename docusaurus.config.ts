@@ -6,8 +6,9 @@ import rehypeKatex from 'rehype-katex';
 const username: string = 'nonfan';
 const repo: string = 'javascript-docs';
 const title: string = 'JavaScript';
-const logoImageSrc: string = './images/logo.png';
-const favicon: string = './images/favicon.ico';
+const logoSrc: string = './images/JavaScript-Dark.svg';
+const logoSrcDark: string = './images/JavaScript.svg';
+const favicon: string = './images/favicon.png';
 
 const config: Config = {
   title,
@@ -34,19 +35,7 @@ const config: Config = {
 
   i18n: {
     defaultLocale: 'zh-CN',
-    locales: ['en', 'zh-CN'],
-    localeConfigs: {
-      'zh-CN': {
-        label: '中文',
-        direction: 'ltr',
-        htmlLang: 'zh-CN',
-      },
-      en: {
-        label: 'English',
-        direction: 'ltr',
-        htmlLang: 'en',
-      },
-    },
+    locales: ['zh-CN'],
   },
   presets: [
     [
@@ -66,9 +55,14 @@ const config: Config = {
         theme: {
           customCss: './src/css/custom.css',
         },
+        sitemap: {
+          changefreq: 'weekly',
+          priority: 0.5,
+        },
       } satisfies Preset.Options,
     ],
   ],
+
   themeConfig: {
     docs: {
       sidebar: {
@@ -78,15 +72,19 @@ const config: Config = {
     },
     algolia: {
       appId: 'TJDGZS0YDF',
-      apiKey: '3a9c1e1a7464c5668826b00f10a47bad',
+      apiKey: '0e9dcbffe637972ccd07915e4c776d88',
       indexName: 'nonfanio',
+      searchParameters: {
+        facetFilters: ['language:zh-CN', 'version:current'],
+      },
+      contextualSearch: false, // 禁用 contextualSearch
     },
     navbar: {
       title: title, // 导航上站点名称
       logo: {
         alt: title, //  站点 logo 文字替换
-        src: logoImageSrc, //   站点 logo  链接
-        srcDark: logoImageSrc,
+        src: logoSrcDark, //   站点 logo  链接
+        srcDark: logoSrc,
         width: 32,
         height: 32,
       },
@@ -97,12 +95,6 @@ const config: Config = {
           sidebarId: 'api',
           label: 'API',
         },
-        // {
-        //   type: 'search',
-        //   position: 'left',
-        //   className: 'custom-search',
-        // },
-
         {
           href: `https://github.com/${username}/${repo}`,
           label: 'GitHub',
@@ -114,7 +106,7 @@ const config: Config = {
     },
     footer: {
       style: 'light',
-      copyright: `Copyright © 2024 by Nonfan. Licensed under CC BY-NC 4.0.`,
+      copyright: `Copyright © 2024 by MoFan. Licensed under CC BY-NC 4.0.`,
     },
     prism: {
       theme: prismThemes.github,
