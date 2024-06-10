@@ -86,6 +86,9 @@ const config: Config = {
       logo: {
         alt: title, //  站点 logo 文字替换
         src: logoImageSrc, //   站点 logo  链接
+        srcDark: logoImageSrc,
+        width: 32,
+        height: 32,
       },
       items: [
         {
@@ -94,16 +97,18 @@ const config: Config = {
           sidebarId: 'api',
           label: 'API',
         },
-        {
-          type: 'search',
-          position: 'left',
-          className: 'custom-search',
-        },
+        // {
+        //   type: 'search',
+        //   position: 'left',
+        //   className: 'custom-search',
+        // },
 
         {
           href: `https://github.com/${username}/${repo}`,
           label: 'GitHub',
           position: 'right',
+          className: 'header-github-link',
+          'aria-label': 'GitHub repository',
         },
       ],
     },
