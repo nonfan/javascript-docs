@@ -36,15 +36,15 @@ const config: Config = {
     defaultLocale: 'zh-CN',
     locales: ['en', 'zh-CN'],
     localeConfigs: {
-      en: {
-        label: 'English',
-        direction: 'ltr',
-        htmlLang: 'en',
-      },
       'zh-CN': {
         label: '中文',
         direction: 'ltr',
         htmlLang: 'zh-CN',
+      },
+      en: {
+        label: 'English',
+        direction: 'ltr',
+        htmlLang: 'en',
       },
     },
   },
@@ -78,7 +78,7 @@ const config: Config = {
     },
     algolia: {
       appId: 'TJDGZS0YDF',
-      apiKey: '0e9dcbffe637972ccd07915e4c776d88',
+      apiKey: '3a9c1e1a7464c5668826b00f10a47bad',
       indexName: 'nonfanio',
     },
     navbar: {
