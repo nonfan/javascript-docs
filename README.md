@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="static/images/readme.png" alt="logo"><br>
+    <img src="static/images/readme.png" alt="logo"><br><br>
     <p>
         <img alt="Static Badge" src="https://img.shields.io/badge/writer-MoFan-blue">
         <img alt="Static Badge" src="https://img.shields.io/badge/docs-JavaScript-orange">
