@@ -96,6 +96,12 @@ const config: Config = {
           label: 'API',
         },
         {
+          type: 'docSidebar',
+          position: 'left',
+          sidebarId: 'source-code',
+          label: '源码鉴赏',
+        },
+        {
           href: `https://github.com/${username}/${repo}`,
           label: 'GitHub',
           position: 'right',
