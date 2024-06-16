@@ -3,25 +3,20 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import rehypeKatex from 'rehype-katex';
 
-const username: string = 'nonfan';
-const repo: string = 'javascript-docs';
-const title: string = 'JavaScript';
-const logoSrc: string = './images/JavaScript-Dark.svg';
-const logoSrcDark: string = './images/JavaScript.svg';
-const favicon: string = './images/favicon.png';
+import {username,repository,title,logoSrc,logoSrcDark,favicon,algolia} from './setting';
+
 
 const config: Config = {
   title,
   favicon,
   trailingSlash: true,
 
-  // 配置网站站点url
   url: `https://${username}.github.io/`,
-  baseUrl: `/${repo}`,
+  baseUrl: `/${repository}`,
 
   // GitHub部署配置
-  organizationName: username, // 用户名
-  projectName: repo, // 仓库名
+  organizationName: username,
+  projectName: repository,
   deploymentBranch: 'gh-pages',
 
   onBrokenLinks: 'throw',
@@ -44,7 +39,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: `https://github.com/${username}/${repo}/tree/main`,
+          editUrl: `https://github.com/${username}/${repository}/tree/main`,
           showLastUpdateTime: false,
           remarkPlugins: [
             require('remark-math'),
@@ -70,20 +65,12 @@ const config: Config = {
         autoCollapseCategories: true,
       },
     },
-    algolia: {
-      appId: 'TJDGZS0YDF',
-      apiKey: '0e9dcbffe637972ccd07915e4c776d88',
-      indexName: 'nonfanio',
-      searchParameters: {
-        facetFilters: ['language:zh-CN', 'version:current'],
-      },
-      contextualSearch: false, // 禁用 contextualSearch
-    },
+    algolia,
     navbar: {
-      title: title, // 导航上站点名称
+      title,
       logo: {
-        alt: title, //  站点 logo 文字替换
-        src: logoSrcDark, //   站点 logo  链接
+        alt: title,
+        src: logoSrcDark,
         srcDark: logoSrc,
         width: 32,
         height: 32,
@@ -102,7 +89,7 @@ const config: Config = {
           label: '源码鉴赏',
         },
         {
-          href: `https://github.com/${username}/${repo}`,
+          href: `https://github.com/${username}/${repository}`,
           label: 'GitHub',
           position: 'right',
           className: 'header-github-link',
