@@ -3,8 +3,15 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import rehypeKatex from 'rehype-katex';
 
-import {username,repository,title,logoSrc,logoSrcDark,favicon,algolia} from './setting';
-
+import {
+  username,
+  repository,
+  title,
+  logoSrc,
+  logoSrcDark,
+  favicon,
+  algolia,
+} from './setting';
 
 const config: Config = {
   title,
@@ -121,11 +128,27 @@ const config: Config = {
           },
         },
         {
+          className: 'code-block-error-line',
+          line: 'error',
+          block: {
+            start: 'error-start',
+            end: 'error-end',
+          },
+        },
+        {
           className: 'code-block-success-line',
           line: 'highlight-success',
           block: {
             start: 'highlight-success-start',
             end: 'highlight-success-end',
+          },
+        },
+        {
+          className: 'code-block-success-line',
+          line: 'success',
+          block: {
+            start: 'success-start',
+            end: 'success-end',
           },
         },
       ],

@@ -1,0 +1,803 @@
+# 语言基础
+
+任何语言的核心所描述的都是这门语言在最基本的层面上如何工作，涉及语法、操作符、数据类型 以及内置功能，在此基础之上才可以构建复杂的解决方案。如前所述，ECMA-262 以一个名为 ECMAScript 的伪语言的形式，定义了 JavaScript 的所有这些方面。
+
+## 语法
+
+### 区分大小写
+
+ECMAScript 中一切都区分大小写。无论是变量、函数名还是操作符，都区分大 10 小写。换句话说，变量 test 和变量 Test 是两个不同的变量。
+
+### 标识符
+
+所谓标识符，就是变量、函数、属性或函数参数的名称。标识符可以由一或多个下列字符组成: 字母、数字、下划线(\_)和美元符号($)。_标识符组成不能由数字开头_。
+
+最佳实践: ECMAScript 标识符使用驼峰大小写形式，即第一个单词的首字母小写，后面每个单词的首字母大写。虽然这种写法并不是强制性的，但因为这种形式跟 ECMAScript 内置函数和对象的命名方式一致。
+
+:::note
+关键字、保留字、true、false 和 null 不能作为标识符。具体查看[关键字和保留字](#关键字和保留字)
+:::
+
+### 注释
+
+ECMAScript 采用 C 语言风格的注释，包括单行注释和块注释。
+
+```js
+// 单行注释
+
+/*
+   多行注释
+ */
+
+/**
+ * 多行注释的一种变体
+ * 常用于文档注释或结构化注释
+ */
+```
+
+### 严格模式
+
+ECMAScript 5 增加了严格模式(strict mode)的概念。严格模式是一种不同的 JavaScript 解析和执 行模型，ECMAScript 3 的一些不规范写法在这种模式下会被处理，对于不安全的活动将抛出错误。要对 整个脚本启用严格模式，在脚本开头加上这一行:
+
+```js
+'use strict';
+```
+
+虽然看起来像个没有赋值给任何变量的字符串，但它其实是一个预处理指令。任何支持的 JavaScript 引擎看到它都会切换到严格模式。选择这种语法形式的目的是不破坏 ECMAScript 3 语法。
+
+也可以单独指定一个函数在严格模式下执行，只要把这个预处理指令放到函数体开头即可:
+
+```js
+function doSomething() {
+  'use strict';
+  // 函数体
+}
+```
+
+严格模式会影响 JavaScript 执行的很多方面，因此本书在用到它时会明确指出来。所有现代浏览器 都支持严格模式。
+
+### 语句
+
+ECMAScript 中的语句以分号结尾。省略分号意味着由解析器确定语句在哪里结尾，如下面的例子 所示:
+
+```js
+let sum = a + b; // 没有分号也有效，但不推荐
+let diff = a - b; // 加分号有效，推荐
+```
+
+即使语句末尾的分号不是必需的，也应该加上。记着加分号有助于防止省略造成的问题，比如可以避免输入内容不完整。此外，加分号也便于开发者通过删除空行来压缩代码(如果没有结尾的分号，只删除空行，则会导致语法错误)。加分号也有助于在某些情况下提升性能，因为解析器会尝试在合适的 位置补上分号以纠正语法错误。
+
+多条语句可以合并到一个 C 语言风格的代码块中。代码块由一个左花括号(`{`)标识开始，一个右 花括号(`}`)标识结束:
+
+```js
+if (test) {
+  test = false;
+  console.log(test);
+}
+```
+
+if 之类的控制语句只在执行多条语句时要求必须有代码块。不过，最佳实践是始终在控制语句中 使用代码块，即使要执行的只有一条语句，如下例所示:
+
+```js
+// 有效，但容易导致错误，应该避免
+if (test) console.log(test);
+
+// 推荐
+if (test) {
+  console.log(test);
+}
+```
+
+## 关键字和保留字
+
+ECMA-262 描述了一组保留的关键字，这些关键字有特殊用途，比如表示控制语句的开始和结束，或者执行特定的操作。按照规定，保留的关键字不能用作标识符或属性名。ECMA-262 第 6 版规定的所有关键字如下:
+
+```text
+break      do       in         typeof
+case       else     instanceof var
+catch      export   new        void
+class      extends  return     while
+const      finally  super      with
+continue   for      switch     yield
+debugger   function this
+default    if       throw
+delete     import   try
+```
+
+规范中也描述了一组*未来的保留字*，同样不能用作标识符或属性名。虽然保留字在语言中没有特定 用途，但它们是保留给将来做关键字用的。
+
+```text
+始终保留：
+
+enum
+
+严格模式下保留:
+
+implements  package     public
+interface   protected   static
+let         private
+
+模块代码中保留:
+
+await(已用于es8异步关键字)
+```
+
+## 变量
+
+ECMAScript 变量是松散类型的，意思是变量可以用于保存任何类型的数据。每个变量只不过是一个用于保存任意值的命名占位符。有 3 个关键字可以声明变量:var、const 和 let。其中，var 在 ECMAScript 的所有版本中都可以使用，而 const 和 let 只能在 ECMAScript 6 及更晚的版本中使用。
+
+### var 关键字
+
+在 JavaScript 创立之初就使用 var 关键字进行变量声明，如：
+
+```js
+var message = '赋值给变量';
+
+// 不推荐写法
+var message2;
+message2 = '初始化变量不赋值，默认是undefined';
+```
+
+:::warning
+
+虽然 "var" 仍然在 JavaScript 中广泛使用，但它有一些特性使其在现代 JavaScript 编码中相对不太推荐。这也是为什么在 ES6 版本推出 const 和 let 关键字。
+
+:::
+
+#### 1.声明作用域
+
+变量使用 "var" 声明时，其作用域限制在声明所在的函数内部，而不是块级作用域（如在 "for" 循环或 "if" 语句内）。
+
+```js
+function example() {
+  if (true) {
+    var x = 5;
+  }
+  console.log(x); // 输出 5
+}
+example();
+```
+
+```js
+function test() {
+  var message = 'hi'; // 局部变量
+}
+test();
+console.log(message); // 出错!
+```
+
+这里，message 变量是在函数内部使用 var 定义的。函数叫 test()，调用它会创建这个变量并给 它赋值。调用之后变量随即被销毁，因此示例中的最后一行会导致错误。不过，在函数内定义变量时省 略 var 操作符，可以创建一个全局变量:
+
+```js
+function test() {
+  message = 'hi'; // 全局变量
+}
+test();
+console.log(message); // "hi"
+```
+
+:::danger
+虽然可以通过省略 var 操作符定义全局变量，但不推荐这么做。在局部作用域中定 义的全局变量很难维护，也会造成困惑。这是因为不能一下子断定省略 var 是不是有意而 为之。在严格模式下，如果像这样给未声明的变量赋值，则会导致抛出 ReferenceError。
+:::
+
+如果需要定义多个变量，可以在一条语句中用逗号分隔每个变量(及可选的初始化):
+
+```js
+var message = 'hi',
+  found = false,
+  age = 29;
+```
+
+#### 2.声明提升
+
+使用 var 时，下面的代码不会报错。这是因为使用这个关键字声明的变量会自动提升到函数作用域顶部:
+
+```js
+function foo() {
+  console.log(age);
+  var age = 26;
+}
+foo(); // undefined
+```
+
+之所以不会报错，是因为 ECMAScript 运行时把它看成等价于如下代码:
+
+```js
+function foo() {
+  var age;
+  console.log(age);
+  age = 26;
+}
+foo(); // undefined
+```
+
+这就是所谓的“提升”(hoist)，也就是把所有变量声明都拉到函数作用域的顶部。此外，反复多次使用 var 声明同一个变量也没有问题:
+
+```js
+function foo() {
+  var age = 16;
+  var age = 26;
+  var age = 36;
+  console.log(age);
+}
+foo(); // 36
+```
+
+:::info 总结
+通过对 var 关键字特性的了解，想必也明白了为什么不推荐使用它来声明变量了。
+:::
+
+### let 关键字
+
+let 跟 var 的作用差不多，但有着非常重要的区别。最明显的区别是，let 声明的范围是块作用域，而 var 声明的范围是函数作用域。
+
+```js
+// var 声明
+if (true) {
+  var name = 'Matt';
+  console.log(name); // Matt
+}
+console.log(name); // Matt
+
+// let 声明
+if (true) {
+  let age = 26;
+  console.log(age);
+}
+console.log(age);
+// 26
+// ReferenceError: age 没有定义
+```
+
+在这里，age 变量之所以不能在 if 块外部被引用，是因为它的作用域仅限于该块内部。块作用域 是函数作用域的子集，因此适用于 var 的作用域限制同样也适用于 let。
+
+let 也不允许同一个块作用域中出现冗余声明。这样会导致报错:
+
+```js
+var name;
+var name;
+
+let age;
+// error
+let age; //SyntaxError;标识符age已经声明过了
+```
+
+当然，JavaScript 引擎会记录用于变量声明的标识符及其所在的块作用域，因此嵌套使用相同的标识符不会报错，而这是因为同一个块中没有重复声明:
+
+```js
+let age = 30;
+console.log(age); // 30
+if (true) {
+  let age = 26;
+  console.log(age); // 26
+}
+```
+
+对声明冗余报错不会因混用 let 和 var 而受影响。这两个关键字声明的并不是不同类型的变量， 它们只是指出变量在相关作用域如何存在。
+
+```js
+var name;
+// error
+let name; // SyntaxError
+
+let age;
+// error
+var age; // SyntaxError
+```
+
+#### 1.暂时性死区
+
+let 与 var 的另一个重要的区别，就是 let 声明的变量不会在作用域中被提升。
+
+```js
+// age 不会被提升
+console.log(age); // ReferenceError:age 没有定义
+let age = 26;
+```
+
+在解析代码时，JavaScript 引擎也会注意出现在块后面的 let 声明，只不过在此之前不能以任何方式来引用未声明的变量。在 let 声明之前的执行瞬间被称为“暂时性死区”(temporal dead zone)，在此阶段引用任何后面才声明的变量都会抛出 ReferenceError。
+
+#### 2.全局声明
+
+与 var 关键字不同，使用 let 在全局作用域中声明的变量不会成为 window 对象的属性(var 声明的变量则会)。
+
+```js
+var name = 'Matt';
+console.log(window.name); // 'Matt'
+
+let age = 26;
+console.log(window.age); // undefined
+```
+
+当你在全局作用域中使用 let 声明一个变量时，这个变量在页面的整个生命周期内都会存在。因此，如果你在同一个页面中重复声明相同名字的变量，就会导致 SyntaxError（语法错误）。
+
+#### 3.条件声明
+
+在某些情况下，我们可能希望根据条件来声明一个变量。可以通过在块内使用 let 声明变量，并在条件语句内初始化它。
+
+```js
+if (someCondition) {
+  let value = 'foo';
+  console.log(value); // foo
+} else {
+  let value = 'bar';
+  console.log(value); // bar
+}
+```
+
+在这个例子中，根据 someCondition 的值，我们在 if 和 else 块中分别声明了两个 value 变量。
+
+_为什么这是一个反模式？_
+
+- 作用域不清晰：在 if 和 else 块之外无法访问 value 变量，因为它们只在各自的块作用域内有效。这可能会让代码的作用域变得复杂和不清晰。
+- 维护性差：如果有多个条件分支，每个分支中都声明了相同的变量名，这将导致代码难以维护，因为每个分支的作用域不同。
+- 可读性差：这种模式会让代码变得冗长且不易读，特别是在条件判断较多的情况下。
+
+为了避免这种反模式，可以采用如下更清晰、更易维护的方式：
+
+```js
+let value;
+if (someCondition) {
+  value = 'foo';
+} else {
+  value = 'bar';
+}
+console.log(value); // value 在这里始终可用
+```
+
+不能使用 let 进行条件式声明是件好事，因为条件声明是一种反模式，它让程序变得更难理解。如果你发现自己在使用这个模式，那一定有更好的替代方式。
+
+#### 4.for 循环中的 let 声明
+
+在 let 出现之前，for 循环定义的迭代变量会渗透到循环体外部:
+
+```js
+for (var i = 0; i < 5; i++) {
+  // 循环逻辑
+}
+console.log(i); // 5
+```
+
+改成使用 let 之后，这个问题就消失了，因为迭代变量的作用域仅限于 for 循环块内部:
+
+```js
+for (let i = 0; i < 5; i++) {
+  // 循环逻辑
+}
+console.log(i); // ReferenceError: i 没有定义
+```
+
+在使用 var 的时候，最常见的问题就是对迭代变量的奇特声明和修改:
+
+```js
+for (var i = 0; i < 5; ++i) {
+  setTimeout(() => console.log(i), 0);
+}
+// 你可能以为会输出0、1、2、3、4
+// 实际上会输出5、5、5、5、5
+```
+
+之所以会这样，是因为在退出循环时，迭代变量保存的是导致循环退出的值:5。在之后执行超时逻辑时，所有的 i 都是同一个变量，因而输出的都是同一个最终值。
+
+而在使用 let 声明迭代变量时，JavaScript 引擎在后台会为每个迭代循环声明一个新的迭代变量。 每个 setTimeout 引用的都是不同的变量实例，所以 console.log 输出的是我们期望的值，也就是循环执行过程中每个迭代变量的值。
+
+```js
+for (let i = 0; i < 5; ++i) {
+  setTimeout(() => console.log(i), 0);
+}
+// 会输出0、1、2、3、4
+```
+
+这种每次迭代声明一个独立变量实例的行为适用于所有风格的 for 循环，包括 `for-in` 和 `for-of` 循环。
+
+### const 关键字
+
+const 的行为与 let 基本相同，唯一一个重要的区别是用它声明变量时必须同时初始化变量，且尝试修改 const 声明的变量会导致运行时错误。
+
+```js
+const age = 26;
+// error
+age = 36; // TypeError: 给常量赋值
+
+// const 也不允许重复声明
+const name = 'Matt';
+// error
+const name = 'Nicholas'; // SyntaxError
+// const 声明的作用域也是块 const name = 'Matt';
+if (true) {
+  // success
+  const name = 'Nicholas';
+}
+console.log(name); // Matt
+```
+
+const 声明的限制只适用于它指向的变量的引用。换句话说，如果 const 变量引用的是一个对象， 那么修改这个对象内部的属性并不违反 const 的限制。
+
+```js
+const person = {};
+person.name = 'Matt'; // ok
+```
+
+JavaScript 引擎会为 for 循环中的 let 声明分别创建独立的变量实例，虽然 const 变量跟 let 变量很相似，但是不能用 const 来声明迭代变量(因为迭代变量会自增):
+
+```js
+// error
+for (const i = 0; i < 10; ++i) {} // TypeError:给常量赋值
+```
+
+### 声明风格及最佳实践
+
+ECMAScript 6 增加 `let` 和 `const` 从客观上为这门语言更精确地声明作用域和语义提供了更好的支持。行为怪异的 `var` 所造成的各种问题，已经让 JavaScript 社区为之苦恼了很多年。随着这两个新关键字的出现，新的有助于提升代码质量的最佳实践也逐渐显现。
+
+_最佳实践_
+
+- 不使用 `var`
+- `const` 优先，`let` 次之
+
+使用 `const` 声明可以让浏览器运行时强制保持变量不变，也可以让静态代码分析工具提前发现不 合法的赋值操作。
+
+## 数据类型
+
+ECMAScript 有 7 种简单数据类型(也称为原始类型):`Undefined`、`Null`、`Boolean`、`Number`、`BigInt`、`String` 和 `Symbol`。Symbol(符号)是 ECMAScript 6 新增的。还有一种复杂数据类型叫 `Object`(对象)。`Object` 是一种无序名值对的集合。因为在 ECMAScript 中不能定义自己的数据类型，所有值都可以用上述 7 种数据类型之一来表示。只有 7 种数据类型似乎不足以表示全部数据。但 ECMAScript 的数据类型很灵活，一种数据类型可以当作多种数据类型来使用。
+
+:::tip 新类型
+BigInt 是一种内置对象，它提供了一种方法来表示大于 2^53 - 1 的整数。这原本是 Javascript 中可以用 Number 表示的最大数字。BigInt 可以表示任意大的整数。
+:::
+
+### typeof 操作符
+
+因为 ECMAScript 的类型系统是松散的，所以需要一种手段来确定任意变量的数据类型。`typeof` 操作符就是为此而生的。对一个值使用 `typeof` 操作符会返回下列字符串之一:
+
+- [ ] `undefined` 表示值未定义;
+- [ ] `boolean` 表示值为布尔值;
+- [ ] `string` 表示值为字符串;
+- [ ] `number` 表示值为数值;
+- [ ] `bigint` 表示值为BigInt数值。
+- [ ] `object` 表示值为对象(而不是函数)或 null;
+- [ ] `function` 表示值为函数;
+- [ ] `symbol` 表示值为符号。
+
+```js title="typeof 示范"
+let message = 'something';
+console.log(typeof message); // "string"
+console.log(typeof message); // "string"
+```
+
+注意，因为 `typeof` 是一个操作符而不是函数，所以不需要参数(但可以使用参数)。
+
+`typeof` 在某些情况下返回的结果可能会让人费解，但技术上讲还是正确的。比如，调用 `typeof null` 返回的是"object"。这是因为特殊值 null 被认为是一个对空对象的引用。
+
+### Undefined 类型
+
+`Undefined` 是 JavaScript 中的一个基本数据类型，表示变量未定义或未赋值。它是七种原始数据类型之一。
+
+永远不必显式地以 undefined 来初始化。但这是不必要的，因为默认情况下，任何未经初始化的变量都会取得 undefined 值。
+
+```js
+// 不推荐
+let message = undefined;
+```
+
+在对未初始化的变量调用 `typeof` 时，返回的结果是"undefined"，但对未声明的变量调用它时，返回的结果还是"undefined"。
+
+```js
+let a;
+
+console.log(typeof a); // undefined
+console.log(typeof b); // undefined
+```
+
+无论是声明还是未声明，typeof 返回的都是字符串"undefined"。逻辑上讲这是对的，因为虽然严格来讲这两个变量存在根本性差异，但它们都无法执行实际操作。
+
+undefined 是一个假值。因此，如果需要，可以用更简洁的方式检测它。
+
+### Null 类型
+
+`Null` 类型同样只有一个值，即特殊值 null。逻辑上讲，null 值表示一个空对象指针，这也是给 typeof 传一个 null 会返回"object"的原因:
+
+```js
+let car = null;
+console.log(typeof car); // "object"
+```
+
+在定义将来要保存对象值的变量时，建议使用 null 来初始化，这样做可以使代码更具可读性，并且通过检查变量是否为 null 可以明确地知道变量是否已经被赋值了对象引用。
+
+```js title="初始化变量为 null 并在后续代码中赋值"
+// 初始化变量为 null
+let user = null;
+
+// 后续代码中赋予实际的对象值
+user = { name: 'Alice', age: 25 };
+
+// 检查变量是否为 null
+if (user !== null) {
+  console.log('User object is assigned:', user);
+} else {
+  console.log('User object is not assigned');
+}
+```
+
+```js title="函数参数初始化为 null"
+function processUser(user = null) {
+  if (user === null) {
+    console.log('No user data provided');
+  } else {
+    console.log('Processing user:', user);
+  }
+}
+
+// 调用函数时没有传递 user 参数
+processUser();
+
+// 调用函数时传递了 user 参数
+processUser({ name: 'Bob', age: 30 });
+```
+
+`undefined` 值是由 `null` 值派生而来的，因此 ECMA-262 将它们定义为表面上相等，如下面的例子所示:
+
+```js
+console.log(null == undefined); // true
+console.log(null === undefined); // false
+```
+
+即使 `null` 和 `undefined` 有关系，它们的用途也是完全不一样的。如前所述，永远不必显式地将 变量值设置为 `undefined`。但 `null` 不是这样的。任何时候，只要变量要保存对象，而当时又没有那个 对象可保存，就要用 `null` 来填充该变量。这样就可以保持 `null` 是空对象指针的语义，并进一步将其与 `undefined` 区分开来。
+
+### Boolean
+
+`Boolean` 是 JavaScript 中的一个基本数据类型，用于表示两个值中的一个：true 或 false。这些值通常用于控制程序的逻辑流，例如条件判断、循环控制等。
+
+虽然布尔值只有两个，但所有其他 ECMAScript 类型的值都有相应布尔值的等价形式。要将一个其 他类型的值转换为布尔值，可以调用特定的 `Boolean()` 转型函数:
+
+| 数据类型  | 转换为true的值                  | 转换为false的值 |
+| --------- | ------------------------------- | --------------- |
+| Boolean   | `true`                          | `false`         |
+| String    | 非空字符串                      | ""(空字符串)    |
+| Number    | 非零数值（包括无穷值 Infinity） | 0, -0, NaN      |
+| Object    | 任意对象                        | null            |
+| Undefined | N/A(不存在)                     | undefined       |
+
+理解以上转换非常重要，因为像 if 等流控制语句会自动执行其他类型值到布尔值的转换。
+
+### Number 类型
+
+`Number` 是 JavaScript 中的一种基本数据类型，用于表示数值。JavaScript 中的 `Number` 类型遵循 IEEE 754 标准，可以表示双精度 64 位浮点数。`Number` 类型能够表示整数和浮点数，但其精度和范围是有限的。
+
+```js title="创建 Number 值"
+// 字面量
+let intLiteral = 42;
+let floatLiteral = 3.14;
+```
+
+整数也可以用八进制(以 8 为基数)或十六进制(以 16 为基数)字面量表示。
+
+创建八进制字面量，第一个数字必须是零(0)，然后是相应的八进制数字(数值 0~7)。如果字面量中包含的数字超出了应有的范围，就会忽略前缀的零，后面的数字序列会被当成十进制数，如下所示:
+
+```js
+let octalNum1 = 070; // 八进制的 56
+let octalNum2 = 079; // 无效的八进制值，当成 79 处理
+let octalNum3 = 08; // 无效的八进制值，当成 8 处理
+```
+
+八进制字面量在严格模式下是无效的， JavaScript 引擎抛出语法错误。
+
+:::warning
+ECMAScript 2015 或 ES6 中的八进制值通过前缀 0o 来表示;严格模式下，前缀 0 会被视为语法错误，如果要表示 八进制值，应该使用前缀 0o。
+:::
+
+创建十六进制字面量，必须让真正的数值前缀 `0x`(区分大小写)，然后是十六进制数字(0~9 以 及 A~F)。十六进制数字中的字母大小写均可。下面是几个例子:
+
+```js
+let hexNum1 = 0xa; // 十六进制 10
+let hexNum2 = 0x1f; // 十六进制 31
+```
+
+#### 1.浮点值
+
+要定义浮点值，数值中必须包含小数点，而且小数点后面必须至少有一个数字。虽然小数点前面不 是必须有整数，但推荐加上。
+
+```js
+let floatNum1 = 1.1;
+let floatNum2 = 0.1;
+let floatNum3 = 0.1; // 有效，但不推荐
+```
+
+因为存储浮点值使用的内存空间是存储整数值的两倍，所以 ECMAScript 总是想方设法把值转换为整数。在小数点后面没有数字的情况下，数值就会变成整数。类似地，如果数值本身就是整数，只是小数点后面跟着 0(如 1.0)，那它也会被转换为整数。
+
+```js
+let floatNum1 = 1; // 小数点后面没有数字，当成整数 1 处理
+let floatNum2 = 10.0; // 小数点后面是零，当成整数 10 处理
+```
+
+对于非常大或非常小的数值，浮点值可以用科学记数法来表示。科学记数法用于表示一个应该乘以 10 的给定次幂的数值。ECMAScript 中科学记数法的格式要求是一个数值(整数或浮点数)后跟一个大 写或小写的字母 e，再加上一个要乘的 10 的多少次幂。比如:
+
+```js
+let floatNum = 3.125e7; // 等于 31250000
+```
+
+科学记数法也可以用于表示非常小的数值，例如 0.000 000 000 000 000 03。这个数值用科学记数法 可以表示为 3e-17。默认情况下，ECMAScript 会将小数点后至少包含 6 个零的浮点值转换为科学记数法(例如，0.000 000 3 会被转换为 3e-7)。
+
+浮点值的精确度最高可达 17 位小数，但在算术计算中远不如整数精确。例如，0.1 加 0.2 得到的不是 0.3，而是 0.300 000 000 000 000 04。由于这种微小的舍入错误，导致很难测试特定的浮点值。比如下面的例子:
+
+```js
+if (a + b == 0.3) {
+  // 别这么干!
+  console.log('You got 0.3.');
+}
+```
+
+这里检测两个数值之和是否等于 0.3。如果两个数值分别是 0.05 和 0.25，或者 0.15 和 0.15，那没问 题。但如果是 0.1 和 0.2，如前所述，测试将失败。因此永远不要测试某个特定的浮点值。
+
+:::warning
+之所以存在这种舍入错误，是因为使用了 IEEE 754 数值，这种错误并非 ECMAScript 所独有。其他使用相同格式的语言也有这个问题。
+:::
+
+#### 2.值的范围
+
+_Number 类型取值范围：_
+
+- 最大安全整数：`Number.MAX_SAFE_INTEGER`，等于 $ 2^{53} - 1 $（9007199254740991）。
+- 最大安全整数：`Number.MIN_SAFE_INTEGER`，等于 $ -2^{53} + 1 $（-9007199254740991）。
+- 最大可表示数值：`Number.MAX_VALUE`，约等于 $1.79 * 10^{308}$ 。
+- 最小可表示数值：`Number.MIN_VALUE`，约等于 $5 * 10^{324}$。
+
+如果某个计算得到的数值结果超出了 JavaScript 可以表示的范围，那么这个数值会被自动转换为一个特殊的 `Infinity`(穷大)值。任何无法表示的负数以`-Infinity`(负无穷大)表示，任何无法表示的正数以 Infinity(正无穷大)表示。
+
+要确定一个值是不是有限大(即介于 JavaScript 能表示的 最小值和最大值之间)，可以使用 `isFinite()` 函数，如下所示:
+
+```js
+let result = Number.MAX_VALUE + Number.MAX_VALUE;
+console.log(isFinite(result)); // false
+```
+
+虽然超出有限数值范围的计算并不多见，但总归还是有可能的。因此在计算非常大或非常小的数值 时，有必要监测一下计算结果是否超出范围。
+
+使用 `Number.NEGATIVE_INFINITY` 和 `Number.POSITIVE_INFINITY` 也可以获 取正、负 Infinity。没错，这两个属性包含的值分别就是-Infinity 和 Infinity。
+
+```js
+console.log(Number.NEGATIVE_INFINITY); // -Infinity
+console.log(Number.POSITIVE_INFINITY); // Infinity
+```
+
+#### 3.NaN
+
+有一个特殊的数值叫 `NaN`，意思是“不是数值”(Not a Number)，用于表示本来要返回数值的操作失败了(而不是抛出错误)。比如，用 0 除任意数值在其他语言中通常都会导致错误，从而中止代码执 12 行。但在 ECMAScript 中，0、+0 或0 相除会返回 NaN:
+
+```js
+console.log(0 / 0); // NaN
+console.log(-0 / +0); // NaN
+```
+
+如果分子是非 0 值，分母是有符号 0 或无符号 0，则会返回 `Infinity` 或 `-Infinity`:
+
+```js
+console.log(5 / 0); // Infinity
+console.log(5 / -0); // -Infinity
+```
+
+`NaN` 有几个独特的属性。首先，任何涉及 NaN 的操作始终返回 NaN(如 NaN/10)，在连续多步计算 时这可能是个问题。其次，NaN 不等于包括 NaN 在内的任何值。例如，下面的比较操作会返回 `false`:
+
+```js
+console.log(NaN == NaN); // false
+```
+
+为此，ECMAScript 提供了 `isNaN()` 函数。该函数接收一个参数，可以是任意数据类型，然后判断 这个参数是否“不是数值”。把一个值传给 `isNaN()` 后，该函数会尝试把它转换为数值。某些非数值的 值可以直接转换成数值，如字符串"10"或布尔值。任何不能转换为数值的值都会导致这个函数返回 `true`。举例如下:
+
+```js
+console.log(isNaN(NaN)); // true
+console.log(isNaN(10)); // false，10 是数值
+console.log(isNaN('10')); // false，可以转换为数值 10
+console.log(isNaN('blue')); // true，不可以转换为数值
+console.log(isNaN(true)); // false，可以转换为数值 1
+```
+
+#### 4.数值转换
+
+有 3 个函数可以将非数值转换为数值: `Number()`、`parseInt()` 和 `parseFloat()`。`Number()` 是转型函数，可用于任何数据类型。后两个函数主要用于将字符串转换为数值。对于同样的参数，这 3 个 函数执行的操作也不同。
+
+```js title="Number() 函数转换规则"
+// 布尔值
+console.log(Number(true)); // 1
+console.log(Number(false)); // 0
+
+// 数值：直接返回
+console.log(Number(520)); // 520
+
+// null
+console.log(Number(null)); // 0
+
+// undefined
+console.log(Number(undefined)); // NaN
+
+// 字符串
+// 一：纯数值字符串，前缀为是0则忽略
+console.log(Number('011')); // 11
+console.log(Number('01.1')); // 1.1
+console.log(Number('200')); // 200
+// 二：有效十六进制、八进制格式
+console.log(Number('0xAA')); // 170
+console.log(Number('0o77')); // 63
+// 三：空字符串
+console.log(Number('')); // 0
+// 四：如果字符串包含除上述情况之外的其他字符，则返回 NaN。
+console.log(Number('xxx')); // NaN
+
+// 对象
+/**
+ * 对象，调用 valueOf()方法，并按照上述规则转换返回的值。如果转换结果是 NaN，则调用 toString()方法，再按照转换字符串的规则转换。
+ */
+```
+
+考虑到用 `Number()` 函数转换字符串时相对复杂且有点反常规，通常在需要得到整数时可以优先使用 `parseInt()` 函数。`parseInt()` 函数更专注于字符串是否包含数值模式。
+
+字符串最前面的空格会被 忽略，从第一个非空格字符开始转换。如果第一个字符不是数值字符、加号或减号，`parseInt()` 立即返回 NaN。这意味着空字符串也会返回 NaN
+
+```js
+console.log(Number.parseInt('')); // NaN
+console.log(Number('')); // 0
+```
+
+如果第一个字符 是数值字符、加号或减号，则继续依次检测每个字符，直到字符串末尾，或碰到非数值字符(忽略后面)。
+
+```js
+console.log(Number.parseInt('01234xxx')); // 1234
+console.log(Number.parseInt('01234.4567xxx')); // 1234
+```
+
+假设字符串中的第一个字符是数值字符，`parseInt()` 函数也能识别不同的整数格式(十进制、八进制、十六进制)。
+
+```js
+// 十六进制
+console.log(Number.parseInt('0xAAPP')); // 170
+// 八进制: 在非严格模式下会被某些实现解释为八进制整数。
+console.log(Number.parseInt('077')); // 63
+// 无法使用八进制 0o 前缀
+console.log(Number.parseInt('0o77')); // 0
+```
+
+不同的数值格式很容易混淆，因此 `parseInt()` 也接收第二个参数，用于指定底数(进制数)。如 果知道要解析的值是十六进制，那么可以传入 16 作为第二个参数，以便正确解析:
+
+```js
+console.log(Number.parseInt('0xAA', 16)); // 170
+
+// 前缀可以省略
+console.log(Number.parseInt('AA', 16)); // 170
+```
+
+`parseFloat()` 函数的工作方式跟 `parseInt()` 函数类似，都是从位置 0 开始检测每个字符。同样， 它也是解析到字符串末尾或者解析到一个无效的浮点数值字符为止。这意味着第一次出现的小数点是有效的，但第二次出现的小数点就无效了，此时字符串的剩余字符都会被忽略。
+
+```js
+console.log(Number.parseFloat('22.34.5')); // 22.34
+```
+
+`parseFloat()` 函数的另一个不同之处在于，它始终忽略字符串开头的零。这个函数能识别前面讨论的所有浮点格式，以及十进制格式(开头的零始终被忽略)。十六进制数值始终会返回 0。因为 `parseFloat()` 只解析十进制值，因此不能指定底数。最后，如果字符串表示整数(没有小数点或者小数点后面只有一个零)，则 `parseFloat()` 返回整数。下面是几个示例:
+
+```js
+let num1 = parseFloat('1234blue'); // 1234，按整数解析
+let num2 = parseFloat('0xA'); // 0
+let num3 = parseFloat('22.5'); // 22.5
+let num4 = parseFloat('22.34.5'); // 22.34
+let num5 = parseFloat('0908.5'); // 908.5
+let num6 = parseFloat('3.125e7'); // 31250000
+```
+
+:::tip
+在 JavaScript 中，`parseInt` 和 `parseFloat` 是一个全局函数，可以直接使用而不需要通过 `Number` 对象调用。这意味着你可以直接使用它们来解析字符串。事实上通过 `Number` 使用的函数是一个静态方法，用法没有区别。
+:::
+
+### BigInt 类型
+
+### String 类型
+
+### Symbol 类型
+
+### Object 类型
+
+## 操作符
+
+## 语句
+
+## 函数
+
+```
+
+```
