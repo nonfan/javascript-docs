@@ -103,8 +103,8 @@ const sidebars: SidebarsConfig = {
       label: '框架',
       items: [
         'javaScript-libraries-and-frameworks/frameworks/react',
-        'javaScript-libraries-and-frameworks/frameworks/angular',
-        'javaScript-libraries-and-frameworks/libraries/axios',
+        'javaScript-libraries-and-frameworks/frameworks/vue',
+        'javaScript-libraries-and-frameworks/frameworks/svelte',
       ],
     },
     {
