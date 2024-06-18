@@ -96,6 +96,12 @@ const config: Config = {
           label: '源码鉴赏',
         },
         {
+          type: 'docSidebar',
+          position: 'left',
+          sidebarId: 'javaScript-libraries-and-frameworks',
+          label: 'JavaScript 库和框架',
+        },
+        {
           href: `https://github.com/${username}/${repository}`,
           label: 'GitHub',
           position: 'right',

@@ -95,6 +95,9 @@ const sidebars: SidebarsConfig = {
       items: ['source-code/modularity-and-tool-libraries/index'],
     },
   ],
+  'javaScript-libraries-and-frameworks': [
+    'javaScript-libraries-and-frameworks/index',
+  ],
 };
 
 export default sidebars;
