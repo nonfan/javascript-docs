@@ -98,6 +98,33 @@ const sidebars: SidebarsConfig = {
   ],
   'javaScript-libraries-and-frameworks': [
     'javaScript-libraries-and-frameworks/index',
+    {
+      type: 'category',
+      label: '框架',
+      items: [
+        'javaScript-libraries-and-frameworks/frameworks/react',
+        'javaScript-libraries-and-frameworks/frameworks/angular',
+        'javaScript-libraries-and-frameworks/libraries/axios',
+      ],
+    },
+    {
+      type: 'category',
+      label: '库',
+      items: [
+        'javaScript-libraries-and-frameworks/libraries/axios',
+        'javaScript-libraries-and-frameworks/libraries/lodash',
+        'javaScript-libraries-and-frameworks/libraries/moment',
+      ],
+    },
+    {
+      type: 'category',
+      label: '工具',
+      items: [
+        'javaScript-libraries-and-frameworks/tools/webpack',
+        'javaScript-libraries-and-frameworks/tools/babel',
+        'javaScript-libraries-and-frameworks/tools/rollup',
+      ],
+    },
   ],
 };
 
