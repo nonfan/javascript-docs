@@ -53,3 +53,8 @@ em {
   color: rgb(153, 138, 138);
   font-size: 16px;
 }
+
+/*LaTeX数学公式存在渲染错误：等待bug解决之前的小技巧*/
+.katex-html {
+  display: none;
+}

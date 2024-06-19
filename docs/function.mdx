@@ -343,7 +343,7 @@ console.log(makeKing()); // King Henry Henry
 
 ```js
 // 不允许去使用后者定义的，给前者赋值，这会导致默认值失败
-//highlight-error
+//error
 function makeKing(name = numerals, numerals = 'VIII') {
   return `King ${name} ${numerals}`;
 }
@@ -351,7 +351,7 @@ function makeKing(name = numerals, numerals = 'VIII') {
 console.log(makeKing()); // ReferenceError: Cannot access 'numerals' before initialization
 
 // 参数也存在于自己的作用域中，它们不能引用函数体的作用域：
-//highlight-error
+//error
 function copyMakeKing(name = 'Henry', numerals = defaultNumeral) {
   let defaultNumeral = 'VIII';
   return `King ${name} ${numerals}`;

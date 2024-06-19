@@ -153,7 +153,7 @@ const handler = {
 
 const proxy = new Proxy(target, handler);
 
-// highlight-error
+// error
 console.log(proxy.foo);
 // TypeError
 ```
@@ -177,7 +177,7 @@ console.log(proxy.name);
 
 // 调用 revoke 撤销代理
 revoke();
-// highlight-error
+// error
 console.log(proxy.name); // TypeError
 ```
 
@@ -185,14 +185,14 @@ console.log(proxy.name); // TypeError
 
 某些情况下应该优先使用反射 API，这是有一些理由的。
 
-#### 1.反射 API 与对象 API
+#### 反射 API 与对象 API
 
 - [ ] 反射 API 并不限于捕获处理程序；
 - [ ] 大多数反射 API 方法在 Object 类型上有应对的方法。
 
 反射 API 的应用远不止于捕获处理程序，它提供了一种更灵活的方式来操作和处理 JavaScript 对象。通常，Object 上的方法适用于通用程序，而反射方法适用于细粒度的对象控制与操作。
 
-#### 2.代理状态
+#### 代理状态
 
 很多反射方法返回称作“状态标记”的布尔值，表示意图执行的操作是否成功。有时候，状态标记比那些返回修改后的对象或者抛出错误（取决于方法）的反射 API 方法更有用。
 
@@ -216,7 +216,7 @@ if (result) {
 - [ ] `Reflect.set()`
 - [ ] `Reflect.deleteProperty()`
 
-#### 3.用一等函数替代操作符
+#### 用一等函数替代操作符
 
 以下反射方法提供只有通过操作符才能完成的操作。
 
@@ -226,7 +226,7 @@ if (result) {
 - [ ] `Reflect.deleteProperty()`：可以替代 `delete` 操作符。
 - [ ] `Reflect.construct()`：可以替代 `new` 操作符。
 
-#### 4.安全地应用函数
+#### 安全地应用函数
 
 在通过 apply 方法调用函数时，被调用的函数可能也定义了自己的 apply 属性（虽然可能性极小）。为绕过这个问题，可以使用定义在 Function 原型上的 apply 方法，比如：
 
@@ -273,7 +273,7 @@ console.log(secondProxy.foo);
 
 代理是在 ECMAScript 现有基础之上构建起来的一套新 API，因此其实现已经尽力做到最好了。很大程度上，代理作为对象的虚拟层可以正常使用。但在某些情况下，代理也不能与现在的 ECMAScript机制很好地协同。
 
-#### 1.代理中的 this
+#### 代理中的 this
 
 代理潜在的一个问题来源是 this 值。我们知道，方法中的 this 通常指向调用这个方法的对象：
 
@@ -325,7 +325,7 @@ const proxyUser = new UserClassProxy(456);
 console.log(proxyUser.id);
 ```
 
-#### 2.代理与内部槽位
+#### 代理与内部槽位
 
 代理与内置引用类型（比如 Array）的实例通常可以很好地协同，但有些 ECMAScript 内置类型可能会依赖代理无法控制的机制，结果导致在代理上调用某些方法会出错。
 
@@ -337,7 +337,7 @@ const proxy = new Proxy(target, {});
 
 console.log(proxy instanceof Date); // true
 
-// highlight-error
+// error
 proxy.getDate(); // TypeError: 'this' is not a Date object
 ```
 
@@ -367,24 +367,24 @@ proxy.foo;
 // 触发 get() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `get` 方法可以返回任何值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `proxy.property`
 - [ ] `proxy[property]`
 - [ ] `Object.create(proxy)[property]`
 - [ ] `Reflect.get(proxy, property, receiver)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `property`：引用的目标对象上的字符串键属性。
 - [ ] `receiver`：代理对象或继承代理对象的对象。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果 `target.property` 不可写且不可配置，则处理程序返回的值必须与 `target.property` 匹配。
 
@@ -408,25 +408,25 @@ proxy.foo = 'bar';
 // 触发 set() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 返回 `true` 表示成功；返回 `false` 表示失败，严格模式下会抛出 TypeError。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `proxy.property = value`
 - [ ] `proxy[property] = value`
 - [ ] `Object.create(proxy)[property] = value`
 - [ ] `Reflect.set(proxy, property, value, receiver)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `property`：引用的目标对象上的字符串键属性。
 - [ ] `value`：要赋给属性的值。
 - [ ] `receiver`：接收最初赋值的对象。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果 `target.property` 不可写且不可配置，则不能修改目标属性的值。
 
@@ -450,23 +450,23 @@ const proxy = new Proxy(myTarget, {
 // 触发 has() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `has()` 必须返回布尔值，表示属性是否存在。返回非布尔值会被转型为布尔值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `property in proxy`
 - [ ] `property in Object.create(proxy)`
 - [ ] `with(proxy) {(property);}`
 - [ ] `Reflect.has(proxy, property)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `property`：引用的目标对象上的字符串键属性。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果 `target.property` 存在且不可配置，则处理程序必须返回 `true`。
 
@@ -490,22 +490,22 @@ Object.defineProperty(proxy, 'foo', { value: 'bar' });
 // 触发 defineProperty() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `defineProperty()` 必须返回布尔值，表示属性是否成功定义。返回非布尔值会被转型为布尔值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `Object.defineProperty(proxy, property, descriptor)`
 - [ ] `Reflect.defineProperty(proxy, property, descriptor)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `property`：引用的目标对象上的字符串键属性。
 - [ ] `descriptor`：包含可选的 `enumerable`、`configurable`、`writable`、`value`、`get` 和 `set` 定义的对象。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果目标对象不可扩展，则无法定义属性。
 
@@ -531,21 +531,21 @@ Object.getOwnPropertyDescriptor(proxy, 'foo');
 // 触发 getOwnPropertyDescriptor() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `getOwnPropertyDescriptor()` 必须返回对象，或者在属性不存在时返回 `undefined`。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `Object.getOwnPropertyDescriptor(proxy, property)`
 - [ ] `Reflect.getOwnPropertyDescriptor(proxy, property)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `property`：引用的目标对象上的字符串键属性。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果自有的 `target.property` 存在且不可配置，则处理程序必须返回一个表示该属性存在的对象。
 
@@ -575,22 +575,22 @@ delete proxy.foo;
 // 触发 deleteProperty() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `deleteProperty()` 必须返回布尔值，表示删除属性是否成功。返回非布尔值会被转型为布尔值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `delete proxy.property`
 - [ ] `delete proxy[property]`
 - [ ] `Reflect.deleteProperty(proxy, property)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `property`：引用的目标对象上的字符串键属性。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果自有的 `target.property` 存在且不可配置，则处理程序不能删除这个属性。
 
@@ -612,22 +612,22 @@ Object.keys(proxy);
 // 触发 ownKeys() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `ownKeys()` 必须返回包含字符串或符号的可枚举对象。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `Object.getOwnPropertyNames(proxy)`
 - [ ] `Object.getOwnPropertySymbols(proxy)`
 - [ ] `Object.keys(proxy)`
 - [ ] `Reflect.ownKeys(proxy)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 返回的可枚举对象必须包含 `target` 的所有不可配置的自有属性。
 
@@ -651,11 +651,11 @@ Object.getPrototypeOf(proxy);
 // 触发 getPrototypeOf() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `getPrototypeOf()` 必须返回对象或 `null`。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `Object.getPrototypeOf(proxy)`
 - [ ] `Reflect.getPrototypeOf(proxy)`
@@ -663,11 +663,11 @@ Object.getPrototypeOf(proxy);
 - [ ] `Object.prototype.isPrototypeOf(proxy)`
 - [ ] `proxy instanceof Object`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果 `target` 不可扩展，则 `Object.getPrototypeOf(proxy)` 唯一有效的返回值就是 `Object.getPrototypeOf(target)` 的返回值。
 
@@ -689,21 +689,21 @@ Object.setPrototypeOf(proxy, Object);
 // 触发 setPrototypeOf() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 setPrototypeOf()必须返回布尔值，表示原型赋值是否成功。返回非布尔值会被转型为布尔值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `Object.setPrototypeOf(proxy)`
 - [ ] `Reflect.setPrototypeOf(proxy)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `prototype`：target 的替代原型，如果是顶级原型则为 `null`。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果 `target` 不可扩展，则唯一有效的 `prototype` 参数就是 `Object.getPrototypeOf(target)` 的返回值。
 
@@ -725,20 +725,20 @@ Object.isExtensible(proxy);
 // 触发 isExtensible() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `isExtensible()` 必须返回布尔值，表示 `target` 是否可扩展。返回非布尔值会被转型为布尔值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `Object.isExtensible(proxy)`
 - [ ] `Reflect.isExtensible(proxy)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果 `target` 可扩展，则处理程序必须返回 `true`。
 
@@ -762,20 +762,20 @@ Object.preventExtensions(proxy);
 // 触发 preventExtensions() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `preventExtensions()` 必须返回布尔值，表示 `target` 是否已经不可扩展。返回非布尔值会被转型为布尔值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `Object.preventExtensions(proxy)`
 - [ ] `Reflect.preventExtensions(proxy)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 如果 `Object.isExtensible(proxy)` 是 false，则处理程序必须返回 true。
 
@@ -797,24 +797,24 @@ proxy();
 // 触发 apply() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `apply` 方法可以返回任何值。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `proxy(...argumentsList)`
 - [ ] `Function.prototype.apply(thisArg, argumentsList)`
 - [ ] `Function.prototype.call(thisArg, ...argumentsList)`
 - [ ] `Reflect.apply(target, thisArgument, argumentsList)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标对象。
 - [ ] `thisArg`：调用函数时的 this 参数。
 - [ ] `argumentsList`：调用函数时的参数列表
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 `target` 必须是一个函数对象。
 
@@ -836,22 +836,22 @@ new proxy();
 // 触发 construct() 捕获器
 ```
 
-#### 1.返回值
+#### 返回值
 
 `construct()` 必须返回一个对象。
 
-#### 2.触发拦截的操作
+#### 触发拦截的操作
 
 - [ ] `new proxy(...argumentsList)`
 - [ ] `Reflect.construct(target, argumentsList, newTarget)`
 
-#### 3.捕获器处理程序参数
+#### 捕获器处理程序参数
 
 - [ ] `target`：目标构造函数。
 - [ ] `argumentsList`：传给目标构造函数的参数列表。
 - [ ] `newTarget`：最初被调用的构造函数。
 
-#### 4.捕获器不变式（约束）
+#### 捕获器不变式（约束）
 
 `target` 必须可以用作构造函数。
 

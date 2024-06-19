@@ -66,6 +66,10 @@ const config: Config = {
   ],
 
   themeConfig: {
+    tableOfContents: {
+      minHeadingLevel: 2,
+      maxHeadingLevel: 5,
+    },
     docs: {
       sidebar: {
         hideable: true,
@@ -127,26 +131,10 @@ const config: Config = {
         },
         {
           className: 'code-block-error-line',
-          line: 'highlight-error',
-          block: {
-            start: 'highlight-error-start',
-            end: 'highlight-error-end',
-          },
-        },
-        {
-          className: 'code-block-error-line',
           line: 'error',
           block: {
             start: 'error-start',
             end: 'error-end',
-          },
-        },
-        {
-          className: 'code-block-success-line',
-          line: 'highlight-success',
-          block: {
-            start: 'highlight-success-start',
-            end: 'highlight-success-end',
           },
         },
         {
@@ -159,6 +147,15 @@ const config: Config = {
         },
       ],
     },
+    stylesheets: [
+      {
+        href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
+        type: 'text/css',
+        integrity:
+          'sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM',
+        crossorigin: 'anonymous',
+      },
+    ],
   } satisfies Preset.ThemeConfig,
 };
 

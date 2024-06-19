@@ -79,13 +79,13 @@ let iterableObj = {
   data: ['JavaScript', 'Java', 'Python', 'Rust'],
 
   // 支持迭代的自我识别能力: 使用 Symbol.iterator 作为默认迭代器键
-  // highlight-success
+  // success
   [Symbol.iterator]() {
     let index = 0;
     let data = this.data;
 
     // 创建实现Iterator 接口的对象的能力: 迭代器工厂函数，返回新的迭代器对象
-    // highlight-success
+    // success
     return {
       // 实现了迭代器协议
       next() {
@@ -257,11 +257,11 @@ console.log(iter.next()); // { done: false, value: 'foo' }
 
 // 在数组中间插入值
 arr.splice(1, 0, 'bar');
-// highlight-success-start
+// success-start
 console.log(iter.next()); // { done: false, value: 'bar' }
 console.log(iter.next()); // { done: false, value: 'baz' }
 console.log(iter.next()); // { done: true, value: undefined }
-// highlight-success-end
+// success-end
 ```
 
 :::note 注意
@@ -410,12 +410,12 @@ class IteratorObject {
       next() {
         return { done: true, value: 'undefined' };
       },
-      // highlight-success-start
+      // success-start
       return() {
         console.log('提前终止执行');
         return { done: true };
       },
-      // highlight-success-end
+      // success-end
     };
   }
 }
@@ -452,7 +452,7 @@ let counter1 = new Counter(5);
 
 for (let i of counter1) {
   if (i > 2) {
-    // highlight-success
+    // success
     break;
   }
   console.log(i);
@@ -465,7 +465,7 @@ let counter2 = new Counter(5);
 try {
   for (let i of counter2) {
     if (i > 2) {
-      // highlight-success
+      // success
       throw 'err';
     }
     console.log(i);
@@ -478,7 +478,7 @@ try {
 let counter3 = new Counter(5);
 
 // 解构操作并未消费所有值。
-// highlight-success
+// success
 let [a, b] = counter3;
 // 提前退出
 ```
@@ -522,7 +522,7 @@ class IteratorObject {
 }
 
 let iter = new IteratorObject()[Symbol.iterator]();
-// highlight-success
+// success
 console.log(typeof iter.return === 'function'); // true
 ```
 
@@ -707,31 +707,31 @@ console.log(generatorObject2.next()); // { done: false, value: '1' }
 yield 关键字只能在生成器函数内部使用，用在其他地方会抛出错误。类似函数的 return 关键字，yield 关键字必须直接位于生成器函数定义中，出现在嵌套的非生成器函数中会抛出语法错误：
 
 ```js
-// highlight-success-start
+// success-start
 function* validGeneratorFn() {
   yield;
 }
-// highlight-success-end
+// success-end
 
 // 无效
-// highlight-error-start
+// error-start
 function* invalidGeneratorFnA() {
   function a() {
     yield;
   }
 }
-// highlight-error-end
+// error-end
 // 无效
-// highlight-error-start
+// error-start
 function* invalidGeneratorFnB() {
   const b = () => {
     yield;
   };
 }
-// highlight-error-end
+// error-end
 ```
 
-#### 1.生成器对象作为可迭代对象
+#### 生成器对象作为可迭代对象
 
 在生成器对象上显式调用 next()方法的用处并不大。其实，如果把生成器对象当成可迭代对象，
 那么使用起来会更方便：
@@ -750,7 +750,7 @@ for (const x of generatorFn()) {
 // 3
 ```
 
-#### 2.使用 yield 实现输入和输出
+#### 使用 yield 实现输入和输出
 
 除了可以作为函数的中间返回语句使用，yield 关键字还可以作为函数的中间参数使用。上一次让生成器函数暂停的 yield 关键字会接收到传给 `next()` 方法的第一个值。这里有个地方不太好理解——第一次调用 `next()` 传入的值不会被使用，因为这一次调用是为了开始执行生成器函数：
 
@@ -802,7 +802,7 @@ console.log(generatorObject.next()); // 1
 console.log(generatorObject.next()); // 2
 ```
 
-#### 3.产生可迭代对象
+#### 产生可迭代对象
 
 可以使用星号增强 yield 的行为，让它能够迭代一个可迭代对象，从而一次产出一个值：
 
@@ -823,7 +823,7 @@ function* generatorFn() {
 
 ```js
 function* generatorFn() {
-  // highlight-success
+  // success
   console.log('iter value:', yield* [1, 2, 3]);
 }
 for (const x of generatorFn()) {
@@ -843,7 +843,7 @@ function* innerGeneratorFn() {
   return 'bar';
 }
 function* outerGeneratorFn(genObj) {
-  // highlight-success
+  // success
   console.log('iter value:', yield* innerGeneratorFn());
 }
 for (const x of outerGeneratorFn()) {
@@ -853,7 +853,7 @@ for (const x of outerGeneratorFn()) {
 // iter value: bar
 ```
 
-#### 4.使用 `yield*` 实现递归算法
+#### 使用 `yield*` 实现递归算法
 
 `yield*` 最有用的地方是实现递归操作，此时生成器可以产生自身。看下面的例子：
 
@@ -1002,7 +1002,7 @@ console.log(g.return); // f return() { [native code] }
 console.log(g.throw); // f throw() { [native code] }
 ```
 
-#### 1.return()
+#### return()
 
 `return()` 方法会强制生成器进入关闭状态。提供给 `return()` 方法的值，就是终止迭代器对象的值：
 
@@ -1059,7 +1059,7 @@ for (const x of g) {
 // 2
 ```
 
-#### 2.throw()
+#### throw()
 
 `throw()` 方法会在暂停的时候将一个提供的错误注入到生成器对象中。如果错误未被处理，生成器就会关闭：
 
