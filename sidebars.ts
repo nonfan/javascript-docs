@@ -97,32 +97,32 @@ const sidebars: SidebarsConfig = {
     },
   ],
   'javaScript-libraries-and-frameworks': [
-    'javaScript-libraries-and-frameworks/index',
+    'javascript-libraries-and-frameworks/index',
     {
       type: 'category',
       label: '框架',
       items: [
-        'javaScript-libraries-and-frameworks/frameworks/react',
-        'javaScript-libraries-and-frameworks/frameworks/vue',
-        'javaScript-libraries-and-frameworks/frameworks/svelte',
+        'javascript-libraries-and-frameworks/frameworks/react',
+        'javascript-libraries-and-frameworks/frameworks/vue',
+        'javascript-libraries-and-frameworks/frameworks/svelte',
       ],
     },
     {
       type: 'category',
       label: '库',
       items: [
-        'javaScript-libraries-and-frameworks/libraries/axios',
-        'javaScript-libraries-and-frameworks/libraries/lodash',
-        'javaScript-libraries-and-frameworks/libraries/moment',
+        'javascript-libraries-and-frameworks/libraries/axios',
+        'javascript-libraries-and-frameworks/libraries/lodash',
+        'javascript-libraries-and-frameworks/libraries/moment',
       ],
     },
     {
       type: 'category',
       label: '工具',
       items: [
-        'javaScript-libraries-and-frameworks/tools/webpack',
-        'javaScript-libraries-and-frameworks/tools/babel',
-        'javaScript-libraries-and-frameworks/tools/rollup',
+        'javascript-libraries-and-frameworks/tools/webpack',
+        'javascript-libraries-and-frameworks/tools/babel',
+        'javascript-libraries-and-frameworks/tools/rollup',
       ],
     },
   ],
