@@ -6,6 +6,7 @@ const sidebars: SidebarsConfig = {
     'javascript-in-html',
     'language-basics',
     'variables-scope-and-memory',
+    'basic-reference-types',
     'collection-reference-type',
     'iterator-and-generator',
     'objects-classes-and-object-oriented-programming',
