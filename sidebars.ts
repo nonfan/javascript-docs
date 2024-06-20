@@ -32,6 +32,13 @@ const sidebars: SidebarsConfig = {
         'bom/history',
       ],
     },
+    'client-detection',
+    'dom',
+    'dom-extensions',
+    'dom2-and-dom3',
+    'events',
+    'animation-and-canvas-graphics',
+    'form-scripts',
     'json',
     {
       type: 'category',
