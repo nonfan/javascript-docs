@@ -21,17 +21,7 @@ const sidebars: SidebarsConfig = {
         'promise-and-async-function/async-function',
       ],
     },
-    {
-      type: 'category',
-      label: 'BOM',
-      items: [
-        'bom/window',
-        'bom/location',
-        'bom/navigator',
-        'bom/screen',
-        'bom/history',
-      ],
-    },
+    'bom',
     'client-detection',
     'dom',
     'dom-extensions',
