@@ -574,8 +574,10 @@ let floatLiteral = 3.14;
 
 ```js
 let octalNum1 = 070; // 八进制的 56
-let octalNum2 = 079; // 无效的八进制值，当成 79 处理
-let octalNum3 = 08; // 无效的八进制值，当成 8 处理
+// error
+// let octalNum2 = 079; // 无效的八进制值，当成 79 处理
+// error
+// let octalNum3 = 08; // 无效的八进制值，当成 8 处理
 ```
 
 八进制字面量在严格模式下是无效的， JavaScript 引擎抛出语法错误。

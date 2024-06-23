@@ -196,7 +196,8 @@ console.log(now.valueOf()); // 1718868712068
 ECMAScript 通过 `RegExp` 类型支持正则表达式。正则表达式使用类似 Perl 的简洁语法来创建:
 
 ```js
-let expression = /pattern/flags;
+// i: 匹配模式
+let expression = /pattern/i;
 ```
 
 这个正则表达式的 pattern(模式) 可以是任何简单或复杂的正则表达式，包括字符类、限定符、 分组、向前查找和反向引用。每个正则表达式可以带零个或多个 flags(标记)，用于控制正则表达式的行为。

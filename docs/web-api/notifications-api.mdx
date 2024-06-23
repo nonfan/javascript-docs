@@ -19,8 +19,6 @@ Notifications API 有被滥用的可能，因此默认会开启两项安全措�
 Notification.requestPermission().then(permission => {
   console.log('User responded to permission request:', permission);
 });
-
-"granted"值意味着用户明确授权了显示通知的权限。除此之外的其他值意味着显示通知会静默失 败。如果用户拒绝授权，这个值就是"denied"。一旦拒绝，就无法通过编程方式挽回，因为不可能再 触发授权提示。
 ```
 
 检查只读属性 Notification.permission 的值来查看你是否已经有权限。
