@@ -2,10 +2,13 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const siderbar: SidebarsConfig = {
   docs: [
-    'javascript-libraries-and-frameworks/index',
     {
       type: 'category',
       label: '框架',
+      link: {
+        type: 'doc',
+        id: 'javascript-libraries-and-frameworks/frameworks/index',
+      },
       items: [
         'javascript-libraries-and-frameworks/frameworks/react',
         'javascript-libraries-and-frameworks/frameworks/vue',
