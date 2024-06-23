@@ -1,4 +1,5 @@
 import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
+import allSidebar from './sidebars/index';
 
 const sidebars: SidebarsConfig = {
   docs: [
@@ -82,81 +83,9 @@ const sidebars: SidebarsConfig = {
     'modules',
     'worker-thread',
     'best-practices',
+    'strict-mode',
   ],
-  api: ['api/index', 'api/array'],
-  'source-code': [
-    'source-code/index',
-    {
-      type: 'category',
-      label: 'JavaScript 基础',
-      items: ['source-code/javascript-basics/index'],
-    },
-    {
-      type: 'category',
-      label: '函数和闭包',
-      items: ['source-code/function-closure/index'],
-    },
-    {
-      type: 'category',
-      label: '面向对象编程',
-      items: ['source-code/object-oriented-programming/index'],
-    },
-    {
-      type: 'category',
-      label: '异步编程',
-      items: ['source-code/asynchronous-programming/index'],
-    },
-    {
-      type: 'category',
-      label: 'JavaScript 引擎与解析器',
-      items: ['source-code/javascript-engine-and-parser/index'],
-    },
-    {
-      type: 'category',
-      label: '标准库与核心 API',
-      items: ['source-code/standard-library-and-core-api/index'],
-    },
-    {
-      type: 'category',
-      label: 'Web API 与 DOM 操作',
-      items: ['source-code/web-api-and-dom-manipulation/index'],
-    },
-    {
-      type: 'category',
-      label: '模块化与工具库',
-      items: ['source-code/modularity-and-tool-libraries/index'],
-    },
-  ],
-  'javaScript-libraries-and-frameworks': [
-    'javascript-libraries-and-frameworks/index',
-    {
-      type: 'category',
-      label: '框架',
-      items: [
-        'javascript-libraries-and-frameworks/frameworks/react',
-        'javascript-libraries-and-frameworks/frameworks/vue',
-        'javascript-libraries-and-frameworks/frameworks/svelte',
-      ],
-    },
-    {
-      type: 'category',
-      label: '库',
-      items: [
-        'javascript-libraries-and-frameworks/libraries/axios',
-        'javascript-libraries-and-frameworks/libraries/lodash',
-        'javascript-libraries-and-frameworks/libraries/moment',
-      ],
-    },
-    {
-      type: 'category',
-      label: '工具',
-      items: [
-        'javascript-libraries-and-frameworks/tools/webpack',
-        'javascript-libraries-and-frameworks/tools/babel',
-        'javascript-libraries-and-frameworks/tools/rollup',
-      ],
-    },
-  ],
+  ...allSidebar,
 };
 
 export default sidebars;
