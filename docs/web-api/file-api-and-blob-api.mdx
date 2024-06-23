@@ -1,0 +1,313 @@
+# File API 与 Blob API
+
+Web 应用程序的一个主要的痛点是无法操作用户计算机上的文件。2000 年之前，处理文件的唯一方式是把 `<input type="file">` 放到一个表单里，仅此而已。File API 与 Blob API 是为了让 Web 开发者能以安全的方式访问客户端机器上的文件，从而更好地与这些文件交互而设计的。
+
+## File 类型
+
+File API 仍然以表单中的文件输入字段为基础，但是增加了直接访问文件信息的能力。HTML5 在 DOM 上为文件输入元素添加了 files 集合。当用户在文件字段中选择一个或多个文件时，这个 files 集合中会包含一组 File 对象，表示被选中的文件。每个 File 对象都有一些只读属性。
+
+- [ ] `name`: 本地系统中的文件名。
+- [ ] `size`: 以字节计的文件大小。
+- [ ] `type`: 包含文件 MIME 类型的字符串。
+- [ ] `lastModifiedDate`: 表示文件最后修改时间的字符串。这个属性只有 Chrome 实现了。
+
+```html title="选取文件示例"
+<!--multiple: 文件多选-->
+<input type="file" id="files-list" multiple />
+<script>
+  // 通过监听 change 事件然后遍历 files 集合可以取得每个选中文件的信息:
+
+  let filesList = document.getElementById('files-list');
+  filesList.addEventListener('change', event => {
+    let files = event.target.files,
+      i = 0,
+      len = files.length;
+    while (i < len) {
+      const f = files[i];
+      console.log(`${f.name} (${f.type}, ${f.size} bytes)`);
+      i++;
+    }
+  });
+</script>
+```
+
+## FileReader 类型
+
+FileReader 类型表示一种异步文件读取机制。可以把 FileReader 想象成类似于 XMLHttpRequest， 只不过是用于从文件系统读取文件，而不是从服务器读取数据。FileReader 类型提供了几个读取文件数据的方法。
+
+- [ ] `readAsText(file, encoding)`: 从文件中读取纯文本内容并保存在 result 属性中。第二个参数表示编码，是可选的。
+- [ ] `readAsDataURL(file)`: 读取文件并将内容的数据 URI 保存在 result 属性中。
+- [ ] `readAsBinaryString(file)`: 读取文件并将每个字符的二进制数据保存在 result 属性中。
+- [ ] `readAsArrayBuffer(file)`: 读取文件并将文件内容以 ArrayBuffer 形式保存在 result 属性。
+
+```js title=用法"
+const reader = new FileReader();
+
+reader.readAsText(file);
+reader.readAsDataURL(file);
+reader.readAsBinaryString(file);
+reader.readAsArrayBuffer(file);
+```
+
+这些读取数据的方法为处理文件数据提供了极大的灵活性。
+
+因为这些读取方法是异步的，所以每个 FileReader 会发布几个事件，其中 3 个最有用的事件是 `progress`、`error` 和 `load`，分别表示还有更多数据、发生了错误和读取完成。其他事件有 `loadstart`、`loadend` 和 `abort`。
+
+`progress` 事件每 50 毫秒就会触发一次，其与 XHR 的 `progress` 事件具有相同的信息: `lengthComputable`、`loaded` 和 `total`。此外，在 `progress` 事件中可以读取 FileReader 的 `result` 属性，即使其中尚未包含全部数据。
+
+`error` 事件会在由于某种原因无法读取文件时触发。触发 `error` 事件时，FileReader 的 `error` 属性会包含错误信息。这个属性是一个对象，只包含一个属性: `code`。这个错误码的值可能是 1(未找到文件)、2(安全错误)、3(读取被中断)、4(文件不可读)或 5(编码错误)。
+
+`load` 事件会在文件成功加载后触发。如果 `error` 事件被触发，则不会再触发 `load` 事件。
+
+`loadstart` 事件会在读取操作开始时触发。
+
+`loadend` 事件会在读取操作完成（无论成功或失败）时触发。
+
+`abort` 事件会在读取操作被中止时触发。
+
+```js title="事件用法"
+let filesList = document.getElementById('files-list');
+
+filesList.addEventListener('change', event => {
+  let info = '',
+    output = document.getElementById('output'),
+    progress = document.getElementById('progress'),
+    files = event.target.files,
+    type = 'default',
+    reader = new FileReader();
+
+  // 根据文件类型选择实例方法
+  if (/image/.test(files[0].type)) {
+    reader.readAsDataURL(files[0]);
+    type = 'image';
+  } else {
+    reader.readAsText(files[0]);
+    type = 'text';
+  }
+
+  // default
+  reader.onerror = function () {
+    output.innerHTML = '不能读取文件, 错误code' + reader.error.code;
+  };
+
+  // default
+  reader.onprogress = function (event) {
+    if (event.lengthComputable) {
+      progress.innerHTML = `${event.loaded}/${event.total}`;
+    }
+  };
+
+  // default
+  reader.onload = function () {
+    let html = '';
+    switch (type) {
+      case 'image':
+        html = `<img src="${reader.result}">`;
+        break;
+      case 'text':
+        html = reader.result;
+        break;
+    }
+    output.innerHTML = html;
+  };
+});
+```
+
+如果想提前结束文件读取，则可以在过程中调用` abort()` 方法，从而触发 `abort` 事件。
+
+## FileReaderSync 类型
+
+顾名思义，FileReaderSync 类型就是 FileReader 的同步版本。这个类型拥有与 FileReader 相同的方法，只有在整个文件都加载到内存之后才会继续执行。FileReaderSync 只在工作线程中可用，因为如果读取整个文件耗时太长则会影响全局。
+
+假设通过 `postMessage()` 向工作线程发送了一个 File 对象。以下代码会让工作线程同步将文件读取到内存中，然后将文件的数据 URL 发回来:
+
+```js title="worker.js"
+self.onmessage = messageEvent => {
+  const syncReader = new FileReaderSync();
+  console.log(syncReader); // FileReaderSync {}
+
+  // 读取文件时阻塞工作线程
+  const result = syncReader.readAsDataUrl(messageEvent.data);
+
+  // PDF 文件的示例响应
+  console.log(result); // data:application/pdf;base64,JVBERi0xLjQK...
+
+  // 把URL发回去
+  self.postMessage(result);
+};
+```
+
+## Blob 与部分读取
+
+某些情况下，可能需要读取部分文件而不是整个文件。为此，File 对象提供了一个名为 `slice()` 的方法。`slice()` 方法接收两个参数:起始字节和要读取的字节数。这个方法返回一个 Blob 的实例，而 Blob 实际上是 File 的超类。
+
+blob 表示二进制大对象(binary larget object)，是 JavaScript 对不可修改二进制数据的封装类型。包含字符串的数组、ArrayBuffers、ArrayBufferViews，甚至其他 Blob 都可以用来创建 blob。Blob 构造函数可以接收一个 options 参数，并在其中指定 MIME 类型:
+
+```js
+console.log(new Blob(['foo']));
+// Blob {size: 3, type: ""}
+
+console.log(new Blob(['{"a": "b"}'], { type: 'application/json' }));
+// {size: 10, type: "application/json"}
+
+console.log(new Blob(['<p>Foo</p>', '<p>Bar</p>'], { type: 'text/html' }));
+// {size: 20, type: "text/html"}
+```
+
+Blob 对象有一个 `size` 属性和一个 `type` 属性，还有一个 `slice()` 方法用于进一步切分数据。另外也可以使用 FileReader 从 Blob 中读取数据。
+
+```html title="读取文件的前 32 字节"
+<input type="file" id="fileInput" />
+<pre id="output"></pre>
+
+<script>
+  document
+    .getElementById('fileInput')
+    .addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        // 使用 slice 方法获取前 32 字节
+        // default
+        const blob = file.slice(0, 32);
+
+        // 使用 FileReader 读取 blob
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const result = e.target.result;
+          // 将结果显示在页面上
+          document.getElementById('output').textContent = result;
+        };
+
+        reader.onerror = function () {
+          console.error('File could not be read! Code ' + reader.error.code);
+        };
+
+        // 读取 Blob 中的数据为文本
+        // default
+        reader.readAsText(blob);
+      }
+    });
+</script>
+```
+
+只读取部分文件可以节省时间，特别是在只需要数据特定部分比如文件头的时候。
+
+## 对象 URL 与 Blob
+
+对象 URL 有时候也称作 Blob URL，是指引用存储在 File 或 Blob 中数据的 URL。对象 URL 的优点是不用把文件内容读取到 JavaScript 也可以使用文件。只要在适当位置提供对象 URL 即可。要创建对象 URL，可以使用 `URL.createObjectURL()` 方法并传入 File 或 Blob 对象。这个函数返回的值是一个指向内存中地址的字符串。因为这个字符串是 URL，所以可以在 DOM 中直接使用。
+
+```html title="使用对象 URL 在页面中显示了一张图片"
+<input type="file" id="fileInput" accept="image/*" />
+<img id="image" style="display:none;" alt="Selected Image" />
+<script>
+  document
+    .getElementById('fileInput')
+    .addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        // 创建一个对象 URL
+        // default
+        const objectURL = URL.createObjectURL(file);
+
+        // 获取 img 元素并设置其 src 属性为对象 URL
+        const img = document.getElementById('image');
+        img.src = objectURL;
+        img.style.display = 'block'; // 显示图片
+
+        // 在文件被加载完后释放 URL 对象
+        img.onload = function () {
+          URL.revokeObjectURL(objectURL);
+        };
+      }
+    });
+</script>
+```
+
+使用 `img.onload` 事件监听器在图片加载完毕后调用 `URL.revokeObjectURL(objectURL)` 方法释放对象 URL，以避免内存泄漏。
+
+## 读取拖放文件
+
+组合使用 HTML5 拖放 API 与 File API 可以创建读取文件信息的有趣功能。在页面上创建放置目标后，可以从桌面上把文件拖动并放到放置目标。这样会像拖放图片或链接一样触发 `drop` 事件。被放置的文件可以通过事件的 `event.dataTransfer.files` 属性读到，这个属性保存着一组 File 对象，就像文本输入字段一样。
+
+```html
+<div id="dropZone">Drag files here</div>
+<div id="fileInfo"></div>
+<img id="image" alt="Dropped Image" style="display:none;" />
+```
+
+```css
+#dropZone {
+  width: 300px;
+  height: 200px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 200px;
+  font-size: 18px;
+  color: #999;
+  margin: 20px;
+}
+#dropZone.dragover {
+  border-color: #000;
+  color: #000;
+}
+img {
+  max-width: 100%;
+  margin-top: 20px;
+}
+```
+
+```js
+const dropZone = document.getElementById('dropZone');
+const fileInfo = document.getElementById('fileInfo');
+const image = document.getElementById('image');
+
+dropZone.addEventListener('dragenter', event => {
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('dragover', event => {
+  event.preventDefault();
+  dropZone.classList.add('dragover');
+});
+
+dropZone.addEventListener('drop', event => {
+  event.preventDefault();
+  dropZone.classList.remove('dragover');
+
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    const file = files[0];
+    displayFileInfo(file);
+    if (file.type.startsWith('image/')) {
+      displayImage(file);
+    }
+  }
+});
+
+function displayFileInfo(file) {
+  // 打印文件信息
+  fileInfo.textContent = `File name: ${file.name}\nFile size: ${file.size} bytes\nFile type: ${file.type}`;
+}
+
+function displayImage(file) {
+  const objectURL = URL.createObjectURL(file);
+  image.src = objectURL;
+  image.style.display = 'block';
+  // 释放内存
+  image.onload = () => {
+    URL.revokeObjectURL(objectURL);
+  };
+}
+```
+
+`dragenter` 事件在拖动元素进入放置目标时触发（只触发一次）。 `dragover` 事件在文件拖动到放置目标区域上方触发（持续触发）；`drop` 事件在文件被放置到放置目标区域时触发；
+
+必须取消 `dragenter`、`dragover` 和 `drop` 的默认行为。这样可以防止浏览器的默认行为（例如打开文件、导航等），从而允许自定义处理这些事件。
+
+在 `drop` 事件处理程序中，可以通过 `event.dataTransfer.files` 读到文件，此时可以获取文件的相关信息。
+
+:::warning
+`dragover` 事件必须使用，在拖动元素悬停在放置目标上时持续触发。需要调用 `event.preventDefault()` 以允许放置操作。
+:::

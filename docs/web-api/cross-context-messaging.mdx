@@ -1,0 +1,43 @@
+# 跨上下文消息
+
+跨文档消息，有时候也简称为 XDM(cross-document messaging)，是一种在不同执行上下文(如不同工作线程或不同源的页面)间传递信息的能力。例如，`www.example.com` 上的页面想要与包含在内嵌窗格中的 `p2p.example.com` 上面的页面通信。在 XDM 之前，要以安全方式实现这种通信需要很多工作。XDM 以安全易用的方式规范化了这个功能。
+
+跨上下文消息用于窗口之间通信或工作线程之间通信。本节主要介绍使用 `postMessage()` 与其他窗口通信 。关于工作线程之间通信、`MessageChannel` 和 `BroadcastChannel` 可以阅读[工作者线程](/worker-thread#工作者线程)。
+
+XDM 的核心是 `postMessage()` 方法。除了 XDM，这个方法名还在 HTML5 中很多地方用到过，但目的都一样，都是把数据传送到另一个位置。
+
+`postMessage()` 方法接收 3 个参数: 消息、表示目标接收源的字符串和可选的可传输对象的数组(只与工作线程相关)。第二个参数对于安全非常重要，其可以限制浏览器交付数据的目标。
+
+```js title="postMessage() 示例"
+// 第二参数可以保护信息不会因地址改变而泄露。如果不想限制接收目标，则可以给 postMessage()的第二个参数传"*"， 但不推荐这么做。
+let iframeWindow = document.getElementById('myframe').contentWindow;
+iframeWindow.postMessage('a secret message', 'http://www.example.com');
+```
+
+接收到 XDM 消息后，`window` 对象上会触发 `message` 事件。这个事件是异步触发的，因此从消息发出到接收到消息(接收窗口触发 `message` 事件)可能有延迟。传给 `onmessage` 事件处理程序的 event 对象包含以下 3 方面重要信息。
+
+- [ ] `data`: 作为第一个参数传递给 `postMessage()` 的字符串数据。
+- [ ] `origin`: 发送消息的文档源，例如 `http://www.example.com`。
+- [ ] `source`: 发送消息的文档中 `window` 对象的代理。
+
+`source` 代理对象主要用于在发送上一条消息的窗口中执行 `postMessage()` 方法。如果发送窗口有相同的源，那么这个对象应该就是 `window` 对象。
+
+```js title="message 事件示例"
+window.addEventListener('message', event => {
+  // 确保来自预期发送者
+  if (event.origin == 'http://www.example.com') {
+    // 对数据进行一些处理
+    processMessage(event.data);
+    // 可选:向来源窗口发送一条消息
+    event.source.postMessage('Received!', 'http://p2p.example.com');
+  }
+});
+```
+
+大多数情况下，`event.source` 是某个 `window` 对象的代理，而非实际的 `window` 对象。因此不能通过它访问所有窗口下的信息。最好只使用 `postMessage()`，这个方法永远存在而且可以调用。
+
+XDM 有一些怪异之处。首先，`postMessage()` 的第一个参数的最初实现始终是一个字符串。后来，第一个参数改为允许任何结构的数据传入，不过并非所有浏览器都实现了这个改变。为此，最好就是只通过 `postMessage()` 发送字符串。如果需要传递结构化数据，那么最好先对该数据调用 `JSON.stringify()`，通过 `postMessage()` 传过去之后，再在 `onmessage` 事件处理程序中调用 `JSON.parse()`。
+
+:::info 应用
+在通过内嵌窗格加载不同域时，使用 XDM 是非常方便的。这种方法在混搭(mashup)和社交应用中非常常用。通过使用 XDM 与内嵌窗格中的网页通信，可以保证包含页面的安全。XDM 也可以用于同源页面之间通信。
+:::

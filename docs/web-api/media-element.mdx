@@ -1,0 +1,202 @@
+# 媒体元素
+
+随着嵌入音频和视频元素在 Web 应用上的流行，HTML5 新增了两个与媒体相关的元素，即 `<audio>` 和 `<video>`，从而为浏览器提供了嵌入音频和视频的统一解决方案。
+
+这两个元素既支持 Web 开发者在页面中嵌入媒体文件，也支持 JavaScript 实现对媒体的自定义控制。以下是它们的用法:
+
+```html
+<!--嵌入视频-->
+<video src="test.mp4" id="myVideo">Video player not available.</video>
+<!--嵌入音频-->
+<audio src="song.mp3" id="myAudio">Audio player not available.</audio>
+```
+
+每个元素至少要求有一个 `src` 属性，以表示要加载的媒体文件。我们也可以指定表示视频播放器大小的 `width` 和 `height` 属性，以及在视频加载期间显示图片 URI 的 `poster` 属性。另外，`controls` 属性如果存在，则表示浏览器应该显示播放界面，让用户可以直接控制媒体。开始和结束标签之间的内容是在媒体播放器不可用时显示的替代内容。
+
+由于浏览器支持的媒体格式不同，因此可以指定多个不同的媒体源。为此，需要从元素中删除 `src` 属性，使用一个或多个 `<source>` 元素代替，如下面的例子所示:
+
+```html
+<!-- 嵌入视频 -->
+<video id="myVideo">
+  <source src="conference.webm" type="video/webm; codecs='vp8, vorbis'" />
+  <source src="conference.ogv" type="video/ogg; codecs='theora, vorbis'" />
+  <source src="conference.mpg" />
+  Video player not available.
+</video>
+<!-- 嵌入音频 -->
+<audio id="myAudio">
+  <source src="song.ogg" type="audio/ogg" />
+  <source src="song.mp3" type="audio/mpeg" />
+  Audio player not available.
+</audio>
+```
+
+## 属性
+
+`<video>` 和 `<audio>` 元素提供了稳健的 JavaScript 接口。这两个元素有很多共有属性，可以用于确定媒体的当前状态，如下表所示。
+
+| 属性                  | 性         | 数据类型                                                                             | 说明 |
+| --------------------- | ---------- | ------------------------------------------------------------------------------------ | ---- |
+| `autoplay`            | Boolean    | 获取或设置 autoplay 标签                                                             |
+| `buffered`            | TimeRanges | 对象，表示已下载缓冲的时间范围                                                       |
+| `bufferedBytes`       | ByteRanges | 对象，表示已下载缓冲的字节范围                                                       |
+| `bufferingRate`       | Integer    | 平均每秒下载的位数                                                                   |
+| `bufferingThrottled`  | Boolean    | 表示缓冲是否被浏览器截流                                                             |
+| `controls`            | Boolean    | 获取或设置 controls 属性，用于显示或隐藏浏览器内置控件                               |
+| `currentLoop`         | Integer    | 媒体已结束的循环次数                                                                 |
+| `currentSrc`          | String     | 当前播放媒体的 URL                                                                   |
+| `currentTime`         | Float      | 已经播放的秒数                                                                       |
+| `defaultPlaybackRate` | Float      | 获取或设置默认回放速率。默认值为 1.0                                                 |
+| `duration`            | Float      | 媒体的总秒数                                                                         |
+| `ended`               | Boolean    | 表示媒体是否播放完成                                                                 |
+| `loop`                | Boolean    | 获取或设置媒体是否应该在播放完后重新开始                                             |
+| `muted`               | Boolean    | 获取或设置媒体是否静音                                                               |
+| `networkState`        | Integer    | 表示媒体当前网络连接状态。0 表示没有，1 表示加载中，2 表示加载完成                   |
+| `paused`              | Boolean    | 表示播放是否暂停                                                                     |
+| `playbackRate`        | Float      | 获取或设置当前播放速率。与 defaultPlaybackRate 不同，该属性会保持不变                |
+| `played`              | TimeRanges | 到目前为止已经播放的时间范围                                                         |
+| `readyState`          | Integer    | 表示媒体是否已经准备就绪。0 表示不可用，1 表示可以显示当前帧，2 表示媒体可以开始播放 |
+| `seekable`            | TimeRanges | 可以跳转的时间范围                                                                   |
+| `seeking`             | Boolean    | 表示播放是否正在移动到媒体文件的新位置                                               |
+| `src`                 | String     | 媒体文件源。可以在任何时候更改                                                       |
+| `start`               | Float      | 获取或设置媒体文件中的位置，以秒为单位，从该处开始播放                               |
+| `totalBytes`          | Integer    | 资源需要的字节总数（如果是网络资源的话）                                             |
+| `videoHeight`         | Integer    | 返回视频（不一定是元素）的高度。只适用于 `<video>`                                   |
+| `videoWidth`          | Integer    | 返回视频（不一定是元素）的宽度。只适用于 `<video> `                                  |
+| `volume`              | Float      | 获取或设置当前音量，值为 0.0 到 1.0                                                  |
+
+## 事件
+
+除了有很多属性，媒体元素还有很多事件。这些事件会监控由于媒体回放或用户交互导致的不同属性的变化。下表列出了这些事件。
+
+| 事件                | 何时触发                                                         |
+| ------------------- | ---------------------------------------------------------------- |
+| dataunavailable     | 不能回放，因为没有数据，readyState 为 0                          |
+| durationchange      | duration 属性的值发生变化                                        |
+| emptied             | 网络连接关闭了                                                   |
+| empty               | 发生了错误，阻止媒体下载                                         |
+| ended               | 媒体已经播放完一遍，且停止了                                     |
+| error               | 下载期间发生了网络错误                                           |
+| load                | 所有媒体已经下载完毕。这个事件已被废弃，使用 canplaythrough 代替 |
+| loadeddata          | 媒体的第一帧已经下载                                             |
+| loadedmetadata      | 媒体的元数据已经下载                                             |
+| loadstart           | 下载已经开始                                                     |
+| pause               | 回放已经暂停                                                     |
+| play                | 媒体已经收到开始播放的请求                                       |
+| playing             | 媒体已经实际开始播放了                                           |
+| progress            | 下载中                                                           |
+| ratechange          | 媒体播放速率发生变化                                             |
+| seeked              | 跳转结束                                                         |
+| seeking             | 回放已移动到新位置                                               |
+| stalled             | 浏览器尝试下载，但尚未收到数据                                   |
+| timeupdate          | currentTime 被非常规或意外地更改了                               |
+| volumechange        | volume 或 muted 属性值发生了变化                                 |
+| waiting             | 回放暂停，以下载更多数据                                         |
+| abort               | 下载被中断                                                       |
+| canplay             | 回放可以开始，readyState 为 2                                    |
+| canplaythrough      | 回放可以继续，不应该中断，readyState 为 3                        |
+| canshowcurrentframe | 已经下载当前帧，readyState 为 1                                  |
+
+这些事件被设计得尽可能具体，以便 Web 开发者能够使用较少的 HTML 和 JavaScript 创建自定义的音频/视频播放器
+
+## 自定义媒体播放器
+
+使用 `<audio>` 和 `<video>` 的 `play()` 和 `pause()` 方法，可以手动控制媒体文件的播放。综合使用属性、事件和这些方法，可以方便地创建自定义的媒体播放器，如下面的例子所示:
+
+```html
+<div class="mediaplayer">
+  <div class="video">
+    <video
+      id="player"
+      src="movie.mov"
+      poster="mymovie.jpg"
+      width="300"
+      height="200"
+    >
+      Video player not available.
+    </video>
+  </div>
+  <div class="controls">
+    <input type="button" value="Play" id="video-btn" />
+    <span id="curtime">0</span>/<span id="duration">0</span>
+  </div>
+</div>
+```
+
+通过使用 JavaScript 创建一个简单的视频播放器，上面这个基本的 HTML 就可以被激活了，如下所示:
+
+```js
+// 取得元素的引用
+let player = document.getElementById('player'),
+  btn = document.getElementById('video-btn'),
+  curtime = document.getElementById('curtime'),
+  duration = document.getElementById('duration');
+
+// 更新时长
+duration.innerHTML = player.duration;
+
+// 为按钮添加事件处理程序
+btn.addEventListener('click', event => {
+  if (player.paused) {
+    player.play();
+    btn.value = 'Pause';
+  } else {
+    player.pause();
+    btn.value = 'Play';
+  }
+});
+
+// 周期性更新当前时间
+setInterval(() => {
+  curtime.innerHTML = player.currentTime;
+}, 250);
+```
+
+这里的 JavaScript 代码简单地为按钮添加了事件处理程序，可以根据当前状态播放和暂停视频。此外，还给 `<video>` 元素的 `load` 事件添加了事件处理程序，以便显示视频的时长。最后，重复的计时器用于更新当前时间。通过监听更多事件以及使用更多属性，可以进一步扩展这个自定义的视频播放器。 同样的代码也可以用于 `<audio>` 元素以创建自定义的音频播放器。
+
+## 检测编解码器
+
+如前所述，并不是所有浏览器都支持 `<video>` 和 `<audio>` 的所有编解码器，这通常意味着必须提供多个媒体源。
+
+为此，也有 JavaScript API 可以用来检测浏览器是否支持给定格式和编解码器。这两个媒体元素都有一个名为 `canPlayType()` 的方法，该方法接收一个格式/编解码器字符串，返回一个字符串值: "probably"、"maybe"或""(空字符串)，其中空字符串就是假值，意味着可以在 if 语句中像这样使用 `canPlayType()`:
+
+```js
+if (audio.canPlayType('audio/mpeg')) {
+  // 执行某些操作
+}
+```
+
+"probably"和"maybe"都是真值，在 if 语句的上下文中可以转型为 true。
+
+在只给 `canPlayType()` 提供一个 MIME 类型的情况下，最可能返回的值是"maybe"和空字符串。 这是因为文件实际上只是一个包装音频和视频数据的容器，而真正决定文件是否可以播放的是编码。在同时提供 MIME 类型和编解码器的情况下，返回值的可能性会提高到"probably"。
+
+```js
+let audio = document.getElementById('audio-player');
+
+// 很可能是"maybe"
+if (audio.canPlayType('audio/mpeg')) {
+  // 执行某些操作
+}
+
+// 可能是"probably"
+if (audio.canPlayType('audio/ogg; codecs="vorbis"')) {
+  // 执行某些操作
+}
+```
+
+注意，编解码器必须放到引号中。同样，也可以在视频元素上使用 `canPlayType()` 检测视频格式。
+
+## 音频类型
+
+`<audio>` 元素还有一个名为 Audio 的原生 JavaScript 构造函数，支持在任何时候播放音频。Audio 类型与 Image 类似，都是 DOM 元素的对等体，只是不需插入文档即可工作。要通过 Audio 播放音频，只需创建一个新实例并传入音频源文件:
+
+```js
+let audio = new Audio('sound.mp3');
+EventUtil.addHandler(audio, 'canplaythrough', function (event) {
+  audio.play();
+});
+```
+
+创建 Audio 的新实例就会开始下载指定的文件。下载完毕后，可以调用 `play()` 来播放音频。
+
+在 iOS 中调用 `play()` 方法会弹出一个对话框，请求用户授权播放声音。为了连续播放，必须在 `onfinish` 事件处理程序中立即调用 `play()`。

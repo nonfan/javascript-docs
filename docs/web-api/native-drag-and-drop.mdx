@@ -1,0 +1,190 @@
+# 原生拖放
+
+IE4 最早在网页中为 JavaScript 引入了对拖放功能的支持。当时，网页中只有两种可以触发拖放的元素：图片和文本。拖动图片的方法很简单，只需要在图片上按住鼠标不放然后移动鼠标。而对于文本，必须先选中，然后再以同样的方式拖动。在 IE4 中，唯一有效的放置目标是文本框。
+
+IE5 扩展了拖放的能力，添加了新的事件，让网页中几乎一切都可以成为放置目标。IE5.5 又进一步，允许几乎一切都可以拖动（IE6 也支持这个功能）。HTML5 在 IE 的拖放实现基础上标准化了拖放功能。所有主流浏览器都根据 HTML5 规范实现了原生的拖放。
+
+关于拖放最有意思的地方可能是可以跨窗格、跨浏览器容器，有时候甚至可以跨应用程序拖动元素。浏览器对拖放的支持可以让我们实现这些功能。
+
+## 拖放事件
+
+拖放事件几乎可以让开发者控制拖放操作的方方面面。关键的部分是确定每个事件是在哪里触发的。有的事件在被拖放元素上触发，有的事件则在放置目标上触发。在某个元素被拖动时，会(按顺序) 触发以下事件:
+
+- `dragstart`
+- `drag`
+- `dragend`
+
+`dragstart` 事件在按住鼠标键并开始移动鼠标的那一刻触发。通常用于初始化拖动操作，如设置拖动数据和样式。`drag` 事件在拖动过程中持续触发，类似于 mousemove 事件。通常用于提供拖动过程中实时反馈。`dragend` 事件在拖动操作结束时触发，无论拖动是成功完成还是被取消。通常用于清理拖动操作的样式和状态。
+
+所有这 3 个事件的目标都是被拖动的元素。默认情况下，浏览器在拖动开始后不会改变被拖动元素的外观，因此是否改变外观由你来决定。不过，大多数浏览器此时会创建元素的一个半透明副本，始终跟随在光标下方。
+
+在把元素拖动到一个有效的放置目标上时，会依次触发以下事件:
+
+- [ ] `dragenter`
+- [ ] `dragover`
+- [ ] `dragleave` 或 `drop`
+
+只要一把元素拖动到放置目标上，`dragenter` 事件(类似于 mouseover 事件)就会触发。`dragenter` 事件触发之后，会立即触发 `dragover` 事件，并且元素在放置目标范围内被拖动期间此事件会持续触发。 当元素被拖动到放置目标之外，`dragover` 事件停止触发，`dragleave` 事件触发(类似于 mouseout 事件)。如果被拖动元素被放到了目标上，则会触发 `drop` 事件而不是 `dragleave` 事件。这些事件的目标是放置目标元素。
+
+## 自定义放置目标
+
+在把某个元素拖动到无效放置目标上时，会看到一个特殊光标(圆环中间一条斜杠)表示不能放下。 即使所有元素都支持放置目标事件，这些元素默认也是不允许放置的。如果把元素拖动到不允许放置的目标上，无论用户动作是什么都不会触发 `drop` 事件。不过，通过覆盖 `dragenter` 和 `dragover` 事件的默认行为，可以把任何元素转换为有效的放置目标。
+
+```js
+let droptarget = document.getElementById('droptarget');
+
+droptarget.addEventListener('dragenter', event => {
+  event.preventDefault();
+});
+
+droptarget.addEventListener('dragover', event => {
+  event.preventDefault();
+});
+```
+
+## dataTransfer 对象
+
+除非数据受影响，否则简单的拖放并没有实际意义。为实现拖动操作中的数据传输，在 event 对象上暴露了 `dataTransfer` 对象，用于从被拖动元素向放置目标传递字符串数据。
+
+`dataTransfer` 对象有四个标准方法：`getData()`、`setData()`、`clearData()` 和 `setDragImage()`；
+
+```js title="getData() 示例"
+// 作用：返回在给定格式中存储的数据。
+/**
+ *  @param format(字符串): 表示数据的格式，比如 text/plain、text/uri-list 等。
+ */
+let data = event.dataTransfer.getData('text/plain');
+console.log(data);
+```
+
+```js title="setData() 示例"
+// 作用：设置拖动操作中存储的数据。
+/**
+ * @param format(字符串): 数据的格式，比如 text/plain、text/uri-list 等
+ * @param data(字符串): 要设置的数据。
+ */
+event.dataTransfer.setData('text/plain', 'This is some text');
+```
+
+```js title="clearData() 示例"
+// 作用：删除指定格式的数据。如果不指定格式，则删除所有格式的数据。
+/**
+ * @param format(可选，字符串): 表示要删除的数据的格式
+ */
+event.dataTransfer.clearData('text/plain');
+// 或清除所有数据
+event.dataTransfer.clearData();
+```
+
+```js title="setDragImage() 示例"
+// 作用：设置拖动操作期间显示的图像。
+/**
+ * @param image(Element)：作为拖动图像的元素（例如 img 元素）。
+ * @param x(数字)：图像的 x 偏移。
+ * @param y(数字)：图像的 y 偏移。
+ */
+let img = document.createElement('img');
+img.src = 'path/to/image.png';
+event.dataTransfer.setDragImage(img, 10, 10);
+```
+
+这个例子展示了 DataTransfer 对象的 `getData()` 和 `setData()` 方法。
+
+```html title="HTML"
+<div id="div1" ondrop="drop(event)" ondragover="allowDrop(event)">
+  <span id="drag" draggable="true" ondragstart="drag(event)"
+    >drag me to the other box</span
+  >
+</div>
+<div id="div2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+```
+
+```css title="CSS"
+#div1,
+#div2 {
+  width: 100px;
+  height: 50px;
+  padding: 10px;
+  border: 1px solid #aaaaaa;
+}
+```
+
+```js title="JavaScript"
+function allowDrop(allowdropevent) {
+  allowdropevent.target.style.color = 'blue';
+  allowdropevent.preventDefault();
+}
+
+function drag(dragevent) {
+  dragevent.dataTransfer.setData('text', dragevent.target.id);
+  dragevent.target.style.color = 'green';
+}
+
+function drop(dropevent) {
+  dropevent.preventDefault();
+  // default
+  let data = dropevent.dataTransfer.getData('text');
+  dropevent.target.appendChild(document.getElementById(data));
+  document.getElementById('drag').style.color = 'black';
+}
+```
+
+```js title="传递不同数据类型"
+// 传递文本
+event.dataTransfer.setData('text/plain', 'some text');
+let text = event.dataTransfer.getData('text/plain');
+
+// 传递URL
+event.dataTransfer.setData('text/uri-list', 'http://www.example.com/');
+let url = event.dataTransfer.getData('text/uri-list');
+```
+
+dataTransfer 对象实际上可以包含每种 MIME 类型的一个值，也就是说可以同时保存文本和 URL，两者不会相互覆盖。存储在 dataTransfer 对象中的数据只能在放置事件中读取。如果没有在 `ondrop` 事件处理程序中取得这些数据，dataTransfer 对象就会被销毁，数据也会丢失。
+
+在从文本框拖动文本时，浏览器会调用 `setData()` 并将拖动的文本以 `text/plain` 格式存储起来。类似地，在拖动链接或图片时，浏览器会调用 `setData()` 并把 URL 存储起来。当数据被放置在目标上时， 可以使用 `getData()` 获取这些数据。当然，可以在 `dragstart` 事件中手动调用 `setData()` 存储自定义数据，以便将来使用。
+
+:::info 不同数据类型特殊对待
+作为文本的数据和作为 URL 的数据有一个区别。当把数据作为文本存储时，数据不会被特殊对待。而当把数据作为 URL 存储时，数据会被作为网页中的一个链接，意味着如果把它放到另一个浏览器窗口，浏览器会导航到该 URL。
+:::
+
+## dropEffect 与 effectAllowed
+
+dataTransfer 对象不仅可以用于实现简单的数据传输，还可以用于确定能够对被拖动元素和放置目标执行什么操作。为此，可以使用两个属性: `dropEffect` 与 `effectAllowed`。
+
+`dropEffect` 属性可以告诉浏览器允许哪种放置行为。这个属性有以下 4 种可能的值:
+
+- [ ] `none`: 被拖动元素不能放到这里。这是除文本框之外所有元素的默认值。
+- [ ] `move`: 被拖动元素应该移动到放置目标。
+- [ ] `copy`: 被拖动元素应该复制到放置目标。
+- [ ] `link`: 表示放置目标会导航到被拖动元素(仅在它是 URL 的情况下)。
+
+在把元素拖动到放置目标上时，上述每种值都会导致显示一种不同的光标。不过，是否导致光标示意的动作还要取决于开发者。换句话说，如果没有代码参与，则没有什么会自动移动、复制或链接。唯一不用考虑的就是光标自己会变。为了使用 `dropEffect` 属性，必须在放置目标的 `ondragenter` 事件处理程序中设置它。
+
+除非同时设置 `effectAllowed`，否则 `dropEffect` 属性也没有用。`effectAllowed` 属性表示对被拖动元素是否允许 `dropEffect`。这个属性有如下几个可能的值:
+
+- [ ] `uninitialized`: 没有给被拖动元素设置动作。
+- [ ] `none`: 被拖动元素上没有允许的操作。
+- [ ] `copy`: 只允许"copy"这种 dropEffect。
+- [ ] `link`: 只允许"link"这种 dropEffect。
+- [ ] `move`: 只允许"move"这种 dropEffect。
+- [ ] `copyLink`: 允许"copy"和"link"两种 dropEffect。
+- [ ] `copyMove`: 允许"copy"和"move"两种 dropEffect。
+- [ ] `linkMove`: 允许"link"和"move"两种 dropEffect。
+- [ ] `all`: 允许所有 dropEffect。
+
+必须在 `ondragstart` 事件处理程序中设置这个属性。
+
+假设我们想允许用户把文本从一个文本框拖动到一个元素。那么必须同时把 `dropEffect` 和 `effectAllowed` 属性设置为 `move`。因为元素上放置事件的默认行为是什么也不做，所以文本不会自动地移动自己。如果覆盖这个默认行为，文本就会自动从文本框中被移除。然后是否把文本插入元素就取决于你了。如果是把 `dropEffect` 和 `effectAllowed` 属性设置为 `copy`，那么文本框中的文本不会自动被移除。
+
+## 可拖动能力
+
+默认情况下，图片、链接和文本是可拖动的，这意味着无须额外代码用户便可以拖动它们。文本只有在被选中后才可以拖动，而图片和链接在任意时候都是可以拖动的。
+
+我们也可以让其他元素变得可以拖动。HTML5 在所有 HTML 元素上规定了一个 `draggable` 属性， 表示元素是否可以拖动。图片和链接的 `draggable` 属性自动被设置为 true，而其他所有元素此属性的默认值为 false。如果想让其他元素可拖动，或者不允许图片和链接被拖动，都可以设置这个属性。
+
+```html title="示例"
+<!-- 禁止拖动图片 -->
+<img src="smile.gif" draggable="false" alt="Smiley face" />
+<!-- 让元素可以拖动 -->
+<div draggable="true">Drap Me</div>
+```

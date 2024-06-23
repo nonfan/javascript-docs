@@ -1,0 +1,75 @@
+# Notifications API
+
+Notifications API 用于向用户显示通知。无论从哪个角度看，这里的通知都很类似 `alert()` 对话框: 都使用 JavaScript API 触发页面外部的浏览器行为，而且都允许页面处理用户与对话框或通知弹层的交互。不过，通知提供更灵活的自定义能力。
+
+Notifications API 在 Service Worker 中非常有用。渐进 Web 应用(PWA，Progressive Web Application) 通过触发通知可以在页面不活跃时向用户显示消息，看起来就像原生应用。
+
+## 通知权限
+
+Notifications API 有被滥用的可能，因此默认会开启两项安全措施:
+
+- 通知只能在运行在安全上下文的代码中被触发;
+- 通知必须按照每个源的原则明确得到用户允许。
+
+用户授权显示通知是通过浏览器内部的一个对话框完成的。除非用户没有明确给出允许或拒绝的答复，否则这个权限请求对每个域只会出现一次。浏览器会记住用户的选择，如果被拒绝则无法重来。
+
+页面可以使用全局对象 Notification 向用户请求通知权限。这个对象有一个 `requestPemission()` 方法，该方法返回一个期约，用户在授权对话框上执行操作后这个期约会解决。
+
+```js
+Notification.requestPermission().then(permission => {
+  console.log('User responded to permission request:', permission);
+});
+
+"granted"值意味着用户明确授权了显示通知的权限。除此之外的其他值意味着显示通知会静默失 败。如果用户拒绝授权，这个值就是"denied"。一旦拒绝，就无法通过编程方式挽回，因为不可能再 触发授权提示。
+```
+
+检查只读属性 Notification.permission 的值来查看你是否已经有权限。
+
+- `default` 用户还未被询问是否授权，所以通知不会被显示
+- `denied` 用户已经明确地拒绝了显示通知的权限。
+- `granted` 表示之前已经询问过用户，并且用户已经授予了显示通知的权限。
+
+## 显示和隐藏通知
+
+Notification 构造函数用于创建和显示通知。最简单的通知形式是只显示一个标题，这个标题内容可以作为第一个参数传给 Notification 构造函数。以下面这种方式调用 Notification，应该会立即显示通知:
+
+```js
+new Notification('Title text!');
+```
+
+可以通过 options 参数对通知进行自定义，包括设置通知的主体、图片和振动等:
+
+```js
+new Notification('Title text!', {
+  body: 'Body text!',
+  image: 'path/to/image.png',
+  vibrate: true,
+});
+```
+
+调用这个构造函数返回的 Notification 对象的 `close()` 方法可以关闭显示的通知。下面的例子展示了显示通知后 1000 毫秒再关闭它:
+
+```js
+const n = new Notification('I will close in 1000ms');
+setTimeout(() => n.close(), 1000);
+```
+
+## 通知生命周期回调
+
+通知并非只用于显示文本字符串，也可用于实现交互。Notifications API 提供了 4 个用于添加回调的生命周期方法:
+
+- [ ] `onshow` 在通知显示时触发;
+- [ ] `onclick` 在通知被点击时触发;
+- [ ] `onclose` 在通知消失或通过 `close()` 关闭时触发;
+- [ ] `onerror` 在发生错误阻止通知显示时触发。
+
+```js title="示例"
+const notification = new Notification('标题', {
+  body: '这是通知的内容',
+});
+
+notification.onshow = () => console.log('通知已显示！');
+notification.onclick = () => console.log('用户点击了通知！');
+notification.onclose = () => console.log('通知已关闭！');
+notification.onerror = () => console.log('通知发生了错误！');
+```

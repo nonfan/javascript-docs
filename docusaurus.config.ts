@@ -130,6 +130,11 @@ const config: Config = {
           block: { start: 'highlight-start', end: 'highlight-end' },
         },
         {
+          className: 'theme-code-block-highlighted-line',
+          line: 'default',
+          block: { start: 'default-start', end: 'default-end' },
+        },
+        {
           className: 'code-block-error-line',
           line: 'error',
           block: {
