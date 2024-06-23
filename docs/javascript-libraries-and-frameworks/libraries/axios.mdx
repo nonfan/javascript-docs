@@ -1,1 +1,303 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Axios
+
+首先需要知道：axios 不是一种新的技术。
+
+axios 是一个基于Promise 用于浏览器和 nodejs 的 HTTP 客户端，本质上也是对原生 XMLHttpRequest 的封装，只不过它是 Promise 的实现版本，符合最新的ES规范，有以下特点：
+
+- 从浏览器中创建 XMLHttpRequests
+- 从 node.js 创建 http 请求
+- 支持 Promise API
+- 拦截请求和响应
+- 转换请求数据和响应数据
+- 取消请求
+- 自动转换 JSON 数据
+- 客户端支持防御 XSRF
+
+## 安装
+
+<Tabs>
+  <TabItem value="NPM" default>
+    ```bash
+    npm install axios --save-dev
+    ```
+  </TabItem>
+
+  <TabItem value="CDN 引入">
+    ```html
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    ```
+  </TabItem>
+</Tabs>
+
+## 基本操作
+
+```javascript
+// 导入axios
+import axios from 'axios';
+
+axios({
+  url: 'http://139.198.169.201/json/index.json',
+  method: 'get',
+})
+  .then(res => {
+    console.log(res);
+  })
+  .catch(err => {
+    console.log('请求失败');
+  });
+
+// 默认是get接收
+// 直接确认接收类型
+axios.get();
+
+axios.post();
+```
+
+### axios请求方法
+
+- `axios(config)`
+- `axios.request(config)`
+- `axios.get(url[,config])`
+- `axios.post(url[,config])`
+- `axios.delete(url[,config])`
+- `axios.head(url[,config])`
+- `axios.put(url[,data[,config]])`
+- `axios.patch(url[,data[,config]])`
+
+### axios发生并发请求
+
+使用 `axios.all` 可以放入多个请求的数组 `axios.all([])` 返回结果是一个数组，使用 `axios.spread` 可将数组 [res1,res2] 展开为 res1，res2
+
+```javascript
+axios
+  .all([
+    axios({
+      url: 'http://123.207.32.32:8000/home/multidata',
+    }),
+    axios({
+      url: 'http://123.207.32.32:8000/home/data',
+      params: {
+        type: 'sell',
+        page: 5,
+      },
+    }),
+  ])
+  .then(res => {});
+```
+
+使用 `axios.spread` 展开写法
+
+```javascript
+Promise.resolve().then(
+  axios.spread((res1, res2) => {
+    console.log(res1);
+    console.log(res2);
+  }),
+);
+
+// 测试后跟数据解构效果一样
+Promise.resolve().then(([res1, res2]) => {
+  console.log(res1);
+  console.log(res2);
+});
+```
+
+## 全局配置
+
+在全局配置默认配置
+
+```javascript
+// 基础的请求路径
+axios.defaults.baseURL = 'http://123.207.32.32:8000';
+// 延时
+axios.defaults.timeout = 5000;
+axios.get({
+  url: '/home/data',
+  params: {
+    //参数
+    type: 'sell',
+    page: 5,
+  },
+});
+```
+
+## Axios 实例
+
+创建 axios 实例来应变不同的服务器请求数据
+
+```javascript
+const instance = axios.create({
+  baseURL: 'http://123.207.32.32:8000',
+  timeout: 5000,
+});
+instance({
+  url: '/home/multdata',
+}).then(res => {
+  console.log(res);
+});
+```
+
+## Axios 封装
+
+为了让代码更具时代性，不要直接在组件中引用，而是创建一个文件夹去引用文件`src/netWork/request.js`
+
+### 封装一
+
+```typescript
+import axios from 'axios';
+/***
+ *
+ * @param config 配置文件
+ * @param successCallback 成功回调函数
+ * @param failureCallback 失败回调函数
+ */
+export function request(config, successCallback, failureCallback) {
+  // 创建实例
+  const instance = axios.create({
+    baseURL: '/api',
+    timeout: 5000,
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+  });
+  // 发送真正的网络请求
+  instance(config)
+    .then(res => {
+      successCallback(res);
+    })
+    .catch(err => {
+      failureCallback(err);
+    });
+}
+```
+
+```typescript
+import { request } from '@/netWork/request';
+
+request(
+  { url: '/home' },
+  res => {},
+  err => {},
+);
+```
+
+### 封装二
+
+```typescript
+import axios from 'axios';
+
+export function request(config) {
+  // 创建实例
+  const instance = axios.create({
+    baseURL: '/api',
+    timeout: 5000,
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+  });
+
+  // 发送真正的网络请求
+  instance(config.baseConfig)
+    .then(res => {
+      config.success(res);
+    })
+    .catch(err => {
+      config.failure(err);
+    });
+}
+```
+
+```typescript
+import { request } from '@/netWork/request';
+
+request({
+  baseConfig: {
+    url: '/home/multidata',
+  },
+  success: function (res) {
+    console.log(res);
+  },
+  failure: function (err) {
+    console.log(err);
+  },
+});
+```
+
+### 封装三
+
+```javascript
+import axios from 'axios';
+
+export function request(config) {
+  // 创建实例
+  const instance = axios.create({
+    baseURL: '/api',
+    timeout: 5000,
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8',
+    },
+  });
+  // 发送真正的网络请求
+  // create本身返回的就是promise
+  return instance(config);
+}
+```
+
+```typescript
+import { request } from '@/netWork/request';
+
+request({
+  url: '/home',
+})
+  .then(res => {
+    console.log(res);
+  })
+  .catch(err => {
+    console.log(err);
+  });
+
+// 或使用 es8 异步 async await 方式
+
+async function fn() {
+  const res = await request({ url: '/home' });
+}
+```
+
+## Axios 拦截器的使用
+
+```javascript
+export function request(config) {
+  const instance = axios.create({
+    baseURL: 'http://123.207.32.32:8000',
+    timeout: 5000,
+  });
+
+  // axios拦截器 还可以全局拦截
+  instance.interceptors.request.use(
+    config => {
+      /*
+      发送请求拦截，会做一些权限类代码
+      给config添加Authorization字段信息
+      通过 return 返回新config
+    */
+      return config;
+    },
+    err => {
+      // 请求失败
+    },
+  );
+
+  // 全局响应拦截器
+  instance.interceptors.response.use(
+    config => {
+      return config;
+    },
+    err => {},
+  );
+
+  return instance(config);
+}
+```
