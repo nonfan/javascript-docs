@@ -91,7 +91,7 @@ const config: Config = {
           type: 'docSidebar',
           position: 'left',
           sidebarId: 'api',
-          label: 'API',
+          label: 'API参考',
         },
         {
           type: 'docSidebar',

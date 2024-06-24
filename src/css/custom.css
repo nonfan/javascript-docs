@@ -1,5 +1,4 @@
 :root {
-  /*暗黑模式*/
   --ifm-color-primary: #2e8555;
   --ifm-color-primary-dark: #29784c;
   --ifm-color-primary-darker: #277148;
@@ -57,15 +56,4 @@ em {
 /*LaTeX数学公式存在渲染错误：等待bug解决之前的小技巧*/
 .katex-html {
   display: none;
-}
-
-/*NProgress 库css*/
-#nprogress .bar {
-  background: var(--nprogress-bg) !important;
-  height: var(--nprogress-height) !important;
-}
-
-#nprogress .spinner-icon {
-  border-top-color: var(--nprogress-bg) !important;
-  border-left-color: var(--nprogress-bg) !important;
 }

@@ -1,5 +1,5 @@
 :root {
- --player-btn-bg: #eeeeee;
+ --player-btn-bg: #488359;
   --nprogress-height: 3px;
   --nprogress-bg: var(--ifm-color-primary);
 }
@@ -33,7 +33,7 @@
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-bottom: 12px solid #777777;
+  border-bottom: 12px solid #ffffff;
   transform: rotate(90deg);
 }
 
@@ -59,12 +59,3 @@
   border-bottom: 12px solid #fff;
 }
 
-#nprogress .bar {
-  background: var(--nprogress-bg) !important;
-  height: var(--nprogress-height) !important;
-}
-
-#nprogress .spinner-icon {
-  border-top-color: var(--nprogress-bg) !important;
-  border-left-color: var(--nprogress-bg) !important;
-}

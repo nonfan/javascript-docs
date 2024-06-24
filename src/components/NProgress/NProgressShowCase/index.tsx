@@ -1,5 +1,6 @@
 import NProgress from '@site/src/utils/nprogress';
 import styles from './index.module.css';
+import './index.css';
 
 NProgress.configure({ showSpinner: true });
 function NProgressShowCase(props: {
