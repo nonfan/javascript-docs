@@ -20,6 +20,7 @@ const siderbar: SidebarsConfig = {
       label: '库',
       items: [
         'javascript-libraries-and-frameworks/libraries/axios',
+        'javascript-libraries-and-frameworks/libraries/nprogress',
         'javascript-libraries-and-frameworks/libraries/lodash',
         'javascript-libraries-and-frameworks/libraries/moment',
       ],
