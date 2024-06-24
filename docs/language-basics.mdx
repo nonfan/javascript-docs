@@ -548,15 +548,15 @@ console.log(null === undefined); // false
 
 虽然布尔值只有两个，但所有其他 ECMAScript 类型的值都有相应布尔值的等价形式。要将一个其 他类型的值转换为布尔值，可以调用特定的 `Boolean()` 转型函数:
 
-| 数据类型  | 转换为true的值                  | 转换为false的值 |
-| --------- | ------------------------------- | --------------- |
-| Boolean   | `true`                          | `false`         |
-| String    | 非空字符串                      | ""(空字符串)    |
-| Number    | 非零数值（包括无穷值 Infinity） | 0, -0, NaN      |
-| Object    | 任意对象                        | null            |
-| Undefined | N/A(不存在)                     | undefined       |
+| 数据类型    | 转换为true的值                  | 转换为false的值 |
+| ----------- | ------------------------------- | --------------- |
+| `Boolean`   | `true`                          | `false`         |
+| `String`    | 非空字符串                      | ""(空字符串)    |
+| `Number`    | 非零数值（包括无穷值 Infinity） | 0, -0, NaN      |
+| `Object`    | 任意对象                        | null            |
+| `Undefined` | N/A(不存在)                     | undefined       |
 
-理解以上转换非常重要，因为像 if 等流控制语句会自动执行其他类型值到布尔值的转换。
+理解以上转换非常重要，因为像 `if` 等流控制语句会自动执行其他类型值到布尔值的转换。
 
 ### Number 类型
 
