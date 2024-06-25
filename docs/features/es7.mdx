@@ -1,3 +1,52 @@
 # ECAMScript 7
 
 ECMAScript 7（也称为 ES2016）是 JavaScript 标准的第七版，于 2016 年发布。ES7 引入了一些新特性和改进，旨在提高 JavaScript 的功能和开发效率。
+
+## Array.prototype.includes
+
+`Array.prototype.includes` 方法用于判断数组中是否包含某个元素，并返回布尔值。它解决了 `Array.prototype.indexOf` 方法在判断数组是否包含 NaN 时的一些问题。
+
+```js
+const array = [1, 2, 3, NaN];
+console.log(array.includes(2)); // true
+console.log(array.includes(NaN)); // true
+```
+
+## 指数运算符
+
+ES7 引入了指数运算符 `**`，用来进行幂运算。
+
+```js
+// 计算 (2 的 3 次方)
+console.log(2 ** 3); // 8
+```
+
+## Async 函数
+
+Async 函数（异步函数）是一个语法糖，简化了使用 Promise 处理异步操作的代码。它可以让异步代码看起来像同步代码，使得异步操作更加容易理解和维护。
+
+```js
+async function fetchData() {
+  const response = await fetch('https://api.example.com/data');
+  const data = await response.json();
+  return data;
+}
+
+fetchData().then(data => {
+  console.log(data);
+});
+```
+
+## SharedArrayBuffer 和 Atomics 对象
+
+`SharedArrayBuffer` 和 `Atomics` 对象是为了支持多线程编程而引入的。`SharedArrayBuffer` 允许多个线程共享同一块内存，而 `Atomics` 对象则提供了一组静态方法来操作 `SharedArrayBuffer` 中的原子操作。
+
+```js
+// 示例代码需要在支持 SharedArrayBuffer 的环境中运行
+const buffer = new SharedArrayBuffer(16);
+const intArray = new Int32Array(buffer);
+
+Atomics.store(intArray, 0, 42); // 将值 42 存储在第一个位置
+```
+
+这些是 ES7 引入的主要新特性和改进。虽然 ES7 相对于之前的版本变化较小，但这些特性都对 JavaScript 编程有着重要的影响和帮助，特别是在处理数组、异步操作和多线程编程方面提供了更多的选择和便利。
