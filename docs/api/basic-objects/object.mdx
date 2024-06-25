@@ -1,0 +1,41 @@
+import TabItem from '@theme/TabItem';
+import Tabs from '@theme/Tabs';
+import CodeBlock from '@theme/CodeBlock';
+import Create from './objectAPI/create';
+
+# Object
+
+## Object.create()
+
+> `Object.create()` 静态方法以一个现有对象作为原型，创建一个新对象。
+
+<Tabs>
+  <TabItem value="语法">
+
+    ```js
+    Object.create(proto);
+    Object.create(proto, propertiesObject);
+    ```
+    `proto`
+    > 新创建对象的原型对象。
+
+    <p className="optional">`propertiesObject`</p>
+
+    > 如果该参数被指定且不为 `undefined`，则该传入对象可枚举的自有属性将为新创建的对象添加具有对应属性名称的属性描述符。这些属性对应于 `Object.defineProperties()` 的第二个参数。
+
+    **返回值**
+
+    根据指定的原型对象和属性创建的新对象。
+
+    **异常**
+
+    如果 `proto` 既不是 null，也不是 Object，则抛出 TypeError。
+
+
+    通过 `Object.create()` 方法，可以利用原型链的特性来实现对象之间的继承关系，非常有用于面向对象的 JavaScript 编程。
+    </TabItem>
+
+  <TabItem value="示例">
+    <Create />
+  </TabItem>
+</Tabs>

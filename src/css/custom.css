@@ -10,6 +10,9 @@
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-code-block-success: #cff5cf;
   --ifm-pre-padding: 10px;
+  /* 自定义 */
+  --code-optional-border: #cdcdcd;
+  --code-optional-color: #4e4e4e;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
@@ -23,6 +26,9 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --ifm-code-block-success: rgba(51, 124, 51, 0.45);
+  /* 自定义 */
+  --code-optional-border: #858585;
+  --code-optional-color: #cdcdcd;
 }
 
 /*代码块警醒*/
@@ -56,4 +62,25 @@ em {
 /*LaTeX数学公式存在渲染错误：等待bug解决之前的小技巧*/
 .katex-html {
   display: none;
+}
+/*可选提示*/
+.optional {
+  position: relative;
+}
+.optional::after {
+  position: absolute;
+  content: "可选";
+  width: 25px;
+  height: 15px;
+  line-height: 15px;
+  text-align: center;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+  border: 1px solid var(--code-optional-border);
+  border-radius: 4rem;
+  font-size: 0.694rem;
+  padding: .125rem .375rem;
+  white-space: nowrap;
+  color: var(--code-optional-color);
 }
