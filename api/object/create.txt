@@ -1,0 +1,15 @@
+const car = {
+  make: 'Toyota',
+  model: 'Corolla',
+};
+
+const myCar = Object.create(car, {
+  year: {
+    value: 2020,
+    writable: true,
+    enumerable: true,
+  },
+});
+
+console.log(myCar.make); // 输出：'Toyota'
+console.log(myCar.year); // 输出：2020

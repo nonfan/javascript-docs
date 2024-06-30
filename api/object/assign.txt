@@ -1,0 +1,8 @@
+onst target = { a: 1, b: 2 };
+const source1 = { b: 4, c: 5 };
+const source2 = { c: 6, d: 7 };
+
+const returnedTarget = Object.assign(target, source1, source2);
+
+console.log(target); // { a: 1, b: 4, c: 6, d: 7 }
+console.log(returnedTarget === target); // true
