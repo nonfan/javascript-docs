@@ -1,21 +1,16 @@
 import TabItem from '@theme/TabItem';
 import Tabs from '@theme/Tabs';
-import CodeBlock from '@theme/CodeBlock';
-import Create from './objectAPI/create';
+import CodeDemo from '../../../src/components/CodeDemo';
 
 # Object
 
-## Object.create()
+## Object.create
 
-> `Object.create()` 静态方法以一个现有对象作为原型，创建一个新对象。
+`Object.create()` 静态方法以一个现有对象作为原型，创建一个新对象。
 
 <Tabs>
   <TabItem value="语法">
 
-    ```js
-    Object.create(proto);
-    Object.create(proto, propertiesObject);
-    ```
     `proto`
     > 新创建对象的原型对象。
 
@@ -29,13 +24,55 @@ import Create from './objectAPI/create';
 
     **异常**
 
-    如果 `proto` 既不是 null，也不是 Object，则抛出 TypeError。
+    如果 `proto` 既不是 `null`，也不是 Object，则抛出 TypeError。
 
-
+    ```js title="用法"
+    Object.create(proto);
+    Object.create(proto, propertiesObject);
+    ```
     通过 `Object.create()` 方法，可以利用原型链的特性来实现对象之间的继承关系，非常有用于面向对象的 JavaScript 编程。
-    </TabItem>
+
+  </TabItem>
 
   <TabItem value="示例">
-    <Create />
+    <CodeDemo filePath="/api/object/create.txt"/>
+    <CodeDemo filePath="/api/object/create2.txt" title="建立原型链的继承关系"/>
+  </TabItem>
+</Tabs>
+
+## Object.assign
+
+从一个或多个源对象复制所有可枚举的自有属性到目标对象，并返回目标对象。
+
+:::warning
+`Object.assign()` 执行的是浅拷贝，而不是深拷贝。如果源对象的属性是对象，则只会复制对象的引用。
+:::
+
+<Tabs>
+  <TabItem value="语法">
+
+    `target`
+
+    > 目标对象，将接收来自源对象的属性。
+
+    `sources`
+
+    > 一个或多个源对象，包含将被复制到目标对象的属性。
+
+
+    **返回值**
+
+    返回目标对象 `target`。
+
+
+    ```js title="用法"
+    Object.assign(target, source1, source2);
+    ```
+
+  </TabItem>
+
+  <TabItem value="示例">
+    <CodeDemo filePath="/api/object/assign.txt"/>
+    <CodeDemo filePath="/api/object/assign2.txt" title="克隆对象"/>
   </TabItem>
 </Tabs>
