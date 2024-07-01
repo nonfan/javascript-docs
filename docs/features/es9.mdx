@@ -1,1 +1,75 @@
 # ECAMScript 9
+
+ECMAScript 2018 (ES9) 引入了几项新功能和改进。以下是 ES9 的主要更新内容：
+
+## 异步迭代
+
+ES9 引入了异步迭代器和 `for-await-of` 循环。这使得在循环中处理异步操作更加容易，方便处理异步数据源。
+
+```js
+async function processData(stream) {
+  for await (const chunk of stream) {
+    console.log(chunk);
+  }
+}
+```
+
+## 剩余属性和展开属性
+
+ES9 为对象解构赋值添加了剩余属性，并为对象字面量添加了展开属性。
+
+```js
+const { a, b, ...rest } = { a: 1, b: 2, c: 3, d: 4 };
+console.log(rest); // { c: 3, d: 4 }
+
+const obj1 = { x: 1, y: 2 };
+const obj2 = { ...obj1, z: 3 };
+console.log(obj2); // { x: 1, y: 2, z: 3 }
+```
+
+## 正则表达式改进
+
+**命名捕获组**：使用命名捕获组可以更清晰地捕获匹配的子字符串。
+
+```js
+const re = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+const result = re.exec('2023-06-27');
+console.log(result.groups.year); // 2023
+```
+
+**正则表达式反向断言**：支持正向断言和反向断言。
+
+```js
+const re = /(?<=\$)\d+/;
+const result = re.exec('$123');
+console.log(result[0]); // 123
+```
+
+## Promise.finally
+
+ES9 为 Promise 对象添加了 `finally` 方法，无论 Promise 是成功还是失败，`finally` 方法都会执行。
+
+```js
+fetch('https://api.example.com/data')
+  .then(response => response.json())
+  .catch(error => console.error(error)) // TypeError: Failed to fetch
+  .finally(() => console.log('请求完成')); // 请求完成
+```
+
+## 模板字符串改进
+
+允许在模板字符串中使用转义序列。
+
+```js
+const str = `行尾的换行符会被移除：\u2028这是一个新行`;
+console.log(str);
+```
+
+`\u2028` 和 `\u2029` 在 Unicode 中分别表示行分隔符（Line Separator）和段落分隔符（Paragraph Separator）。它们在某些文本处理应用程序中有特定的意义，例如文本编辑器和一些文档处理系统会将它们解释为换行符或段落分隔符。然而，在大多数编程语言和环境中，包括 JavaScript 和 Node.js，这些字符通常被视为普通的 Unicode 字符，而不会自动导致换行。
+
+为了在模板字符串中实现换行，你可以使用实际的换行符 `\n` 或使用多行字符串的方式：
+
+```js
+const str = `这是第一行\n这是第二行`;
+console.log(str);
+```

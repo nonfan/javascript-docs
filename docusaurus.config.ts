@@ -128,7 +128,7 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
       defaultLanguage: 'javascript',
-      additionalLanguages: ['json'],
+      additionalLanguages: ['json', 'bash'],
       magicComments: [
         {
           className: 'theme-code-block-highlighted-line',

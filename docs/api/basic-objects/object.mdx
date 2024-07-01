@@ -76,3 +76,105 @@ import CodeDemo from '../../../src/components/CodeDemo';
     <CodeDemo filePath="/api/object/assign2.txt" title="克隆对象"/>
   </TabItem>
 </Tabs>
+
+## Object.keys
+
+`Object.keys()` 静态方法返回一个由给定对象自身的可枚举的字符串键*属性名组成的数组*。
+
+```js title="示例"
+const person = {
+  name: 'mofan',
+  age: '23',
+  address: 'China',
+};
+
+console.log(Object.keys(person)); // [ 'name', 'age', 'address' ]
+```
+
+## Object.values
+
+`Object.values()` 静态方法返回一个给定对象的自有可枚举字符串键属性值组成的数组。
+
+```js title="示例"
+const person = {
+  name: 'mofan',
+  age: '23',
+  address: 'China',
+};
+
+console.log(Object.values(person)); // [ 'mofan', '23', 'China' ]
+```
+
+## Object.entries
+
+`Object.entries()` 静态方法返回一个包含给定对象自有的可枚举字符串键属性的键值对的数值（二维数组）。
+
+```js title="示例"
+const person = {
+  name: 'mofan',
+  age: '23',
+  address: 'China',
+};
+
+console.log(Object.entries(person)); // [ [ 'name', 'mofan' ], [ 'age', '23' ], [ 'address', 'China' ] ]
+```
+
+## Object.freeze
+
+`Object.freeze()` 静态方法可以使一个对象被冻结。冻结对象可以防止扩展，并使现有的属性不可写入和不可配置。被冻结的对象不能再被更改：不能添加新的属性，不能移除现有的属性，不能更改它们的可枚举性、可配置性、可写性或值，对象的原型也不能被重新指定。`freeze()` 返回与传入的对象相同的对象。
+
+:::tip
+冻结一个对象是 JavaScript 提供的最高完整性级别保护措施。
+:::
+
+```js title="示例"
+const person = {
+  name: 'mofan',
+  age: '23',
+  address: 'China',
+};
+
+const freezePerson = Object.freeze(person);
+
+console.log(freezePerson === person); // true
+
+// 严格模式下抛出异常，非严格模式静默失败
+// error
+person.age = 30;
+```
+
+## Object.seal
+
+`Object.seal()` 静态方法密封一个对象。密封一个对象会阻止其扩展并且使得现有属性不可配置。密封对象有一组固定的属性：不能添加新属性、不能删除现有属性或更改其可枚举性和可配置性、不能重新分配其原型。_只要现有属性的值是可写的，它们仍然可以更改_。`seal()` 返回传入的同一对象。
+
+```js title="示例"
+const person = {
+  name: 'mofan',
+  age: '23',
+  address: 'China',
+};
+
+const sealPerson = Object.seal(person);
+
+console.log(sealPerson === person); // true
+
+// 非严格模式下静默失败，严格模式下抛出异常
+// error
+person.gender = '男';
+
+// 可修改属性
+// success-start
+person.name = 'coder_mofan';
+console.log(person); // { name: 'coder_mofan', age: '23', address: 'China' }
+// success-end
+```
+
+:::info `Object.freeze` 和 `Object.seal` 区别
+前者冻结对象，防止修改对象及其属性。已冻结的对象不可添加新属性，不可删除现有属性，也不可修改属性的值。后者密封对象，防止添加或删除属性，但可以修改现有属性。
+:::
+
+## Object.getOwnPropertyDescriptors
+
+## Object.getPrototypeOf
+
+## Object.defineProperty
