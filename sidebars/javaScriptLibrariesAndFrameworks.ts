@@ -11,6 +11,7 @@ const siderbar: SidebarsConfig = {
       },
       items: [
         'javascript-libraries-and-frameworks/frameworks/react',
+        'javascript-libraries-and-frameworks/frameworks/nextjs',
         'javascript-libraries-and-frameworks/frameworks/vue',
         'javascript-libraries-and-frameworks/frameworks/svelte',
       ],
