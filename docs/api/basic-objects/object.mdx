@@ -119,6 +119,20 @@ const person = {
 console.log(Object.entries(person)); // [ [ 'name', 'mofan' ], [ 'age', '23' ], [ 'address', 'China' ] ]
 ```
 
+## Object.fromEntries
+
+`Object.fromEntries()` 静态方法将键值对列表转换为一个对象。
+
+```js title="示例"
+const person = [
+  ['name', 'mofan'],
+  ['age', '23'],
+  ['address', 'China'],
+];
+
+console.log(Object.fromEntries(person)); // { name: 'mofan', age: '23', address: 'China' }
+```
+
 ## Object.freeze
 
 `Object.freeze()` 静态方法可以使一个对象被冻结。冻结对象可以防止扩展，并使现有的属性不可写入和不可配置。被冻结的对象不能再被更改：不能添加新的属性，不能移除现有的属性，不能更改它们的可枚举性、可配置性、可写性或值，对象的原型也不能被重新指定。`freeze()` 返回与传入的对象相同的对象。
@@ -173,8 +187,124 @@ console.log(person); // { name: 'coder_mofan', age: '23', address: 'China' }
 前者冻结对象，防止修改对象及其属性。已冻结的对象不可添加新属性，不可删除现有属性，也不可修改属性的值。后者密封对象，防止添加或删除属性，但可以修改现有属性。
 :::
 
+## Object.getOwnPropertyDescriptor
+
+`Object.getOwnPropertyDescriptor()` 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
+
+```js title="示例"
+const person = {
+  name: 'mofan',
+  age: '23',
+  address: 'China',
+};
+
+let descriptor = Object.getOwnPropertyDescriptor(person, 'name');
+
+console.log(descriptor.configurable); // true
+console.log(descriptor.value); // mofan
+
+descriptor.value = 'wohu';
+console.log(descriptor.value); // wohu
+
+// 不会影响原始属性的配置
+console.log(person.name); // mofan
+```
+
 ## Object.getOwnPropertyDescriptors
+
+`Object.getOwnPropertyDescriptors()` 静态方法返回给定对象的所有自有属性描述符。
+
+```js title="示例"
+const person = {
+  name: 'mofan',
+  age: '23',
+  address: 'China',
+};
+
+let descriptors = Object.getOwnPropertyDescriptors(person);
+
+console.log(descriptors);
+
+/**
+{
+  name: {
+    value: 'mofan',
+    writable: true,
+    enumerable: true,
+    configurable: true
+  },
+  age: { value: '23', writable: true, enumerable: true, configurable: true },
+  address: {
+    value: 'China',
+    writable: true,
+    enumerable: true,
+    configurable: true
+  }
+}
+ */
+```
 
 ## Object.getPrototypeOf
 
+`Object.getPrototypeOf()` 静态方法返回指定对象的原型（即内部 `[[Prototype]]` 属性的值）。它返回对象的原型对象，或者 `null` 如果该对象没有继承属性。
+
+```js title="示例"
+// 创建一个原型对象
+const proto = {
+  greet() {
+    return 'Hello!';
+  },
+};
+
+// 创建一个对象，设置其原型为 `proto`
+const obj = Object.create(proto);
+
+console.log(Object.getPrototypeOf(obj) === proto); // true
+
+// 验证继承性
+console.log(obj.greet()); // "Hello!"
+```
+
 ## Object.defineProperty
+
+`Object. ()` 静态方法会直接在一个对象上定义一个新属性，或修改其现有属性，并返回此对象。
+
+```js title="示例"
+const person = {};
+
+Object.defineProperty(person, 'name', {
+  value: 'mofan',
+  writable: false,
+  enumerable: true,
+});
+
+console.log(person); // { name: 'mofan' }
+```
+
+## Object.defineProperties()
+
+`Object.defineProperties()` 静态方法直接在一个对象上定义新的属性或修改现有属性，并返回该对象。相比较 `defineProperty` 可以配置多个属性。
+
+```js title="示例"
+const person = {};
+
+Object.defineProperties(person, {
+  name: {
+    value: 'mofan',
+    writable: false,
+    enumerable: true,
+  },
+  age: {
+    value: 23,
+    writable: true,
+    enumerable: true,
+  },
+  address: {
+    value: 'China',
+    writable: true,
+    enumerable: true,
+  },
+});
+
+console.log(person); // { name: 'mofan', age: 23, address: 'China' }
+```

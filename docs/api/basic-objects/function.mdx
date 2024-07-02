@@ -1,0 +1,41 @@
+import TabItem from '@theme/TabItem';
+import Tabs from '@theme/Tabs';
+import CodeDemo from '../../../src/components/CodeDemo';
+
+# Function
+
+## apply
+
+## call
+
+## bind
+
+## 属性
+
+_length_
+
+表示函数的形参个数（不包括剩余参数和默认参数）。
+
+```js
+function example(a, b) {}
+console.log(example.length); // 2
+```
+
+函数的 `length` 属性只计算从第一个参数到第一个默认参数或剩余参数之前的参数个数。对于那些在第一个默认参数或剩余参数之后定义的参数，它们不会包含在 `length` 属性的计数中。
+
+```js
+function example(a, b = 1, c) {}
+console.log(example.length); // 输出: 1
+```
+
+`name`
+
+表示函数的名称。如果是匿名函数，则返回空字符串。
+
+```js
+function example() {}
+console.log(example.name); // "example"
+
+const anon = function () {};
+console.log(anon.name); // ""
+```

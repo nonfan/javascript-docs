@@ -1,1 +1,59 @@
 # ECAMScript 10
+
+ES10（ECMAScript 2019）引入了一些新特性和改进。以下是ES10的主要新特性：
+
+## Function.prototype.toString 改进
+
+现在返回函数的精确字符，包括空格和注释。
+
+```js
+function person() {
+  // 函数逻辑
+}
+
+console.log(person.toString());
+
+/** 输出
+function person() {
+  // 函数逻辑
+}
+*/
+```
+
+## try...catch 中的可选 catch 绑定
+
+现在可以在 catch 语句中省略对错误对象的绑定。
+
+```js
+try {
+  // code
+} catch {
+  // handle error
+}
+```
+
+## 新增 API
+
+_Array.prototype.flat_
+
+用于将嵌套的数组“拉平”，即将多层嵌套的数组转换为一维数组。
+
+_Array.prototype.flatMap_
+
+首先对数组中的每个元素进行映射处理，然后将结果压缩成一个新数组。
+
+_String.prototype.trimStart_
+
+移除字符串开头的空白字符。
+
+_String.prototype.trimEnd_
+
+移除字符串结尾的空白字符。
+
+_[Object.fromEntries()](/api/basic-objects/object/#objectfromentries)_
+
+将一个键值对数组转换为对象。
+
+_Symbol.prototype.description_
+
+这个属性允许直接获取 Symbol 的描述。
