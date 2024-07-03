@@ -1,0 +1,33 @@
+# Boolean
+
+## Boolean.prototype.toString
+
+`toString()` 方法返回表示指定的布尔对象的字符串。
+
+```js title="示例"
+const flag1 = new Boolean(true);
+
+console.log(flag1.toString());
+// 输出: "true"
+
+const flag2 = new Boolean(1);
+
+console.log(flag2.toString());
+// 输出: "true"
+```
+
+## Boolean.prototype.valueOf
+
+`valueOf()` 方法返回一个 Boolean 对象的原始值。
+
+```js title="示例"
+const x = new Boolean();
+
+console.log(x.valueOf());
+// 输出: false
+
+const y = new Boolean('Mozilla');
+
+console.log(y.valueOf());
+// 输出: true
+```

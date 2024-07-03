@@ -6,7 +6,21 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: '基本对象',
-      items: ['api/basic-objects/object'],
+      items: [
+        'api/basic-objects/object',
+        'api/basic-objects/function',
+        'api/basic-objects/boolean',
+        'api/basic-objects/symbol',
+      ],
+    },
+    {
+      type: 'category',
+      label: '数值和日期对象',
+      items: [
+        'api/number-and-date-objects/number',
+        'api/number-and-date-objects/math',
+        'api/number-and-date-objects/date',
+      ],
     },
   ],
 };

@@ -4,11 +4,121 @@ import CodeDemo from '../../../src/components/CodeDemo';
 
 # Function
 
-## apply
+## Function.prototype.apply
 
-## call
+Function 实例的 `apply()` 方法会以给定的 `this` 值和作为数组（或类数组对象）提供的 `arguments` 调用该函数。
 
-## bind
+<Tabs>
+  <TabItem value="语法">
+
+    `thisArg`
+
+    > 调用 func 时提供的 `this` 值。如果函数不处于严格模式，则 `null` 和 `undefined` 会被替换为全局对象，原始值会被转换为对象。
+
+
+    <p className="optional">`argsArray`</p>
+
+    > 一个类数组对象，用于指定调用 func 时的参数，或者如果不需要向函数提供参数，则为 `null` 或 `undefined`。
+
+    ```js title="用法"
+    func.apply(thisArg);
+    func.apply(thisArg, argsArray);
+    ```
+
+  </TabItem>
+  <TabItem value="示例">
+    <CodeDemo filePath="/api/function/apply.txt"/>
+  </TabItem>
+</Tabs>
+
+## Function.prototype.bind
+
+Function 实例的 `bind()` 方法创建一个新函数，当调用该新函数时，它会调用原始函数并将其 this 关键字设置为给定的值，同时，还可以传入一系列指定的参数，这些参数会插入到调用新函数时传入的参数的前面。
+
+<Tabs>
+  <TabItem value="语法">
+
+    `thisArg`
+
+    > 调用 func 时提供的 `this` 值。如果函数不处于严格模式，则 `null` 和 `undefined` 会被替换为全局对象，原始值会被转换为对象。如果使用 `new` 运算符构造绑定函数，则忽略该值。
+
+    <p className="optional">`arg1, …, argN`</p>
+
+    > 在调用 func 时，插入到传入绑定函数的参数前的参数。
+
+    ```js title="用法"
+    func.bind(thisArg);
+    func.bind(thisArg, arg1);
+    func.bind(thisArg, arg1, arg2);
+    func.bind(thisArg, arg1, arg2, /* …, */ argN);
+    ```
+
+  </TabItem>
+  <TabItem value="示例">
+    <CodeDemo filePath="/api/function/bind.txt"/>
+
+    `bind()` 函数创建一个新的绑定函数。调用绑定函数通常会执行其所包装的函数，也称为目标函数。绑定函数将绑定时传入的参数（包括 `this` 的值和前几个参数）提前存储为其内部状态。而不是在实际调用时传入。通常情况下，你可以将下面视为等效：
+
+    ```js
+    const boundFn = fn.bind(thisArg, arg1, arg2);
+    const boundFn = (...restArgs) => fn.call(thisArg, arg1, arg2, ...restArgs);
+    ```
+
+    构建的绑定函数的调用效果视为等效（但就构建 boundFn 的过程而言，不是二者等效的）。
+
+  </TabItem>
+</Tabs>
+
+## Function.prototype.call
+
+Function 实例的 `call()` 方法会以给定的 `this` 值和逐个提供的参数调用该函数。
+
+<Tabs>
+  <TabItem value="语法">
+
+    `thisArg`
+
+    > 调用 func 时提供的 `this` 值。如果函数不处于严格模式，则 `null` 和 `undefined` 会被替换为全局对象，原始值会被转换为对象。
+
+
+    <p className="optional">`arg1, …, argN`</p>
+
+    > 函数的参数。
+
+    ```js title="用法"
+    func.call(thisArg);
+    func.call(thisArg, arg1);
+    func.call(thisArg, arg1, arg2);
+    func.call(thisArg, arg1, arg2, /* …, */ argN);
+    ```
+
+  </TabItem>
+  <TabItem value="示例">
+    <CodeDemo filePath="/api/function/call.txt" />
+  </TabItem>
+</Tabs>
+
+:::info
+这个函数几乎与 `apply()` 相同，只是函数的参数以列表的形式逐个传递给 `call()`，而在 `apply()` 中它们被组合在一个对象中，通常是一个数组——例如：`func.call(this, "eat", "bananas")` 与 `func.apply(this, ["eat", "bananas"])`。
+:::
+
+## Function.prototype.toString
+
+Function 实例的 `toString()` 方法返回一个表示该函数源码的字符串。
+
+```js title="示例"
+function sum(a, b) {
+  return a + b;
+}
+
+console.log(sum.toString());
+// Expected output: "function sum(a, b) {
+//                     return a + b;
+//                   }"
+
+console.log(Math.abs.toString());
+// Expected output: "function abs() { [native code] }"
+```
 
 ## 属性
 
@@ -28,7 +138,7 @@ function example(a, b = 1, c) {}
 console.log(example.length); // 输出: 1
 ```
 
-`name`
+_name_
 
 表示函数的名称。如果是匿名函数，则返回空字符串。
 
