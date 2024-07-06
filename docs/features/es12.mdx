@@ -1,1 +1,158 @@
 # ECAMScript 12
+
+ECMAScript 2021（也称为 ES12）是 JavaScript 的一个重要版本，引入了一些新的语言特性和改进。以下是 ECMAScript 2021 的主要内容：
+
+## 新增逻辑赋值运算符
+
+### 逻辑或赋值运算符 `||=`
+
+该运算符会在左侧操作数为 falsy 值（false、0、''、null、undefined、NaN）时进行赋值操作。
+
+```js title="语法"
+x ||= y;
+
+// 等价于
+x || (x = y);
+```
+
+```js title="示例"
+let a = 0;
+a ||= 1;
+console.log(a); // 输出: 1，因为 0 是 falsy 值
+
+let b = 2;
+b ||= 1;
+console.log(b); // 输出: 2，因为 2 是 truthy 值
+```
+
+### 逻辑与赋值运算符 `&&=`
+
+该运算符会在左侧操作数为 truthy 值时进行赋值操作。
+
+```js title="语法"
+x &&= y;
+
+// 等价于
+x && (x = y);
+```
+
+```js title="示例"
+let a = 2;
+a &&= 3;
+console.log(a); // 输出: 3，因为 2 是 truthy 值
+
+let b = 0;
+b &&= 3;
+console.log(b); // 输出: 0，因为 0 是 falsy 值
+```
+
+### 逻辑空赋值运算符 `??=`
+
+该运算符会在左侧操作数为 `null` 或 `undefined` 时进行赋值操作。
+
+```js title="语法"
+x ??= y;
+
+// 等价于
+x ?? (x = y);
+```
+
+```js title="示例"
+let a = null;
+a ??= 1;
+console.log(a); // 输出: 1，因为 a 是 null
+
+let b = undefined;
+b ??= 2;
+console.log(b); // 输出: 2，因为 b 是 undefined
+
+let c = 0;
+c ??= 3;
+console.log(c); // 输出: 0，因为 0 不是 null 或 undefined
+
+let d = false;
+d ??= 4;
+console.log(d); // 输出: false，因为 false 不是 null 或 undefined
+```
+
+## 数字分隔符
+
+数字分隔符允许在数字字面量中使用下划线 `_` 进行分隔，提高可读性。
+
+```js
+const largeNumber = 1_000_000_000;
+const creditCardNumber = 1234_5678_9012_3456;
+```
+
+## WeakRef 和 FinalizationRegistry
+
+`WeakRef`：允许创建对对象的弱引用，这样不会阻止对象被垃圾回收。
+
+```js
+let obj = { name: 'John' };
+let weakRef = new WeakRef(obj);
+obj = null; // `obj` 现在可以被垃圾回收
+```
+
+`FinalizationRegistry`：允许注册回调函数，在对象被垃圾回收时执行清理操作。
+
+```js
+const registry = new FinalizationRegistry(heldValue => {
+  console.log(`Cleaning up ${heldValue}`);
+});
+
+let obj = { name: 'John' };
+registry.register(obj, 'some resource');
+obj = null; // 当 `obj` 被垃圾回收时，回调函数会被调用
+```
+
+## Promise.any
+
+`Promise.any` 方法接受一个 Promise 数组，并返回最先解决（fulfilled）的 Promise 的值。如果所有 Promise 都拒绝（rejected），则返回一个 AggregateError。
+
+```js
+const promises = [
+  Promise.reject(new Error('Error 1')),
+  Promise.resolve('Success 1'),
+  Promise.reject(new Error('Error 2')),
+];
+
+Promise.any(promises)
+  .then(result => {
+    console.log(result); // 输出：Success 1
+  })
+  .catch(error => {
+    console.error(error); // 捕获 AggregateError
+  });
+```
+
+## 私有字段和方法
+
+ES2021 进一步增强了类的私有性支持，引入了私有字段和私有方法。私有字段和方法以 # 作为前缀，只能在类内部访问。
+
+```js
+class MyClass {
+  #privateField = 42;
+  #privateMethod() {
+    console.log(this.#privateField);
+  }
+
+  publicMethod() {
+    this.#privateMethod();
+  }
+}
+
+const instance = new MyClass();
+instance.publicMethod(); // 输出：42
+// instance.#privateMethod(); // 会抛出 SyntaxError
+```
+
+## 新增 API
+
+### [Object.hasOwn](/api/basic-objects/object#objecthasown)
+
+`hasOwn` 是一个新的静态方法，用于检查对象自身是否具有某个属性。
+
+### String.prototype.replaceAll
+
+`replaceAll` 方法用于替换字符串中所有匹配的子串。
