@@ -1,0 +1,10 @@
+class Example extends React.Component {
+  componentDidMount() {
+    // 组件挂载后执行的操作
+    console.log('Component mounted');
+  }
+
+  render() {
+    return <div>Hello, world!</div>;
+  }
+}

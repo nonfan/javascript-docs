@@ -1,0 +1,23 @@
+const [items, setItems] = useState(['Item 1', 'Item 2', 'Item 3']);
+
+// 在末尾插入新元素
+const appendItem = () => {
+  const newItem = `Item ${items.length + 1}`;
+  setItems([...items, newItem]);
+};
+
+// 在开头插入新元素
+const prependItem = () => {
+  const newItem = `Item ${items.length + 1}`;
+   setItems([newItem, ...items]);
+};
+
+// 在指定索引处插入新元素
+const insertItem = (index, newItem) => {
+  const updatedItems = [
+    ...items.slice(0, index),
+    newItem,
+    ...items.slice(index),
+  ];
+  setItems(updatedItems);
+};

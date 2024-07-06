@@ -1,0 +1,6 @@
+// default
+import Welcome from 'Welcome.js'
+
+export default function App() {
+  return <Welcome/>
+}

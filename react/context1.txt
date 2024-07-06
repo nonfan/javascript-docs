@@ -1,0 +1,6 @@
+import React from "react";
+
+// 创建一个 Context 对象
+const ThemeContext = React.createContext({});
+
+export default ThemeContext;

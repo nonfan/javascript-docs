@@ -1,0 +1,10 @@
+class Example extends React.Component {
+  componentWillUnmount() {
+    // 组件卸载前执行的操作
+    console.log('Component will unmount');
+  }
+
+  render() {
+    return <div>Hello, world!</div>;
+  }
+}

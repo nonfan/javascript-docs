@@ -1,0 +1,12 @@
+import React, { useContext } from "react";
+import ThemeContext from "./ThemeContext.js";
+
+function AnySonComponent() {
+  return (
+    <ThemeContext.Consumer>
+      {(value) => <h1>我的顶层父组件名字：{value.name}</h1>}
+    </ThemeContext.Consumer>
+  );
+}
+
+export default AnySonComponent;

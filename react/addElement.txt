@@ -1,0 +1,6 @@
+const [items, setItems] = useState(['Item 1', 'Item 2']);
+
+const addItem = () => {
+  const newItem = `Item ${items.length + 1}`;
+  setItems([...items, newItem]); // 使用展开运算符创建新数组，并添加新元素
+};
