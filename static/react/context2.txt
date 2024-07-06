@@ -1,0 +1,23 @@
+import React from "react";
+import ThemeContext from "./ThemeContext.js";
+import AnySonComponent from "./AnySonComponent.tsx";
+export default function App() {
+
+  return (
+    <>
+      <ThemeContext.Provider value={{
+        name: "mofan"
+      }}>
+        <A/>
+      </ThemeContext.Provider>
+    </>
+  );
+}
+
+function A() {
+  return <B/>
+}
+
+function B() {
+  return <AnySonComponent/>
+}

@@ -1,0 +1,10 @@
+class Example extends React.Component {
+  componentDidUpdate(prevProps, prevState) {
+    // 组件更新后执行的操作
+    console.log('Component updated');
+  }
+
+  render() {
+    return <div>Hello, world!</div>;
+  }
+}

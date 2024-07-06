@@ -1,0 +1,15 @@
+class MyComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleClick = this.handleClick.bind(this);
+  }
+
+  handleClick() {
+    // 在这里可以访问到 this 指向当前组件的实例
+    console.log(this.props);
+  }
+
+  render() {
+    return <button onClick={this.handleClick}>Click me</button>;
+  }
+}

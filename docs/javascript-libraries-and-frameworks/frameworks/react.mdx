@@ -181,6 +181,85 @@ const element = (
 );
 ```
 
+_只能返回一个根元素_
+
+如果想要在一个组件中包含多个元素，需要用一个父标签把它们包裹起来。
+
+```jsx
+const element = (
+  <div>
+    <h1>海蒂·拉玛的待办事项</h1>
+    <img
+      src="https://i.imgur.com/yXOvdOSs.jpg"
+      alt="Hedy Lamarr"
+      class="photo"
+    />
+  </div>
+);
+```
+
+如果你不想在标签中增加一个额外的 `<div>`，可以用 `<>` 和 `</>` 元素来代替：
+
+这个空标签被称作 Fragment。React Fragment 允许你将子元素分组，而不会在 HTML 结构中添加额外节点。
+
+**为什么多个 JSX 标签需要被一个父元素包裹？**
+
+> JSX 虽然看起来很像 HTML，但在底层其实被转化为了 JavaScript 对象，你不能在一个函数中返回多个对象，除非用一个数组把他们包装起来。这就是为什么多个 JSX 标签必须要用一个父元素或者 Fragment 来包裹。
+
+_标签必须闭合_
+
+JSX 要求标签必须正确闭合。像 `<img>` 这样的自闭合标签必须书写成 `<img />`，而像 `<li>oranges` 这样只有开始标签的元素必须带有闭合标签，需要改为 `<li>oranges</li>`。
+
+_使用驼峰式命名法给大部分属性命名_
+
+JSX 最终会被转化为 JavaScript，而 JSX 中的属性也会变成 JavaScript 对象中的键值对。在你自己的组件中，经常会遇到需要用变量的方式读取这些属性的时候。但 JavaScript 对变量的命名有限制。例如，变量名称不能包含 `-` 符号或者像 `class` 这样的保留字。
+
+这就是为什么在 React 中，大部分 HTML 和 SVG 属性都用驼峰式命名法表示。例如，需要用 `strokeWidth` 代替 `stroke-width`。由于 `class` 是一个保留字，所以在 React 中需要用 `className` 来代替。
+
+_使用 “双大括号”：JSX 中的 CSS 和 对象_
+
+除了字符串、数字和其它 JavaScript 表达式，你甚至可以在 JSX 中传递对象。对象也用大括号表示，例如 `{ name: "Hedy Lamarr", inventions: 5 }`。因此，为了能在 JSX 中传递，你必须用另一对额外的大括号包裹对象：`person={{ name: "Hedy Lamarr", inventions: 5 }}`。
+
+你可能在 JSX 的内联 CSS 样式中就已经见过这种写法了。React 不要求你使用内联样式（使用 CSS 类就能满足大部分情况）。但是当你需要内联样式的时候，你可以给 `style` 属性传递一个对象：
+
+```jsx
+export default function TodoList() {
+  return (
+    <ul
+      style={{
+        backgroundColor: 'black',
+        color: 'pink',
+      }}
+    >
+      <li>打篮球</li>
+      <li>看书</li>
+      <li>写代码</li>
+    </ul>
+  );
+}
+```
+
+```jsx title="拆解Style"
+export default function TodoList() {
+  // success-start
+  let style = {
+    backgroundColor: 'black',
+    color: 'pink',
+  };
+  // success-end
+
+  return (
+    <ul style={style}>
+      <li>打篮球</li>
+      <li>看书</li>
+      <li>写代码</li>
+    </ul>
+  );
+}
+```
+
+所以当你下次在 JSX 中看到 `{{` 和 `}}` 时，就知道它只不过是包在大括号里的一个对象罢了！
+
 ### JSX 与 HTML 的区别
 
 尽管 JSX 看起来非常像 HTML，但它们之间有一些重要的区别：
@@ -243,6 +322,8 @@ const element = <div>{/* 注释内容 */}</div>;
 
 组件是 React 的基本构建块。每个组件可以看作是一个独立的、可复用的 UI 单位。组件分为两类：类组件（Class Component）和函数组件（Function Component）。类组件使用 ES6 类来定义，包含状态和生命周期方法；函数组件则是简单的 JavaScript 函数，可以使用 [React Hooks](#hooks) 来管理状态和副作用。
 
+自从 React 16.8 引入了 Hooks 之后，函数组件变得更加强大和灵活，能够处理以前只有类组件才能处理的复杂状态逻辑和生命周期方法。
+
 <Tabs>
   <TabItem value="类组件">
     <CodeDemo filePath="/react/classComponent.txt" />
@@ -251,3 +332,1277 @@ const element = <div>{/* 注释内容 */}</div>;
     <CodeDemo filePath="/react/funcComponent.txt" />
   </TabItem>
 </Tabs>
+
+### 定义组件
+
+_第一步：导出组件_
+
+`export default` 前缀是一种 JavaScript 标准语法（非 React 的特性）。它允许你导出一个文件中的主要函数以便你以后可以从其他文件引入它。
+
+_第二步：定义函数_
+
+使用 `function Welcome() { }` 定义名为 Profile 的 JavaScript 函数。
+
+:::warning
+React 组件是常规的 JavaScript 函数，但组件的名称必须以大写字母开头，否则它们将无法运行！
+:::
+
+_第三步：添加标签_
+
+```jsx
+return <div>Hello World!</div>;
+```
+
+返回语句可以全写在一行上，但是，如果你的标签和 `return` 关键字不在同一行，则必须把它包裹在一对括号中，如下所示：
+
+```jsx
+return (
+  <div>
+    <h1>Hello World!</h1>
+  </div>
+);
+```
+
+:::warning
+没有括号包裹的话，任何在 `return` 下一行的代码都将被忽略！
+:::
+
+### 嵌套和组合组件
+
+无论类组件还是函数组件都可以嵌套和组合，以创建更复杂的 UI。以函数组件为例：
+
+```jsx
+function App() {
+  return (
+    <div>
+      <Header />
+      <Main />
+      <Footer />
+    </div>
+  );
+}
+
+function Header() {
+  return <h1>Header</h1>;
+}
+
+function Main() {
+  return (
+    <div>
+      <Sidebar />
+      <Content />
+    </div>
+  );
+}
+
+function Sidebar() {
+  return <div>Sidebar</div>;
+}
+
+function Content() {
+  return <div>Content</div>;
+}
+
+function Footer() {
+  return <h1>Footer</h1>;
+}
+```
+
+:::warning
+组件可以渲染其他组件，但是请不要嵌套他们的定义：
+
+```jsx
+function App() {
+  // 永远不要在组件中定义组件
+  // error-start
+  function Header() {
+    return <h1>Header</h1>;
+  }
+  // error-end
+  return (
+    <div>
+      <Header />
+    </div>
+  );
+}
+```
+
+:::
+
+### 组件的导入导出
+
+这是 JavaScript 里两个主要用来导出值的方式：**默认导出**和**具名导出**。到目前为止，我们的示例中只用到了默认导出。但你可以在一个文件中，选择使用其中一种，或者两种都使用。一个文件里有且仅有一个默认导出，但是可以有任意多个具名导出。
+
+<Tabs>
+  <TabItem value="默认导出">
+    <CodeDemo filePath="/react/exportDefault.txt" />
+  </TabItem>
+  <TabItem value="具名导出">
+    <CodeDemo filePath="/react/export.txt" />
+  </TabItem>
+</Tabs>
+
+<Tabs>
+  <TabItem value="默认导入">
+    <CodeDemo filePath="/react/importExportDefault.txt" />
+  </TabItem>
+  <TabItem value="具名导入">
+    <CodeDemo filePath="/react/importExport.txt" />
+  </TabItem>
+</Tabs>
+
+### 组件的 props
+
+`props`（属性）是 React 组件的输入参数，用于传递数据和事件处理函数。`props` 是从父组件传递给子组件的，因此子组件不能修改 `props`，它们是只读的。
+
+#### 如何使用 props？
+
+1. 传递 props
+
+父组件可以通过 JSX 属性语法传递 `props` 给子组件。
+
+```js title="传递 props 示例"
+import Profile from './Profile.jsx';
+
+function App() {
+  return <Profile name="MoFan" age="18" address="China" />;
+}
+```
+
+2. 访问 props
+
+子组件可以通过函数参数（对于函数组件）或 `this.props`（对于类组件）访问 `props`。
+
+```js
+function Profile(props) {
+  return (
+    <h1>
+      我是 {props.name}， 今年 {props.age}, 居住在 {props.address}
+    </h1>
+  );
+}
+
+export default Profile;
+```
+
+通常你不需要整个 props 对象，所以可以将它解构为单独的 props。
+
+```js title="解构 props"
+function Profile({ name, age, address }) {
+  return (
+    <h1>
+      我是 {name}， 今年 {age}, 居住在 {address}
+    </h1>
+  );
+}
+
+export default Profile;
+```
+
+如果你想在没有指定值的情况下给 `prop` 一个默认值，你可以通过在参数后面写 `=` 和默认值来进行解构：
+
+```js
+// default
+function Profile({ name, age = 20, address }) {
+  return (
+    <h1>
+      我是 {name}， 今年 {age}, 居住在 {address}
+    </h1>
+  );
+}
+
+export default Profile;
+```
+
+如果子组件 Profile 仍需要传递 props 给下一个子组件 Avatar，如下：
+
+```jsx title="Profile.jsx"
+import Avatar from './Avatar.jsx';
+
+function Profile({ name, age, address }) {
+  return (
+    <div className="card">
+      //error-start
+      {/*不推荐写法*/}
+      <Avatar name="MoFan" age="18" address="China" />
+      // error-end
+    </div>
+  );
+}
+```
+
+重复代码没有错（它可以更清晰）。但有时你可能会重视简洁。一些组件将它们所有的 props 转发给子组件，正如 Profile 转给 Avatar 那样。因为这些组件不直接使用他们本身的任何 props，所以使用更简洁的“展开”语法是有意义的：
+
+```jsx title="Profile.jsx"
+import Avatar from './Avatar.jsx';
+
+function Profile(props) {
+  return (
+    <div className="card">
+      //success-start
+      {/*推荐写法*/}
+      <Avatar {...props} />
+      // success-end
+    </div>
+  );
+}
+```
+
+#### props 的类型
+
+`props` 可以是任意类型的数据，包括字符串、数字、数组、对象、函数等。
+
+```js
+function App() {
+  const user = {
+    name: 'MoFan',
+    age: 25,
+  };
+
+  return <Greeting user={user} />;
+}
+
+function Greeting(props) {
+  return (
+    <div>
+      <h1>Hello, {props.user.name}</h1>
+      <p>Age: {props.user.age}</p>
+    </div>
+  );
+}
+```
+
+#### props 验证
+
+可以使用 `prop-types` 库对 `props` 进行类型检查，确保传递的 `props` 符合预期。
+
+```bash npm2yarn
+npm i prop-types
+```
+
+```js title="用法"
+import PropTypes from 'prop-types';
+
+function Greeting(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+
+Greeting.propTypes = {
+  name: PropTypes.string,
+};
+```
+
+#### 传递子组件（Children）
+
+React 有一个特殊的 `props`，称为 `children`，用来传递嵌套在组件中的子元素。
+
+```jsx
+function Wrapper(props) {
+  return <div className="wrapper">{props.children}</div>;
+}
+
+function App() {
+  return (
+    <Wrapper>
+      <h1>Hello, world!</h1>
+    </Wrapper>
+  );
+}
+```
+
+在上述示例中，`<h1>` 标签作为 Wrapper 组件的子元素，通过 `props.children` 传递给 Wrapper 组件。
+
+#### 子组件传递 props 到父组件
+
+子传父的原理也是 props，只是变换思维，父组件向子组件传递函数，子组件调用函数，传递参数给父组件。
+
+```jsx title="FatherComponent.jsx"
+// useState 是一个 hook 用于保存状态的，后续会有所讲解
+import { useState } from 'react';
+import SonComponent from './SonComponent.jsx';
+
+function FatherComponent() {
+  const [user, setUser] = useState(null);
+
+  function getUser(user) {
+    console.log(user);
+    setUser(user);
+  }
+
+  return (
+    <div>
+      <h1>父组件: {JSON.stringify(user)}</h1>
+      <SonComponent getUser={getUser} />
+    </div>
+  );
+}
+
+export default FatherComponent;
+```
+
+```jsx title="SonComponents.jsx"
+import React from 'react';
+
+function SonComponent(props) {
+  function transferDataForFather() {
+    props.getUser({
+      name: '用户名',
+      age: '18',
+      address: 'China',
+    });
+  }
+
+  return (
+    <button onClick={transferDataForFather}>
+      子组件: 点击传递数据给父组件
+    </button>
+  );
+}
+
+export default SonComponent;
+```
+
+### 组件的状态（state）
+
+在 React 中，组件的状态（state）是组件内部的数据源，它是一个能够改变组件外观和行为的对象。状态与 `props` 的不同之处在于，`props` 是由父组件传递的是只读的；而状态是由组件自身管理的，可以通过特定的方法进行更新。状态主要用于需要动态更新或变化的数据。
+
+`useState` Hook 提供了这两个功能：
+
+- State 变量 用于保存渲染间的数据。
+- State setter 函数 更新变量并触发 React 再次渲染组件。
+
+```jsx title="示例"
+import { useState } from 'react';
+
+function App() {
+  // default
+  let [count, setCount] = useState(0);
+
+  function handleAdd() {
+    setCount(++count);
+  }
+
+  return (
+    <div>
+      <h1>计算 {count}</h1>
+      <button onClick={handleAdd}>+</button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+:::info
+这里的 `[` 和 `]` 语法称为数组解构，它允许你从数组中读取值。 `useState` 返回的数组总是正好有两项。
+:::
+
+#### 剖析 useState
+
+当你调用 `useState` 时，你是在告诉 React 你想让这个组件记住一些东西：
+
+```jsx
+let [count, setCount] = useState(0);
+```
+
+:::tip 最佳实践
+惯例是将这对返回值命名为 `const [thing, setThing]`。你也可以将其命名为任何你喜欢的名称，但遵照约定俗成能使跨项目合作更易理解。
+:::
+
+#### 赋予一个组件多个 state 变量
+
+<Tabs>
+  <TabItem value="示例">
+
+    ```js
+    const [index, setIndex] = useState(0);
+    const [showMore, setShowMore] = useState(false);
+    ```
+
+  </TabItem>
+  
+  <TabItem value="React 如何知道返回哪个 state">
+
+    你可能已经注意到，`useState` 在调用时没有任何关于它引用的是哪个 `state` 变量的信息。没有传递给 `useState` 的“标识符”，它是如何知道要返回哪个 `state` 变量呢？它是否依赖于解析函数之类的魔法？答案是否定的。
+
+    相反，为了使语法更简洁，在同一组件的每次渲染中，Hooks 都依托于一个稳定的调用顺序。这在实践中很有效，因为如果你遵循上面的规则（“只在顶层调用 Hooks”），Hooks 将始终以相同的顺序被调用。此外，[linter](https://www.npmjs.com/package/eslint-plugin-react-hooks) 插件也可以捕获大多数错误。
+
+    在 React 内部，为每个组件保存了一个数组，其中每一项都是一个 `state` 对。它维护当前 `state` 对的索引值，在渲染之前将其设置为 “0”。每次调用 `useState` 时，React 都会为你提供一个 state 对并增加索引值。你可以在文章 [React Hooks: not magic, just arrays](https://medium.com/@ryardley/react-hooks-not-magic-just-arrays-cd4f1857236e) 中阅读有关此机制的更多信息。
+
+    <CodeDemo filePath="/react/stateExample.txt" title="index.js"/>
+    <CodeDemo filePath="/react/stateExampleHtml.txt" title="index.html"/>
+
+  </TabItem>
+</Tabs>
+
+#### State 是隔离且私有的
+
+State 是屏幕上组件实例内部的状态。换句话说，如果你渲染同一个组件两次，每个副本都会有完全隔离的 `state`！改变其中一个不会影响另一个。
+
+试着点击每个计算按钮。你会注意到它们的 `state` 是相互独立的
+
+```jsx title="示例"
+import { useState } from 'react';
+
+function Count() {
+  let [count, setCount] = useState(0);
+  function handleAdd() {
+    setCount(++count);
+  }
+
+  return (
+    <div>
+      <h1>计算 {count}</h1>
+      <button onClick={handleAdd}>+</button>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div>
+      <Count />
+      <Count />
+    </div>
+  );
+}
+
+export default App;
+```
+
+#### 更新 state 中的对象
+
+`state` 中可以保存任意类型的 JavaScript 值，包括对象。但是，你不应该直接修改存放在 React state 中的对象。相反，当你想要更新一个对象时，你需要创建一个新的对象（或者将其拷贝一份），然后将 `state` 更新为此对象。
+
+##### 什么是 mutation？
+
+mutation 指的是对数据进行直接修改或改变, 当你直接修改 state 对象时，就制造了一个 mutation：
+
+```js
+const [position, setPosition] = useState({ x: 0, y: 0 });
+position.x = 5;
+```
+
+然而，虽然严格来说 React state 中存放的对象是可变的，但你应该像处理数字、布尔值、字符串一样将它们视为不可变的。因此你应该替换它们的值，而不是对它们进行修改。
+
+##### 将 state 视为只读的
+
+换句话说，你应该把所有存放在 state 中的 JavaScript 对象都视为只读的。
+
+通过使用 setPosition，你在告诉 React：使用这个新的对象替换 position 的值,使用这个新的对象替换 position 的值。
+
+```js
+setPosition({
+  x: e.clientX,
+  y: e.clientY,
+});
+```
+
+#### 更新 state 中的数组
+
+数组是另外一种可以存储在 `state` 中的 JavaScript 对象，它虽然是可变的，但是却应该被视为不可变。同对象一样，当你想要更新存储于 `state` 中的数组时，你需要创建一个新的数组（或者创建一份已有数组的拷贝值），并使用新数组设置 `state`。
+
+##### 在没有 mutation 的前提下更新数组
+
+在 JavaScript 中，数组只是另一种对象。同对象一样，你需要将 React state 中的数组视为只读的。这意味着你不应该使用类似于 `arr[0] = 'bird'` 这样的方式来重新分配数组中的元素，也不应该使用会直接修改原始数组的方法，例如 `push()` 和 `pop()`。
+
+相反，每次要更新一个数组时，你需要把一个新的数组传入 `state` 的 `setting` 方法中。为此，你可以通过使用像 `filter()` 和 `map()` 这样不会直接修改原始值的方法，从原始数组生成一个新的数组。然后你就可以将 state 设置为这个新生成的数组。
+
+下面是常见数组操作的参考表。当你操作 React state 中的数组时，你需要避免使用左列的方法，而首选右列的方法：
+
+|          | 避免使用 (会改变原始数组)      | 推荐使用 (会返回一个新数组）  |
+| -------- | ------------------------------ | ----------------------------- |
+| 添加元素 | `push`，`unshift`              | `concat`，`[...arr]` 展开语法 |
+| 删除元素 | `pop`，`shift`，`splice`       | `filter`，`slice`             |
+| 替换元素 | `splice`，`arr[i] = ... ` 赋值 | `map`                         |
+| 排序     | `reverse`，`sort`              | 先将数组复制一份              |
+
+<Tabs>
+  <TabItem value="添加元素">
+    <CodeDemo filePath="/react/addElement.txt" />
+  </TabItem>
+  <TabItem value="删除元素">
+    <CodeDemo filePath="/react/deleteElement.txt" />
+  </TabItem>
+  <TabItem value="替换元素">
+    <CodeDemo filePath="/react/replaceElement.txt" />
+  </TabItem>
+  <TabItem value="插入元素">
+    <CodeDemo filePath="/react/insertElement.txt" />
+  </TabItem>
+</Tabs>
+
+##### 更新数组内部的对象
+
+在 React 中更新数组内部的对象，通常需要找到要更新的对象，然后创建该对象的副本，对其进行修改，再将更新后的对象放回数组中。最后，通过调用 `setState` 来更新状态，从而触发重新渲染。以下是一些示例，演示如何更新数组内部的对象。
+
+在下面的例子中，两个不同的艺术品清单有着相同的初始 `state`。他们本应该互不影响，但是因为一次 mutation，他们的 `state` 被意外地共享了，勾选一个清单中的事项会影响另外一个清单：
+
+```js
+import { useState } from 'react';
+
+let nextId = 3;
+const initialList = [
+  { id: 0, title: 'Big Bellies', seen: false },
+  { id: 1, title: 'Lunar Landscape', seen: false },
+  { id: 2, title: 'Terracotta Army', seen: true },
+];
+
+export default function BucketList() {
+  const [myList, setMyList] = useState(initialList);
+  const [yourList, setYourList] = useState(initialList);
+
+  function handleToggleMyList(artworkId, nextSeen) {
+    const myNextList = [...myList];
+    const artwork = myNextList.find(a => a.id === artworkId);
+    // error-start
+    artwork.seen = nextSeen;
+    setMyList(myNextList);
+    // error-end
+  }
+
+  function handleToggleYourList(artworkId, nextSeen) {
+    const yourNextList = [...yourList];
+    const artwork = yourNextList.find(a => a.id === artworkId);
+    // error-start
+    artwork.seen = nextSeen;
+    setYourList(yourNextList);
+    // error-end
+  }
+
+  return (
+    <>
+      <h1>艺术愿望清单</h1>
+      <h2>我想看的艺术清单：</h2>
+      <ItemList artworks={myList} onToggle={handleToggleMyList} />
+      <h2>你想看的艺术清单：</h2>
+      <ItemList artworks={yourList} onToggle={handleToggleYourList} />
+    </>
+  );
+}
+
+function ItemList({ artworks, onToggle }) {
+  return (
+    <ul>
+      {artworks.map(artwork => (
+        <li key={artwork.id}>
+          <label>
+            <input
+              type="checkbox"
+              checked={artwork.seen}
+              onChange={e => {
+                onToggle(artwork.id, e.target.checked);
+              }}
+            />
+            {artwork.title}
+          </label>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+你可以使用 `map` 在没有 mutation 的前提下将一个旧的元素替换成更新的版本。
+
+```js
+setMyList(
+  myList.map(artwork => {
+    if (artwork.id === artworkId) {
+      // 创建包含变更的*新*对象
+      return { ...artwork, seen: nextSeen };
+    } else {
+      // 没有变更
+      return artwork;
+    }
+  }),
+);
+```
+
+##### 使用 Immer 编写简洁的更新逻辑
+
+Immer 是一个帮助处理不可变数据结构的库，它允许你以更加简洁和直观的方式编写更新逻辑。通过使用 Immer，你可以直接“修改”状态，并且 Immer 会在幕后处理不可变性。
+
+```bash npm2yarn
+npm install immer
+```
+
+```jsx title="示例"
+// success
+import { produce } from 'immer';
+import { useState } from 'react';
+
+let nextId = 3;
+const initialList = [
+  { id: 0, title: 'Big Bellies', seen: false },
+  { id: 1, title: 'Lunar Landscape', seen: false },
+  { id: 2, title: 'Terracotta Army', seen: true },
+];
+
+export default function BucketList() {
+  const [myList, setMyList] = useState(initialList);
+  const [yourList, setYourList] = useState(initialList);
+
+  function handleToggleMyList(artworkId, nextSeen) {
+    // success-start
+    const nextState = produce(myList, draft => {
+      const artwork = draft.find(a => a.id === artworkId);
+      artwork.seen = nextSeen;
+    });
+    // success-end
+
+    setMyList(nextState);
+  }
+
+  function handleToggleYourList(artworkId, nextSeen) {
+    const yourNextList = [...yourList];
+    // success-start
+    const nextState = produce(yourNextList, draft => {
+      const artwork = draft.find(a => a.id === artworkId);
+      artwork.seen = nextSeen;
+    });
+    // success-end
+
+    setYourList(nextState);
+  }
+
+  return (
+    <>
+      <h1>艺术愿望清单</h1>
+      <h2>我想看的艺术清单：</h2>
+      <ItemList artworks={myList} onToggle={handleToggleMyList} />
+      <h2>你想看的艺术清单：</h2>
+      <ItemList artworks={yourList} onToggle={handleToggleYourList} />
+    </>
+  );
+}
+
+function ItemList({ artworks, onToggle }) {
+  return (
+    <ul>
+      {artworks.map(artwork => (
+        <li key={artwork.id}>
+          <label>
+            <input
+              type="checkbox"
+              checked={artwork.seen}
+              onChange={e => {
+                onToggle(artwork.id, e.target.checked);
+              }}
+            />
+            {artwork.title}
+          </label>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### 条件渲染
+
+通常你的组件会需要根据不同的情况显示不同的内容。在 React 中，你可以通过使用 JavaScript 的 `if` 语句、`&&` 和 `?:` 运算符来选择性地渲染 JSX。
+
+#### 使用 if 语句
+
+使用 `if` 语句来条件渲染时，可以在渲染逻辑中放置 `if` 语句并返回不同的 JSX。
+
+```jsx
+function Greeting(props) {
+  const isLoggedIn = props.isLoggedIn;
+  if (isLoggedIn) {
+    return <h1>Welcome back!</h1>;
+  } else {
+    return <h1>Please sign up.</h1>;
+  }
+}
+
+function App() {
+  return <Greeting isLoggedIn={true} />;
+}
+```
+
+**选择性地返回 null**
+
+在一些情况下，你不想有任何东西进行渲染。比如，你不想显示已经打包好的物品。但一个组件必须返回一些东西。这种情况下，你可以直接返回 `null`。
+
+```jsx
+function Greeting(props) {
+  const isLoggedIn = props.isLoggedIn;
+  if (isLoggedIn) {
+    return <h1>Welcome back!</h1>;
+  } else {
+    // default
+    return null;
+  }
+}
+
+function App() {
+  return <Greeting isLoggedIn={true} />;
+}
+```
+
+#### 使用逻辑 && 运算符
+
+逻辑 `&&` 运算符常用于在某个条件为真时渲染某些内容。
+
+```jsx
+function Welcome(props) {
+  const { name, isShowName } = props;
+  return <h1>欢迎你 {isShowName && name}</h1>;
+}
+
+function App() {
+  return <Welcome name="mofan" isShowName={true} />;
+}
+```
+
+#### 使用三元运算符 ?:
+
+三元运算符可以在一个表达式中实现简单的条件渲染。
+
+```jsx
+function UserGreeting(props) {
+  return <h1>Welcome back!</h1>;
+}
+
+function GuestGreeting(props) {
+  return <h1>Please sign up.</h1>;
+}
+
+function Greeting(props) {
+  const isLoggedIn = props.isLoggedIn;
+  return isLoggedIn ? <UserGreeting /> : <GuestGreeting />;
+}
+
+function App() {
+  return <Greeting isLoggedIn={false} />;
+}
+```
+
+### 渲染列表
+
+你可能经常需要通过 JavaScript 的数组方法 来操作数组中的数据，从而将一个数据集渲染成多个相似的组件。在这篇文章中，你将学会如何在 React 中使用 filter() 筛选需要渲染的组件和使用 map() 把数组转换成组件数组。
+
+#### 使用 map 将数组转换成组件数组
+
+`map()` 方法用于遍历数组，并对每个元素执行指定的操作，返回操作后的新数组。常用于将数组元素转换成 JSX 元素。
+
+```jsx
+function NumberList(props) {
+  const numbers = props.numbers;
+
+  // default-start
+  const listItems = numbers.map(number => (
+    <li key={number.toString()}>{number}</li>
+  ));
+  // default-end
+
+  return <ul>{listItems}</ul>;
+}
+
+function App() {
+  const numbers = [1, 2, 3, 4, 5, 6];
+  return <NumberList numbers={numbers} />;
+}
+```
+
+#### 使用 filter 筛选需要渲染的组件
+
+`filter()` 方法用于筛选数组中的元素，返回符合条件的元素组成的新数组。
+
+```jsx
+function NumberList(props) {
+  const numbers = props.numbers;
+  // default
+  const evenNumbers = numbers.filter(number => number % 2 === 0);
+
+  return (
+    <ul>
+      {evenNumbers.map(number => (
+        <li key={number.toString()}>{number}</li>
+      ))}
+    </ul>
+  );
+}
+
+function App() {
+  const numbers = [1, 2, 3, 4, 5, 6];
+  return <NumberList numbers={numbers} />;
+}
+```
+
+#### 必须设置 Key 值
+
+直接放在 `map()` 方法里的 JSX 元素一般都需要指定 key 值！
+
+这些 key 会告诉 React，每个组件对应着数组里的哪一项，所以 React 可以把它们匹配起来。这在数组项进行移动（例如排序）、插入或删除等操作时非常重要。一个合适的 key 可以帮助 React 推断发生了什么，从而得以正确地更新 DOM 树。
+
+```jsx
+<li key={number.toString()}>{number}</li>
+```
+
+:::danger 报错
+不使用 Key, 会在控制台报错：Warning: Each child in a list should have a unique “key” prop.
+:::
+
+**key 需要满足的条件**
+
+- key 值在兄弟节点之间必须是唯一的。 不过不要求全局唯一，在不同的数组中可以使用相同的 key。
+- key 值不能改变，否则就失去了使用 key 的意义！所以千万不要在渲染时动态地生成 key。
+
+**React 中为什么需要 key？**
+
+设想一下，假如你桌面上的文件都没有文件名，取而代之的是，你需要通过文件的位置顺序来区分它们———第一个文件，第二个文件，以此类推。也许你也不是不能接受这种方式，可是一旦你删除了其中的一个文件，这种组织方式就会变得混乱无比。原来的第二个文件可能会变成第一个文件，第三个文件会成为第二个文件……
+
+React 里需要 key 和文件夹里的文件需要有文件名的道理是类似的。它们（key 和文件名）都让我们可以从众多的兄弟元素中唯一标识出某一项（JSX 节点或文件）。而一个精心选择的 key 值所能提供的信息远远不止于这个元素在数组中的位置。即使元素的位置在渲染的过程中发生了改变，它提供的 key 值也能让 React 在整个生命周期中一直认得它。
+
+:::warning 陷阱
+你可能会想直接把数组项的索引当作 key 值来用，实际上，如果你没有显式地指定 key 值，React 确实默认会这么做。但是数组项的顺序在插入、删除或者重新排序等操作中会发生改变，此时把索引顺序用作 key 值会产生一些微妙且令人困惑的 bug。
+
+与之类似，请不要在运行过程中动态地产生 key，像是 `key={Math.random()}` 这种方式。这会导致每次重新渲染后的 key 值都不一样，_从而使得所有的组件和 DOM 元素每次都要重新创建_。这不仅会造成运行变慢的问题，更有可能导致用户输入的丢失。所以，使用能从给定数据中稳定取得的值才是明智的选择。
+
+有一点需要注意，组件不会把 key 当作 props 的一部分。Key 的存在只对 React 本身起到提示作用。如果你的组件需要一个 ID，那么请把它作为一个单独的 prop 传给组件： `<Profile key={id} userId={id}` />。
+:::
+
+### 保持组件纯粹
+
+保持组件纯粹（pure）指的是确保组件的渲染输出仅由其 props 和 state 决定，而不依赖于外部的副作用或全局状态。这有助于使组件更可预测、易于测试和调试。以下是一些保持组件纯粹的方法：
+
+**无副作用的生命周期方法：**
+
+- 避免在生命周期方法中执行副作用，如 API 请求或直接操作 DOM。
+- 将这些操作放在适当的生命周期方法（如 `componentDidMount` 或 `useEffect`）中，并在需要时清理它们。
+
+**使用纯函数组件：**
+
+- 优先使用函数组件，而不是类组件。函数组件更容易保持纯粹，因为它们通常不涉及复杂的生命周期方法。
+- 使用 `React.memo` 包装组件，以避免不必要的重新渲染。
+
+**管理 state 和 props：**
+
+- 确保组件只依赖其 `props` 和 `state` 渲染。避免在渲染过程中使用全局变量或外部状态。
+- 使用 propTypes 和 TypeScript 类型检查，确保组件接收正确类型的 `props`。
+
+**避免直接修改 props 和 state：**
+
+- 永远不要直接修改 `props` 和 `state`，而是使用 setState 或 React hooks（如 useState）来更新状态。
+- 使用不可变的数据结构，如对象和数组的拷贝，来确保 `state` 和 `props` 的不可变性。
+
+**拆分大型组件：**
+
+- 将大型组件拆分为更小、更专注的子组件，每个子组件只负责渲染其自身的一部分。
+- 这样可以减少单个组件的复杂性，并使其更容易保持纯粹。
+
+**使用 Context API 和 Redux 管理全局状态：**
+
+- 使用 Context API 或 Redux 等状态管理库，将全局状态管理和组件逻辑分离开。
+- 这样可以避免在纯粹组件中直接访问或修改全局状态。
+
+:::info 使用严格模式检测不纯的计算
+React 提供了 “严格模式”，在严格模式下开发时，它将会调用每个组件函数两次。通过重复调用组件函数，严格模式有助于找到违反这些规则的组件。
+
+严格模式在生产环境下不生效，因此它不会降低应用程序的速度。如需引入严格模式，你可以用 `<React.StrictMode>` 包裹根组件。一些框架会默认这样做。
+:::
+
+```js title="React 入口文件默认使用严格模式"
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+```
+
+### 事件处理
+
+在 React 中，事件处理是构建交互式用户界面的重要部分。理解事件处理器、事件对象以及事件绑定与 this 的相关问题，是开发 React 应用程序的关键。
+
+#### 事件处理器
+
+事件处理器是处理用户交互操作的函数，通常在组件中定义并与特定的 DOM 元素或 React 元素相关联。在 React 中，事件处理器可以直接作为 JSX 元素的属性来指定。
+
+```jsx title="示例"
+function handleClick() {
+  console.log('Button clicked!');
+}
+
+function Button() {
+  return <button onClick={handleClick}>Click me</button>;
+}
+```
+
+#### 事件对象
+
+在处理事件时，React 将事件对象 event 作为参数传递给事件处理器函数。这个事件对象包含了与事件相关的信息，例如触发事件的元素、事件类型等。
+
+```jsx
+function handleChange(event) {
+  console.log('Input value changed:', event.target.value);
+}
+
+function InputField() {
+  return <input type="text" onChange={handleChange} />;
+}
+```
+
+在 JSX 元素中绑定点击事件 handleChange 函数默认接收 event 参数，可以通过 `event.target.value` 获取输入框中的新值。
+
+如果需要在绑定事件时传递参数，可以在绑定事件中使用箭头函数，如下示例：
+
+```js
+function InputField() {
+  return <input type="text" onChange={event => handleChange(event, ...args)} />;
+}
+```
+
+#### 事件绑定与 this
+
+在 React 类组件中，事件处理函数默认情况下不会自动将 this 绑定到当前组件的实例。这是因为在 JavaScript 中，函数的执行上下文（即 this 的值）取决于函数如何被调用，而不是如何被定义。因此，当你将一个方法作为事件处理函数传递给 DOM 元素时，如果不进行额外的绑定处理，this 将会是 undefined 或者指向 window 对象（在严格模式下）。
+
+<Tabs>
+  <TabItem value="显式绑定 this">
+
+    在类组件的构造函数中，使用 [bind](/api/basic-objects/function#functionprototypebind) 方法显式地将方法绑定到当前组件实例的 this 上。
+
+    <CodeDemo filePath="/react/bindThis.txt"/>
+
+  </TabItem>
+  <TabItem value="使用箭头函数">
+
+    箭头函数不会创建自己的 `this` 上下文，而是继承父级作用域的 `this`。因此，使用箭头函数定义方法可以确保方法内部的 `this` 指向当前组件的实例。
+
+    <CodeDemo filePath="/react/arrowFunc.txt"/>
+
+  </TabItem>
+</Tabs>
+
+### CSS Module
+
+CSS Module 是一种让 CSS 变得模块化的解决方案，它允许你将 CSS 文件中的类名（class 名）映射为一个局部作用域内的对象。这意味着每个类名在引入它们的组件中都是唯一的，并且不会污染全局命名空间。
+
+```css title="style.module.css"
+.button {
+  background-color: blue;
+  color: white;
+}
+```
+
+```jsx title="ButtonComponent.jsx"
+import React from 'react';
+import styles from './styles.module.css';
+
+function ButtonComponent() {
+  return <button className={styles.button}>Click me</button>;
+}
+
+export default ButtonComponent;
+```
+
+**使用变量和局部作用域**：你可以在 CSS Module 中使用变量，并且这些变量仅在当前模块中有效，不会影响全局。
+
+```css title="styles.module.css"
+:local {
+  --primary-color: blue;
+}
+
+.button {
+  background-color: var(--primary-color);
+  color: white;
+}
+```
+
+### Portal
+
+在 React 中，Portal 是一种特殊的组件渲染技术，允许你将子组件渲染到 DOM 中的任意位置，而不受父组件层级的限制。这在处理一些特定的 UI 情况下非常有用，例如在模态框、弹出菜单或者悬浮组件中。
+
+首先，在项目中创建一个 Portal 组件，通常是一个简单的函数组件，用于渲染它的子组件到指定的 DOM 节点上。
+
+```html title="index.html"
+<!-- public/index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    ...
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="portal-root"></div>
+  </body>
+</html>
+```
+
+```jsx title="创建 Portal 组件"
+// Portal.jsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+const Portal = ({ children }) => {
+  const portalRoot = document.getElementById('portal-root'); // 这里的 'portal-root' 是一个在 public/index.html 中定义的 div id
+  return ReactDOM.createPortal(children, portalRoot);
+};
+
+export default Portal;
+```
+
+在需要使用 Portal 渲染的组件中，将子组件包裹在 Portal 组件中。
+
+```jsx title="在组件中使用 Portal"
+import React from 'react';
+import Portal from './Portal.jsx';
+const App = () => {
+  return (
+    <Portal>
+      <div className="modal">
+        <h2>Modal Title</h2>
+        <p>This is the content of the modal.</p>
+      </div>
+    </Portal>
+  );
+};
+
+export default App;
+```
+
+#### 冒泡问题
+
+Portal 可以渲染组件到任意节点下，即使渲染到 body 节点下与 root 跟节点成为兄弟节点，在 Portal 组件触发事件，仍然会冒泡触发 root 节点事件。
+
+:::tip 深入探讨
+在 React 中，事件处理是通过合成事件系统管理的，而 Portal 本质上是将组件渲染到 DOM 树中的不同位置，但在 React 组件层次结构中，它仍然被认为是 root 根节点的子节点。因此，如果你在 Portal 中创建了一个节点并且在该节点上触发了事件，事件会冒泡到 Portal 的直接父级组件，然后继续向上冒泡直到根节点。这样确保了事件在 React 组件树中正确地传递和处理。
+:::
+
+## 状态管理
+
+状态管理是 React 组件的核心部分之一，涉及到如何定义、更新和传递数据。理解状态管理的基本概念和技术是开发 React 应用的关键。
+
+### State 与 Props 的区别
+
+在 React 中，State 和 Props 是两个不同的概念，它们在组件的数据管理和通信中扮演着不同的角色。
+
+<Tabs>
+  <TabItem value="State">
+    
+    - **定义**：State 是组件内部管理的数据，描述了组件的当前状态和行为。
+    - **可变性**：State 是可变的，组件可以通过调用 `setState()` 方法来更新状态。
+    - **作用范围**：State 是局部的，仅在定义它的组件内部有效。
+    - **访问方式**：在类组件中通过 `this.state` 访问；在函数组件中通过 `useState` Hook 访问。
+
+  </TabItem>
+  <TabItem value="Props">
+
+    - **定义**：Props 是从父组件传递给子组件的数据，用于组件间的数据传递。
+    - **可变性**：Props 是不可变的，子组件无法直接修改 Props 的值。
+    - **作用范围**：Props 是全局的，可以在父组件中传递给任意层级的子组件。
+    - **访问方式**：在类组件中通过 `this.props` 访问；在函数组件中通过函数参数 `props` 访问。
+
+  </TabItem>
+</Tabs>
+
+```js title="示例"
+function ChildComponent(props) {
+  return <div>{props.message}</div>;
+}
+
+function ParentComponent() {
+  const [message, setMessage] = useState('Hello from state!');
+
+  return <ChildComponent message={message} />;
+}
+```
+
+### 状态提升
+
+有时候，你希望两个组件的状态始终同步更改。要实现这一点，可以将相关 state 从这两个组件上移除，并把 state 放到它们的公共父级，再通过 props 将 state 传递给这两个组件。这被称为“状态提升”，这是编写 React 代码时常做的事。
+
+```jsx title="示例"
+import { useState } from 'react';
+
+function BoilingVerdict({ celsius }) {
+  if (celsius >= 100) {
+    return <p>水沸腾了.</p>;
+  } else {
+    return <p>水没有沸腾</p>;
+  }
+}
+
+function TemperatureInput({ temperature, onTemperatureChange }) {
+  return (
+    <fieldset>
+      <legend>输入摄氏度:</legend>
+      <input
+        type="text"
+        value={temperature}
+        onChange={e => onTemperatureChange(e.target.value)}
+      />
+    </fieldset>
+  );
+}
+
+function Calculator() {
+  const [temperature, setTemperature] = useState('');
+  return (
+    <div>
+      // default-start
+      <TemperatureInput
+        temperature={temperature}
+        onTemperatureChange={setTemperature}
+      />
+      <BoilingVerdict celsius={parseFloat(temperature)} />
+      // default-end
+    </div>
+  );
+}
+
+export default Calculator;
+```
+
+_受控组件和非受控组件_
+
+通常我们把包含“不受控制”状态的组件称为“非受控组件”。例如，最开始带有 isActive 状态变量的 Panel 组件就是不受控制的，因为其父组件无法控制面板的激活状态。
+
+相反，当组件中的重要信息是由 props 而不是其自身状态驱动时，就可以认为该组件是“受控组件”。这就允许父组件完全指定其行为。最后带有 isActive 属性的 Panel 组件是由 Accordion 组件控制的。
+
+非受控组件通常很简单，因为它们不需要太多配置。但是当你想把它们组合在一起使用时，就不那么灵活了。受控组件具有最大的灵活性，但它们需要父组件使用 props 对其进行配置。
+
+在实践中，“受控”和“非受控”并不是严格的技术术语——通常每个组件都同时拥有内部状态和 props。然而，这对于组件该如何设计和提供什么样功能的讨论是有帮助的。
+
+当编写一个组件时，你应该考虑哪些信息应该受控制（通过 props），哪些信息不应该受控制（通过 state）。当然，你可以随时改变主意并重构代码。
+
+### 使用 Context 深层传递参数
+
+通常来说，你会通过 `props` 将信息从父组件传递到子组件。但是，如果你必须通过许多中间组件向下传递 `props`，或是在你应用中的许多组件需要相同的信息，传递 `props` 会变的十分冗长和不便。Context 允许父组件向其下层无论多深的任何组件提供信息，而无需通过 props 显式传递。
+
+#### 传递 props 带来的问题
+
+传递 `props` 是将数据通过 UI 树显式传递到使用它的组件的好方法。
+
+但是当你需要在组件树中深层传递参数以及需要在组件间复用相同的参数时，传递 props 就会变得很麻烦。最近的根节点父组件可能离需要数据的组件很远，状态提升 到太高的层级会导致 “逐层传递 props” 的情况。
+
+#### Context：传递 props 的另一种方法
+
+在 React 中，Context 提供了一种在组件之间共享数据的方式，而不必通过显式地传递 `props` 层层传递数据。使用 Context 可以有效地解决跨多层级组件传递数据的繁琐问题。
+
+_Context 主要由两部分组成：_
+
+1. Provider（提供器）：负责提供数据的组件。它通过 `Context.Provider` 将数据传递给下层组件。
+2. Consumer（消费者）：负责使用数据的组件。它通过 `Context.Consumer` 或 `useContext` Hook 来访问从 Provider 中传递下来的数据。
+
+<Tabs>
+  <TabItem value="Step 1：创建 Context">
+
+    首先，你需要创建这个 context，并将其从一个文件中导出：
+
+    <CodeDemo filePath="/react/context1.txt" title="ThemeContext.js"/>
+
+  </TabItem>
+  <TabItem value="Step 2：提供 Context">
+    在应用程序的顶层组件中使用 `Context.Provider` 提供主题信息
+    <CodeDemo filePath="/react/context2.txt" title="App.jsx"/>
+  </TabItem>
+
+  <TabItem value="Step 3：使用 Context">
+    使用 `useContext` Hook 在任意组件消费。
+
+    <CodeDemo filePath="/react/context3.txt" title="AnySonComponent.jsx"/>
+
+    使用 `Context.Consumer` 在任意组件消费。
+
+    <CodeDemo filePath="/react/context3-1.txt" title="AnySonComponent.jsx"/>
+
+  </TabItem>
+</Tabs>
+
+## 生命周期
+
+在 React 中，组件的生命周期方法和 Hooks 都用于处理组件在不同阶段的行为和副作用。下面是对比类组件生命周期方法和函数组件中的 Hooks 的常见用法和功能：
+
+### 类组件
+
+<Tabs>
+  <TabItem value="componentDidMount">
+    在组件挂载后调用，可以执行一次性的初始化操作，如获取远程数据、添加事件监听器等。
+    
+    <CodeDemo filePath="/react/componentDidMount.txt"/>
+    
+  </TabItem>
+  <TabItem value="componentDidUpdate">
+    在组件更新后调用，可以根据新的 props 或 state 执行额外的操作，如更新 DOM、发送网络请求等。
+
+    <CodeDemo filePath="/react/componentDidUpdate.txt"/>
+
+  </TabItem>
+  <TabItem value="componentWillUnmount">
+    在组件即将被卸载时调用，可以执行一些清理操作，如取消定时器、清除订阅等。
+
+    <CodeDemo filePath="/react/componentWillUnmount.txt"/>
+
+  </TabItem>
+</Tabs>
+
+### 函数组件
+
+`useEffect` Hook 可以替代 `componentDidMount`、`componentDidUpdate` 和 `componentWillUnmount`。通过传递不同的依赖数组，可以控制 `useEffect` 的触发时机和条件。
+
+`useEffect` 内部的函数会在组件挂载后执行一次，之后会在每次组件更新时执行（除非指定了依赖项并且依赖项未发生变化时会跳过执行），同时也支持在组件卸载时执行清理操作。
+
+```jsx
+import React, { useEffect } from 'react';
+
+function Example() {
+  useEffect(() => {
+    // 在组件更新后执行的操作
+  }, [props]);
+
+  useEffect(() => {
+    // 在组件挂载后和更新后执行的操作
+    console.log('Component mounted or updated');
+    return () => {
+      // 在组件卸载前执行的清理操作
+      console.log('Component will unmount');
+    };
+  }, []); // 第二个参数为空数组，表示仅在组件挂载和卸载时执行
+
+  return <div>Hello, world!</div>;
+}
+```
+
+## React Hooks
+
+### 什么是Hooks？
+
+Hooks 是 React 中的一种特性，允许你在函数式组件中使用 React 的状态（state）和生命周期特性。通过 Hooks，可以在不编写类组件的情况下，复用状态逻辑、副作用逻辑（如数据获取、订阅等），以及更好地组织和抽象组件的逻辑。Hooks 的引入使得 React 组件的编写更加简洁、灵活，并提高了代码的可维护性和复用性。
+
+#### Hooks 规则
+
+在使用 React Hooks 时，有一些重要的规则需要遵循，以确保 Hooks 能够正确地工作和发挥其作用。以下是使用 React Hooks 的主要规则：
+
+**1. 只在最顶层使用 Hook:**
+
+不要在循环，条件或嵌套函数中调用 Hook， 确保总是在你的 React 函数的最顶层以及任何 return 之前调用他们。遵守这条规则，你就能确保 Hook 在每一次渲染中都按照同样的顺序被调用。这让 React 能够在多次的 `useState` 和 `useEffect` 调用之间保持 hook 状态的正确
+
+**2. 只在 React 函数或 Hook 中调用 Hook:**
+
+Hooks 只能在 React 的函数式组件中使用，不能在普通的 JavaScript 函数中使用，也不能在类组件中使用。以及自定义 Hook 中调用 Hooks。
+
+**3. 按顺序调用 Hooks:**
+
+在每次渲染时，Hooks 的调用顺序必须始终保持一致。React 依赖于 Hooks 调用顺序来正确地管理组件的状态和副作用。
+
+**4. 命名规则：**
+
+自定义 Hook 必须以 `use` 开头，这是 React 对自定义 Hook 的约定。例如，`useEffect`、`useState` 是 React 提供的内置 Hook 名称，而你自己定义的 Hook 应该遵循相同的命名规则，例如 `useCustomHook`。
+
+### State Hook
+
+### Context Hook
+
+### Ref Hook
+
+### Effect Hook
+
+### 性能 Hook
+
+### 其他 Hook
+
+### 自定义 Hook

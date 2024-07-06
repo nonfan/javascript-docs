@@ -1,0 +1,12 @@
+// default
+import {Welcome} from 'Welcome.js'
+import {Profile} from 'Profile.js'
+
+export default function App() {
+  return (
+    <div>
+      <Welcome/>
+      <Profile/
+    </div>
+  )
+}
