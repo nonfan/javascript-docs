@@ -1312,66 +1312,6 @@ export default ButtonComponent;
 }
 ```
 
-### Portal
-
-在 React 中，Portal 是一种特殊的组件渲染技术，允许你将子组件渲染到 DOM 中的任意位置，而不受父组件层级的限制。这在处理一些特定的 UI 情况下非常有用，例如在模态框、弹出菜单或者悬浮组件中。
-
-首先，在项目中创建一个 Portal 组件，通常是一个简单的函数组件，用于渲染它的子组件到指定的 DOM 节点上。
-
-```html title="index.html"
-<!-- public/index.html -->
-<!doctype html>
-<html lang="en">
-  <head>
-    ...
-  </head>
-  <body>
-    <div id="root"></div>
-    <div id="portal-root"></div>
-  </body>
-</html>
-```
-
-```jsx title="创建 Portal 组件"
-// Portal.jsx
-import React from 'react';
-import ReactDOM from 'react-dom';
-
-const Portal = ({ children }) => {
-  const portalRoot = document.getElementById('portal-root'); // 这里的 'portal-root' 是一个在 public/index.html 中定义的 div id
-  return ReactDOM.createPortal(children, portalRoot);
-};
-
-export default Portal;
-```
-
-在需要使用 Portal 渲染的组件中，将子组件包裹在 Portal 组件中。
-
-```jsx title="在组件中使用 Portal"
-import React from 'react';
-import Portal from './Portal.jsx';
-const App = () => {
-  return (
-    <Portal>
-      <div className="modal">
-        <h2>Modal Title</h2>
-        <p>This is the content of the modal.</p>
-      </div>
-    </Portal>
-  );
-};
-
-export default App;
-```
-
-#### 冒泡问题
-
-Portal 可以渲染组件到任意节点下，即使渲染到 body 节点下与 root 跟节点成为兄弟节点，在 Portal 组件触发事件，仍然会冒泡触发 root 节点事件。
-
-:::tip 深入探讨
-在 React 中，事件处理是通过合成事件系统管理的，而 Portal 本质上是将组件渲染到 DOM 树中的不同位置，但在 React 组件层次结构中，它仍然被认为是 root 根节点的子节点。因此，如果你在 Portal 中创建了一个节点并且在该节点上触发了事件，事件会冒泡到 Portal 的直接父级组件，然后继续向上冒泡直到根节点。这样确保了事件在 React 组件树中正确地传递和处理。
-:::
-
 ## 状态管理
 
 状态管理是 React 组件的核心部分之一，涉及到如何定义、更新和传递数据。理解状态管理的基本概念和技术是开发 React 应用的关键。
@@ -2036,7 +1976,7 @@ export default useCustomHook;
 可以非常简单使用计数器功能，且可以简单复用。
 
 ```jsx title="使用 useCustomHook"
-import useCustomHook from './CustomHook.ts';
+import useCustomHook from './useCustomHook.ts';
 
 export default function App() {
   const [count, increment, decrement] = useCustomHook();
@@ -2051,3 +1991,137 @@ export default function App() {
   );
 }
 ```
+
+## 路由
+
+## 错误边界
+
+## Context API
+
+在 React 中将数据从父组件传递子组件的主要方法是通过 props。然而，在某些情况下，props 用起来会很繁琐，并且会导致代码更难阅读和维护。为此，Context API 应运而生。
+
+### 什么是 Prop drilling
+
+Prop drilling（属性传递）指的是将属性从一个组件传递到另一个组件的过程，特别是在组件层级较深时可能会出现的一种情况。这种情况通常发生在父组件需要将属性传递给深层次的子组件，而中间的组件并不需要这些属性，但需要将它们传递下去的情况。
+
+### Context API
+
+属性传递不一定是一个问题。在大多数情况下，这正是你应该使用的方法。然而，如果应用程序中有数据或函数可以视为“全局的”（或者对于特定的组件树是全局的），那么使用 Context 可以避免连续属性传递带来的问题。
+
+#### 创建 Context
+
+要创建 Context，可以使用 `React.createContext`.
+
+```js title="ThemeContext.js"
+import React from 'react';
+
+let defaultValue = {
+  theme: 'dark',
+};
+
+const ThemeContext = React.createContext(defaultValue);
+
+export default ThemeContext;
+```
+
+`React.createContext` 方法返回一个 Context 对象。传递给 createContext 的 defaultValue 参数是在没有匹配的 Provider 时将提供给后代的数据。由于默认值很可能永远都用不上，许多开发人员将默认值保留为 `undefined`, 或者将其设置为某个示例对象。
+
+#### 创建 Provider
+
+Context Provider 是一个组件，它将对上下文数据的变化发布给后代组件。Provider 组件接收一个名为 value 的属性，该属性将重写 `React.createContext` 中设置的 defaultValue。
+
+```jsx
+return (
+  <ThemeContext.Provider value={{ theme: 'light' }}>
+    <OtherComponent />
+  </ThemeContext.Provider>
+);
+```
+
+Provider 组件可以根据需要多次使用，并且可以嵌套在组件树中。使用 Context 的组件将会访问最近的 Provider 祖先组件，如果没有 Provider 祖先组件，则会使用 Context 的默认值。
+
+#### 使用 Context
+
+一旦有了 Context 和 Provider，后代组件就可以成为 Context 的 Consumer（消费者）。Context Consumer 将在 Provider 的值发生变化时重新渲染。
+
+在函数组件和类组件中，它们消费的方式有所不同：
+
+<Tabs>
+  <TabItem value="函数组件">
+    可以通过使用 `Context.Consumer` 组件或使用 `useContext` hook 在函数组件中使用 Context。
+
+    <CodeDemo filePath="/react/useContext1.txt" title="Context.Consumer 示例"/>
+
+    <CodeDemo filePath="/react/useContext2.txt" title="useContext 示例"/>
+
+  </TabItem>
+  <TabItem value="类组件">
+    
+    在类组件中使用 Context 有两种方式：设置类的 `contextType` 属性和使用 `Context.Consumer` 组件。
+
+    <CodeDemo filePath="/react/useContext3.txt" title="contextType 示例"/>
+
+    <CodeDemo filePath="/react/useContext4.txt" title="Context.Consumer 示例"/>
+
+  </TabItem>
+</Tabs>
+
+## Portal
+
+在 React 中，Portal 是一种特殊的组件渲染技术，允许你将子组件渲染到 DOM 中的任意位置，而不受父组件层级的限制。这在处理一些特定的 UI 情况下非常有用，例如在模态框、弹出菜单或者悬浮组件中。
+
+首先，在项目中创建一个 Portal 组件，通常是一个简单的函数组件，用于渲染它的子组件到指定的 DOM 节点上。
+
+```html title="index.html"
+<!-- public/index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    ...
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="portal-root"></div>
+  </body>
+</html>
+```
+
+```jsx title="创建 Portal 组件"
+// Portal.jsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+const Portal = ({ children }) => {
+  const portalRoot = document.getElementById('portal-root'); // 这里的 'portal-root' 是一个在 public/index.html 中定义的 div id
+  return ReactDOM.createPortal(children, portalRoot);
+};
+
+export default Portal;
+```
+
+在需要使用 Portal 渲染的组件中，将子组件包裹在 Portal 组件中。
+
+```jsx title="在组件中使用 Portal"
+import React from 'react';
+import Portal from './Portal.jsx';
+const App = () => {
+  return (
+    <Portal>
+      <div className="modal">
+        <h2>Modal Title</h2>
+        <p>This is the content of the modal.</p>
+      </div>
+    </Portal>
+  );
+};
+
+export default App;
+```
+
+### 冒泡问题
+
+Portal 可以渲染组件到任意节点下，即使渲染到 body 节点下与 root 跟节点成为兄弟节点，在 Portal 组件触发事件，仍然会冒泡触发 root 节点事件。
+
+:::tip 深入探讨
+在 React 中，事件处理是通过合成事件系统管理的，而 Portal 本质上是将组件渲染到 DOM 树中的不同位置，但在 React 组件层次结构中，它仍然被认为是 root 根节点的子节点。因此，如果你在 Portal 中创建了一个节点并且在该节点上触发了事件，事件会冒泡到 Portal 的直接父级组件，然后继续向上冒泡直到根节点。这样确保了事件在 React 组件树中正确地传递和处理。
+:::

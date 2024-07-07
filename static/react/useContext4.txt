@@ -1,0 +1,15 @@
+import React from "react";
+import ThemeContext from "./ThemeContext.js";
+class App extends React.Component {
+  render() {
+    return (
+      <ThemeContext.Consumer>
+        {(value) => {
+          return <h1>主题是 {value.theme}</h1>;
+        }}
+      </ThemeContext.Consumer>
+    );
+  }
+}
+
+export default App;
