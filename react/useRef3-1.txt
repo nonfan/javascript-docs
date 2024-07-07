@@ -1,0 +1,26 @@
+import React, { useRef, useState } from "react";
+
+class User {
+  constructor() {
+    // default-start
+    /**
+     * 在浏览器控制台会多次打印它，证明 ref 被多次创建了
+     */
+    console.log("只需要获取用户信息一次");
+    // default-end
+  }
+}
+
+function App() {
+  const ref = useRef(new User());
+  const [count, setCount] = useState(0);
+
+  return (
+    <>
+      <h1>计算： {count}</h1>
+      <button onClick={() => setCount((prev) => prev + 1)}>+</button>
+    </>
+  );
+}
+
+export default App;

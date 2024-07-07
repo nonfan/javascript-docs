@@ -1,0 +1,13 @@
+import { useContext } from "react";
+import ThemeContext from "./ThemeContext.js";
+const App = () => {
+  return (
+    <ThemeContext.Consumer>
+      {(value) => {
+        return <h1>主题是 {value.theme}</h1>;
+      }}
+    </ThemeContext.Consumer>
+  );
+};
+
+export default App;

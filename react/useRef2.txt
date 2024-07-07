@@ -1,0 +1,15 @@
+import React, { useRef } from "react";
+
+function App() {
+
+  const inputRef = useRef(null);
+
+  return (
+    <>
+      <input ref={inputRef}/>
+      <button onClick={() => inputRef.current.focus()}>聚焦</button>
+    </>
+  )
+}
+
+export default App

@@ -1,0 +1,11 @@
+import React from "react";
+import ThemeContext from "./ThemeContext";
+class App extends React.Component {
+  static contextType = ThemeContext;
+
+  render() {
+    return <h1>主题是 {this.context.theme}</h1>;
+  }
+}
+
+export default App;

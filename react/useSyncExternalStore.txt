@@ -1,0 +1,34 @@
+import React, { useSyncExternalStore } from "react";
+
+const stateStore = {
+  state: 0,
+  listeners: new Set(),
+  subscribe(listener) {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  },
+  getSnapshot() {
+    return this.state;
+  },
+  setState(newState) {
+    this.state = newState;
+    this.listeners.forEach((listener) => listener());
+  },
+};
+
+function useExternalState() {
+  return useSyncExternalStore(
+    stateStore.subscribe.bind(stateStore),
+    stateStore.getSnapshot.bind(stateStore)
+  );
+}
+
+export default function Counter() {
+  const count = useExternalState();
+  return (
+    <div>
+      <h1>计数器: {count}</h1>
+      <button onClick={() => stateStore.setState(count + 1)}>+</button>
+    </div>
+  );
+}

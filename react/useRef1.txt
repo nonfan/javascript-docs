@@ -1,0 +1,8 @@
+const intervalId = useRef(initialId);
+
+function handleStartClick() {
+  const intervalId = setInterval(() => {
+    // ...
+  }, 1000);
+  intervalRef.current = intervalId;
+}

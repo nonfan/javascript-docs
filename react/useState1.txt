@@ -1,0 +1,5 @@
+// 导入 hook
+import { useState } from 'react';
+
+// 解构数组
+const [count, setCount] = useState(0);
