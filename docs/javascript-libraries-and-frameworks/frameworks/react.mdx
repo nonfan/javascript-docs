@@ -1542,7 +1542,7 @@ _Context 主要由两部分组成：_
 
 ### 函数组件
 
-`useEffect` Hook 可以替代 `componentDidMount`、`componentDidUpdate` 和 `componentWillUnmount`。通过传递不同的依赖数组，可以控制 `useEffect` 的触发时机和条件。
+[useEffect](#useeffect) Hook 可以替代 `componentDidMount`、`componentDidUpdate` 和 `componentWillUnmount`。通过传递不同的依赖数组，可以控制 `useEffect` 的触发时机和条件。
 
 `useEffect` 内部的函数会在组件挂载后执行一次，之后会在每次组件更新时执行（除非指定了依赖项并且依赖项未发生变化时会跳过执行），同时也支持在组件卸载时执行清理操作。
 
