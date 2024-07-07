@@ -1579,11 +1579,11 @@ Hooks 是 React 中的一种特性，允许你在函数式组件中使用 React 
 
 **1. 只在最顶层使用 Hook:**
 
-不要在循环，条件或嵌套函数中调用 Hook， 确保总是在你的 React 函数的最顶层以及任何 return 之前调用他们。遵守这条规则，你就能确保 Hook 在每一次渲染中都按照同样的顺序被调用。这让 React 能够在多次的 `useState` 和 `useEffect` 调用之间保持 hook 状态的正确
+不要在循环，条件或嵌套函数中调用 Hook， 确保总是在你的 React 函数的最顶层以及任何 return 之前调用他们。遵守这条规则，你就能确保 Hook 在每一次渲染中都按照同样的顺序被调用。这让 React 能够在多次的 `useState` 和 `useEffect` 调用之间保持 hook 状态的正确。
 
 **2. 只在 React 函数或 Hook 中调用 Hook:**
 
-Hooks 只能在 React 的函数式组件中使用，不能在普通的 JavaScript 函数中使用，也不能在类组件中使用。以及自定义 Hook 中调用 Hooks。
+Hooks 只能在 React 的函数式组件中使用，以及自定义 Hook 中调用 Hooks。不能在普通的 JavaScript 函数中使用，也不能在类组件中使用。
 
 **3. 按顺序调用 Hooks:**
 
@@ -1593,16 +1593,461 @@ Hooks 只能在 React 的函数式组件中使用，不能在普通的 JavaScrip
 
 自定义 Hook 必须以 `use` 开头，这是 React 对自定义 Hook 的约定。例如，`useEffect`、`useState` 是 React 提供的内置 Hook 名称，而你自己定义的 Hook 应该遵循相同的命名规则，例如 `useCustomHook`。
 
-### State Hook
+### useState
 
-### Context Hook
+在包含 `useState` hook 的函数组件进行第一次渲染时，它会根据传递给它的参数创建一个有状态的值，同时创建一个用于更新该值的函数。
 
-### Ref Hook
+<Tabs>
+  <TabItem value="设置初始状态">
+    需要将初始值传递给 `useState`。接收单个参数，该参数可以是 JavaScript 的任何数据类型（或计算结果为单个值的表达式）或函数。
 
-### Effect Hook
+    如果不向 `useState` 传递参数，则将创建初始值为 undefind 的状态变量。
 
-### 性能 Hook
+    初始值只会在组件的初始渲染中起作用，后续渲染时会被忽略。React称之为惰性初始状态。
+    <CodeDemo filePath="/react/useState1.txt"/>
 
-### 其他 Hook
+  </TabItem>
+  <TabItem value="使用 Setter 函数">
+    
+    `useState` 返回的 setter 函数将触发渲染。如果将 setter 函数向下传递给子组件并从该子组件调用它，它仍然会操作创建它的原始变量。
+    
+    <CodeDemo filePath="/react/useState2.txt"/>
+  </TabItem>
+  <TabItem value="向 Setter 传递值">
+    
+    `useState` 返回的 setter 函数将触发渲染。如果将 setter 函数向下传递给子组件并从该子组件调用它，它仍然会操作创建它的原始变量。
+    
+    <CodeDemo filePath="/react/useState3.txt"/>
+  </TabItem>
+  <TabItem value="向 Setter 传递函数">
+    
+    当变量的新状态是基于变量之前的状态计算得出时，应该使用这种方法。通过传递一个函数，可以确保 setter 函数总是接收到变量的最新值。
+    
+    <CodeDemo filePath="/react/useState4.txt"/>
+  </TabItem>
+</Tabs>
+
+### useReducer
+
+useReducer hook 是 useState 的替代方案，它适用于复杂的状态更新或新状态依赖于旧状态的情况。useState 仅接收一个初始状态作为其参数，但 useReducer 接收一个初始状态和 reducer 作为实参。reducer 是一个纯函数，它接收当前状态和一个名为 action 的对象，并返回新状态。
+
+```js title="reducer 函数签名"
+(state, action) => newState;
+```
+
+useReducer hook 返回一个值和 dispatch 函数。dispatch 函数可用于响应事件，但它不使用值来设置状态变量，而是 action 对象。action 对象具有类型和可选的有效负载。
+
+```jsx title="示例"
+import { useReducer } from 'react';
+
+const initialState = {
+  count: 0,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      // 这种方式确保了原始状态对象不会被修改，从而保持状态的不可变性，使得 React 能够正确地检测和响应状态的变化。
+      // default
+      return { ...state, count: state.count + 1 };
+
+    case 'decrement':
+      // default
+      return { ...state, count: state.count - 1 };
+
+    default:
+      throw new Error('错误的 action');
+  }
+}
+
+const App = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <div>
+      <h1>计算器 {state.count}</h1>
+      <button onClick={() => dispatch({ type: 'increment' })}>increment</button>
+      <button onClick={() => dispatch({ type: 'decrement' })}>decrement</button>
+    </div>
+  );
+};
+
+export default App;
+```
+
+### useContext
+
+全局数据是程序中所有组件或多个组件都使用的数据，如主题或用户偏好。对于 React 应用程序中的每一个组件，将全局数据从父组件传递到子组件可能是件麻烦事，特别是当组件树有多个层级时。
+
+React Context 提供了一种在组件之间共享全局数据的方法，而不必将值作为 `props` 手动传递。`useContext` hook 接收一个 Context 对象作为参数，并返回该对象的最新值。
+
+```jsx title="示例"
+import { useContext } from 'react';
+import themeContext from './themeContext.js';
+const App = () => {
+  const theme = useContext(themeContext);
+  return <h1>Hello World! {theme.name}</h1>;
+};
+
+export default App;
+```
+
+### useRef
+
+`useRef` hook 会返回一个带有可变属性 current 的 `ref` 对象。`ref` 对象的一个用途是以命令式访问 DOM。当附加了 `ref` 的 DOM 节点发生变化时，`ref` 对象的当前属性将被更新。而对 `ref` 的更改不会导致组件重新渲染。
+
+`useRef` 它能帮助引用一个不需要渲染的值。
+
+```js
+const ref = useRef(initialValue);
+```
+
+<Tabs>
+  <TabItem value="使用用 ref 引用一个值">
+    
+    在组件顶层调用 `useRef` 声明一个或多个 `ref`。
+    
+    ```jsx
+    import { useRef } from 'react';
+    const intervalRef = useRef(0);
+    ```
+
+    `useRef` 返回一个具有单个 current 属性 的 `ref` 对象，并初始化为你提供的初始值。
+
+    在后续的渲染中，`useRef` 将返回相同的对象。你可以改变它的 current 属性来存储信息，并在之后读取它。这会让人联想到 `state`，但是有一个重要的区别。
+
+    改变 `ref` 不会触发重新渲染。这意味着 `ref` 是存储一些不影响组件视图输出信息的完美选择。例如，如果需要存储一个 interval ID 并在以后检索它，那么可以将它存储在 `ref` 中。只需要手动改变它的 current 属性 即可修改 `ref` 的值：
+
+    <CodeDemo filePath="/react/useRef1.txt" />
+
+  </TabItem>
+  <TabItem value="通过 ref 操作 DOM">
+
+    使用 `ref` 操作 DOM 是非常常见的行为。React 内置了对它的支持。
+
+
+    <CodeDemo filePath="/react/useRef2.txt" />
+
+  </TabItem>
+  <TabItem value="避免重复创建 ref 的内容">
+
+    虽然 `new User()` 的结果只会在首次渲染时使用，但是依然在每次渲染时都在调用这个方法。如果是创建昂贵的对象，这可能是一种浪费。
+
+    <CodeDemo filePath="/react/useRef3-1.txt" title="重复创建 ref"/>
+
+    为了解决这个问题，你可以像这样初始化 `ref`：
+
+    <CodeDemo filePath="/react/useRef3-2.txt"/>
+
+  </TabItem>
+  <TabItem value="获取自定义组件的 ref">
+
+    如果尝试像这样传递 `ref` 到自定义组件：你可能会在控制台中得到这样的错误：
+
+    > Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
+
+    ```jsx
+    const inputRef = useRef(null);
+
+    return <MyInput ref={inputRef} />;
+    ```
+
+    默认情况下，自定义组件不会暴露它们内部 DOM 节点的 `ref`。 为了解决这个问题，首先，找到想获得 `ref` 的组件，然后像这样将其包装在 `forwardRef` 里。
+
+
+    <CodeDemo filePath="/react/useRef4.txt"/>
+
+  </TabItem>
+</Tabs>
+
+### useEffect
+
+`useEffect` hook 接收一个函数作为从参数，默认情况下，它将在每次渲染函数组件后运行该函数。`useEffect` hook 可以用来模拟类组件中的 `componentDidMount()`、`componentDidUpdate()` 和 `componentWillUnmount()` 生命周期方法。
+
+useEffect 的目的时允许你在函数组件中运行具有副作用的命令式代码。这些副作用在函数组件中时不允许存在的，比如网络请求、设置计时器和直接操作 DOM。这些类型的操作在函数组件中时不可能实现的，原因是函数组件本质上只是组件的 render 方法。render 方法中不应该产生副作用，即使在类组件中也是如此，因为 render 方法可能会覆盖任何副作用的结果。相反，副作用应该在 render 方法运行后和更新 DOM 后执行。
+
+这就是为什么要在生命周期方法内处理副作用的原因。
+
+<Tabs>
+  <TabItem value="默认行为">
+    `useEffect` 最基本的形式中，只接收一个函数，并在每次渲染完成后执行该函数。
+    <CodeDemo filePath="/react/useEffect0.txt" />
+  </TabItem>
+  <TabItem value="模拟 componentDidMount 方法">
+    
+    `useEffect` 默认行为上每次渲染组件都运行函数，如果你只希望在初始渲染上使用 `useEffect`，可以自定义 `useEffect` 行为，向它传递可选的第二个实参。当将空数组作为第二参数传递时，它模拟了 `componentDidMount()` 生命周期方法。
+    
+    <CodeDemo filePath="/react/useEffect1.txt" />
+  </TabItem>
+  <TabItem value="模拟 componentDidUpdate 方法">
+
+    向 `useEffect` 第二参数传递依赖项，当依赖性更新，触发 `useEffect`。
+
+    <CodeDemo filePath="/react/useEffect2.txt" />
+
+  </TabItem>
+  <TabItem value="模拟 componentWillUnmount 方法">
+    
+    如果使用 `useEffect` 来设置订阅、设置事件监听器或创建计时器，那么就有可能将内存泄露问题引入应用程序员中，故需要在组件卸载前清理它们。在函数组件中使用 `useEffect` 后如果要进行清理，可以从传递给 `useEffect` 的函数中返回一个函数，这个返回的函数会在组件从用户界面中被移除前运行。
+    
+    <CodeDemo filePath="/react/useEffect3.txt" />
+  </TabItem>
+</Tabs>
+
+因为 `useEffect` 是异步的，并且在组件渲染后运行，所以它是执行异步任务（例如获取数据）的理想场所。
+
+```js title="异步代码执行"
+useEffect(() => {
+  async function getData() {
+    const result = await fetch('http://localhost:8080/api/v3');
+  }
+  getData();
+}, []);
+```
+
+### useCallback
+
+通常，你在组件中定义的函数会在每次渲染时重新创建。这通常不是问题。然而，有时候需要（或出于性能原因）返回函数的缓存版本，以使其在渲染之前保持可用。这就是 `useCallback` 的作用。
+
+使用 `useCallback` hook 去包裹函数，获取函数的缓存，在函数的依赖项更新时，再重新创建函数。
+
+```jsx title="试验组件定义的函数是否每次渲染会重新创建"
+import { useEffect, useState } from 'react';
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  // default-start
+  const handleSomething = () => {
+    console.log('触发了 handleSomething');
+  };
+  // default-end
+
+  // default-start
+  useEffect(() => {
+    handleSomething();
+  }, [handleSomething]);
+  // default-end
+
+  return (
+    <button onClick={() => setCount(prev => prev + 1)}>触发组件渲染</button>
+  );
+}
+
+export default App;
+```
+
+在上诉代码中，`useEffect` 依赖于 handleSomething 更新，如果重新渲染会导致重新创建 handleSomething 函数，那么就会触发 `useEffect`。结果不言而已会触发 `useEffect`。
+
+```jsx
+import { useCallback, useEffect, useState } from 'react';
+
+function App() {
+  const [count, setCount] = useState(0);
+  // success
+  const [list, setList] = useState([]);
+
+  // success-start
+  const handleSomething = useCallback(() => {
+    console.log('触发了 handleSomething');
+  }, [list]);
+  // success-end
+
+  // default-start
+  useEffect(() => {
+    handleSomething();
+  }, [handleSomething]);
+  // default-end
+
+  return (
+    <div>
+      <button onClick={() => setCount(prev => prev + 1)}>触发组件渲染</button>
+      // success
+      <button onClick={() => setList(prev => [...prev, prev.length])}>
+        更新 list，触发函数重新创建
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+### useMemo
+
+使用 `useMemo` hook 可以在函数组件的渲染之间存储值。它的用法与 `useCallback` 相同，只是它可以缓存任何值类型，而不仅限于函数。
+
+和 `useCallback` 一样，使用 `useMemo` 有两个原因：
+
+- 解决不必要的渲染问题
+- 解决与计算成本昂贵有关的性能问题
+
+在某些情况下，组件可能会因为父组件的重新渲染而不必要地重新渲染。`useMemo` 可以用来缓存计算结果，避免不必要的渲染。
+
+```jsx title="解决不必要的渲染问题"
+import React, { useState, useMemo } from 'react';
+
+const ChildComponent = ({ count }) => {
+  console.log('ChildComponent rendered');
+  return <div>Count: {count}</div>;
+};
+
+const ParentComponent = () => {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState('');
+
+  const memoizedCount = useMemo(() => {
+    return count;
+  }, [count]);
+
+  return (
+    <div>
+      <input
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="Type something"
+      />
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <ChildComponent count={memoizedCount} />
+    </div>
+  );
+};
+
+export default ParentComponent;
+```
+
+有些计算非常耗时，如果每次渲染都重新计算，会影响性能。`useMemo` 可以缓存计算结果，只有在依赖项变化时才重新计算。
+
+```jsx title="解决与计算成本昂贵有关的性能问题"
+import React, { useState, useMemo } from 'react';
+
+const expensiveCalculation = num => {
+  console.log('Calculating...');
+  // 模拟耗时计算
+  for (let i = 0; i < 1000000000; i++) {}
+  return num * 2;
+};
+
+const ExpensiveComponent = () => {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState('');
+
+  const calculatedValue = useMemo(() => {
+    return expensiveCalculation(count);
+  }, [count]);
+
+  return (
+    <div>
+      <input
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="Type something"
+      />
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <div>Calculated Value: {calculatedValue}</div>
+    </div>
+  );
+};
+
+export default ExpensiveComponent;
+```
+
+### useDebugValue
+
+`useDebugValue` 是 React 提供的一个 Hook，用于在 React 开发者工具中*显示自定义 Hook* 的标签和调试信息。它主要是为了提高*自定义 Hook 的可调试性和可读性*，使得在调试复杂应用程序时更容易理解和分析 Hook 的行为。
+
+`useDebugValue` 接受一个参数，可以是任意类型的值，用来描述当前 Hook 的状态或一些调试信息。
+
+```js title="示例"
+import React, { useState, useEffect, useDebugValue } from 'react';
+
+function useFriendStatus(friendID) {
+  const [isOnline, setIsOnline] = useState(null);
+
+  useEffect(() => {
+    function handleStatusChange(status) {
+      setIsOnline(status.isOnline);
+    }
+
+    // 假设有一个订阅函数来监听好友状态
+    ChatAPI.subscribeToFriendStatus(friendID, handleStatusChange);
+    return () => {
+      ChatAPI.unsubscribeFromFriendStatus(friendID, handleStatusChange);
+    };
+  }, [friendID]);
+
+  // 在开发者工具中显示调试信息
+  useDebugValue(isOnline ? 'Online' : 'Offline');
+
+  return isOnline;
+}
+```
+
+### useSyncExternalStore
+
+`useSyncExternalStore` 是 React 18 引入的一个 Hook，用于订阅外部存储（如全局状态管理器、WebSocket 数据源等），并确保在更新时同步获取最新的存储值。它提供了一种方式，让组件可以安全、同步地读取外部存储的数据。
+
+<Tabs>
+  <TabItem value="语法">
+    `useSyncExternalStore` 接受三个参数：
+
+    `subscribe`
+    > 一个函数，用于订阅存储的变化。它返回一个取消订阅的函数。
+
+    `getSnapshot`
+    > 一个函数，用于获取当前的存储值。
+
+    <p className="optional">`getServerSnapshot`</p>
+    > 一个函数，用于在服务器渲染时获取当前的存储值。
+
+  </TabItem>
+  <TabItem value="示例">
+    <CodeDemo filePath="/react/useSyncExternalStore.txt"/>
+  </TabItem>
+</Tabs>
 
 ### 自定义 Hook
+
+自定义 hook 是利用内置 hook 来封装可重用功能的函数。通过创建自定义 Hook，可以将组件中的复杂逻辑提取到独立的函数中，从而使代码更模块化和可重用。自定义 Hook 使得 React 组件更具可读性和可维护性。
+
+自定义 hook，像内置 hook 一样，名称以 use 开发，这是一种约定俗成，而不是强制要求。要编写自定义 hook，在函数内至少使用一个或多个内置 hook，并从该函数导出一个值。
+
+```js title="hook 示例：useCustomHook.js"
+import { useState } from 'react';
+
+function useCustomHook(initalValue = 0) {
+  const [count, setCount] = useState(initalValue);
+  const increment = () => {
+    setCount(prev => prev + 1);
+  };
+
+  const decrement = () => {
+    setCount(prev => prev - 1);
+  };
+
+  return [count, increment, decrement];
+}
+
+export default useCustomHook;
+```
+
+自定义 Hook 可以返回任意类型的值，包括状态、函数、对象、数组等。返回值将被解构或直接使用在组件中。
+
+可以非常简单使用计数器功能，且可以简单复用。
+
+```jsx title="使用 useCustomHook"
+import useCustomHook from './CustomHook.ts';
+
+export default function App() {
+  const [count, increment, decrement] = useCustomHook();
+
+  return (
+    <div>
+      <h1>计数器 {count}</h1>
+
+      <button onClick={increment}>+</button>
+      <button onClick={decrement}>-</button>
+    </div>
+  );
+}
+```
