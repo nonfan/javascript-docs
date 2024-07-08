@@ -1,0 +1,18 @@
+import React from "react";
+import { useMatch } from "react-router-dom";
+
+const MatchRoute = ({ path }) => {
+  const match = useMatch(path);
+
+  return (
+    <div>
+      {match ? (
+        <div>Path matches the current URL</div>
+      ) : (
+        <div>Path does not match the current URL</div>
+      )}
+    </div>
+  );
+};
+
+export default MatchRoute;

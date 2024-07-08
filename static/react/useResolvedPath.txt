@@ -1,0 +1,15 @@
+import React from "react";
+import { useResolvedPath } from "react-router-dom";
+
+const CustomLink = ({ to, children }) => {
+  const resolvedPath = useResolvedPath(to);
+
+  return (
+    <div>
+      <a href={resolvedPath.pathname}>{children}</a>
+      <div>Resolved Path: {resolvedPath.pathname}</div>
+    </div>
+  );
+};
+
+export default CustomLink;

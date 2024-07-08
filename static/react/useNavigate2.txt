@@ -1,0 +1,9 @@
+const navigate = useNavigate();
+navigate("/profile", {
+  state: {
+    name: "mofan",
+  },
+});
+
+// 目标组件获取
+const state = useLocation();

@@ -1,0 +1,23 @@
+import React from "react";
+import { Outlet, useOutletContext } from "react-router-dom";
+
+const Layout = () => {
+  const contextValue = { user: "John Doe" };
+
+  return (
+    <div>
+      <header>Header</header>
+      <main>
+        <Outlet context={contextValue} />
+      </main>
+      <footer>Footer</footer>
+    </div>
+  );
+};
+
+const ChildComponent = () => {
+  const context = useOutletContext();
+  return <div>User: {context.user}</div>;
+};
+
+export { Layout, ChildComponent };

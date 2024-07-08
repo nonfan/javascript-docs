@@ -1994,6 +1994,618 @@ export default function App() {
 
 ## 路由
 
+React Router是为React（一个用于构建用户界面的 JavaScript 库）设计的一个功能齐全的可以用在客户端和服务端的路由库，它可以在React运行的地方运行，在web上，node.js在服务器上，以及React Native上。
+
+### 安装
+
+```bash npm2yarn
+npm install react-router-dom@6 history@5
+```
+
+### 连接路由
+
+首先，我们想把你的应用连接到路由: `BrowserRouter`，并用它包裹你的整个应用。
+
+```js
+import { BrowserRouter } from 'react-router-dom';
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+);
+```
+
+### 添加导航
+
+在 `App.js` 组件导入 `Link` 并添加一些全局导航，帮助应用实现跳转。
+
+```js title="App.js"
+import { Link } from 'react-router-dom';
+
+function App() {
+  return (
+    <div>
+      <Link to="/">Home</Link>
+      <Link to="/about">About</Link>
+      <Link to="/profile">Profile</Link>
+    </div>
+  );
+}
+
+export default App;
+```
+
+你还可以使用 `NavLink`，它是 `Link` 组件的升级版，用于给当前点击链接，追加一个calss类名样式，默认active
+
+```css title="App.css"
+.active {
+  color: red;
+}
+```
+
+当前激活的链接会自动高亮红色链接。
+
+```js title="App.js"
+import { NavLink } from 'react-router-dom';
+import './App.css';
+
+function App() {
+  return (
+    <div>
+      <NavLink to="/">Home</NavLink>
+      <NavLink to="/about">About</NavLink>
+      <NavLink to="/profile">Profile</NavLink>
+    </div>
+  );
+}
+
+export default App;
+```
+
+如果需要修改默认类名，向 className 传入一个回调函数，函数接收 isActive 参数，渲染高亮类名。
+
+```jsx
+<NavLink
+  to="/home"
+  className={({ isActive }) => {
+    return isActive ? 'custom-active' : '';
+  }}
+>
+  Home
+</NavLink>
+```
+
+### 注册路由
+
+使用 Route 将组件注册成路由组件，并通过匹配 URL 来切换路由组件时，需要将它们包裹在 Routes 组件中，以便监视 URL 的变化。
+
+```js title="App.js"
+import React from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+
+const Home = () => <h2>Home Page</h2>;
+const About = () => <h2>About Page</h2>;
+const Profile = () => <h2>Profile Page</h2>;
+
+function App() {
+  return (
+    <div>
+      <ul>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/profile">Profile</Link>
+      </ul>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;
+```
+
+### 添加“无匹配”路由
+
+如果您单击一些链接使页面变为空白，并没有像您预期的那样进行，那是因为我们定义的所有路由都匹配不到我们点击的 URL.
+
+```jsx
+const NotFoundPage = () => <h2>NotFoundPage</h2>;
+
+<Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/about" element={<About />} />
+  <Route path="/profile" element={<Profile />} />
+  <Route path="*" element={<NotFoundPage />} />
+</Routes>;
+```
+
+### 嵌套路由
+
+设置二级路由链接时，可以是 `to="son1"`、`to="./son1"`，但不能是 `to="/son1"`，因为它会重置为一级路由。
+
+```jsx
+import React from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+
+// default-start
+const Home = () => (
+  <div>
+    <h1>Home Page </h1>
+    <Link to="son1">son1</Link>
+    <Link to="son2">son2</Link>
+  </div>
+);
+// default-end
+
+const About = () => <h2>About Page</h2>;
+const Profile = () => <h2>Profile Page</h2>;
+const Son1 = () => <h3>Son1</h3>;
+const Son2 = () => <h3>Son2</h3>;
+
+function App() {
+  return (
+    <div>
+      <ul>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/profile">Profile</Link>
+      </ul>
+
+      <Routes>
+        // default-start
+        <Route path="/" element={<Home />}>
+          <Route path="son1" element={<Son1 />} />
+          <Route path="son2" element={<Son2 />} />
+        </Route>
+        // default-end
+        <Route path="/about" element={<About />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;
+```
+
+嵌套路由中，需要使用 `<Outlet>` 设置子路由的路由的位置，即在何处渲染子路由。
+
+```jsx
+import { Outlet } from 'react-router-dom';
+
+const Home = () => (
+  <div>
+    <h1>Home Page </h1>
+    <Link to="/son1">son1</Link>
+    <Link to="/son2">son2</Link>
+    <Outlet />
+  </div>
+);
+```
+
+### 默认路由
+
+在路由组件内再次注册子路由，使用 `index` 指定默认渲染子路由（ 或者 `path` 为空）。
+
+```js
+<Route path="/" element={<Home />}>
+  <Route index element={<Son1 />} />
+  <Route path="son1" element={<Son1 />} />
+  <Route path="son2" element={<Son2 />} />
+</Route>
+```
+
+### 路由表
+
+创建一个路由表是管理复杂应用中的路由配置的好方法。路由表将所有的路由集中在一个地方，便于维护和修改。
+
+```js title="路由表（routes.js）"
+import { Link, Outlet } from 'react-router-dom';
+
+const Home = () => (
+  <div>
+    <h1>Home Page </h1>
+    <Link to="/son1">son1</Link>
+    <Link to="/son2">son2</Link>
+    <Outlet />
+  </div>
+);
+const About = () => <h2>About Page</h2>;
+const Profile = () => <h2>Profile Page</h2>;
+const Son1 = () => <h3>Son1</h3>;
+const Son2 = () => <h3>Son2</h3>;
+const NotFoundPage = () => <h2>NotFoundPage</h2>;
+
+const routes = [
+  {
+    path: '/',
+    element: <Home />,
+    children: [
+      {
+        path: '',
+        element: <Son1 />,
+      },
+      {
+        path: 'son1',
+        element: <Son1 />,
+      },
+      {
+        path: 'son2',
+        element: <Son2 />,
+      },
+    ],
+  },
+  {
+    path: '/about',
+    element: <About />,
+  },
+  {
+    path: '/profile',
+    element: <Profile />,
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
+  },
+];
+
+export default routes;
+```
+
+借助 `useRoutes` hook 可以帮你快速将路由表进行注册。
+
+```js title="App.js"
+import React from 'react';
+import { Link, useRoutes } from 'react-router-dom';
+import routes from './routes';
+
+function App() {
+  // default
+  const element = useRoutes(routes);
+  return (
+    <div>
+      <ul>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/profile">Profile</Link>
+      </ul>
+      {element}
+    </div>
+  );
+}
+
+export default App;
+```
+
+类组件不能使用 React 的 Hooks，因此无法使用 `useRoutes`。但是，我们可以通过传统的方法，比如使用 map 函数，将路由表渲染出来。
+
+```jsx
+import routes from './routes';
+
+<Routes>
+  {routes.map((route, index) => (
+    <Route key={index} path={route.path} element={route.element} />
+  ))}
+</Routes>;
+```
+
+### 路由参数
+
+#### params 参数
+
+在注册路由或路由表绑定 `path` 来传递 params 参数，在函数组件使用 `useParams` hook 获取解析。
+
+```js title="注册路"
+<Route path="/profile/:id"></Route>
+```
+
+`:id` 被 `useParams` 解析，通过 `params.id` 获取。
+
+```js title="Profile 组件"
+import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+
+function Profile() {
+  const params = useParams();
+
+  useEffect(() => {
+    console.log(params);
+  }, []);
+
+  return <h1>Profile</h1>;
+}
+
+export default Profile;
+```
+
+#### search 参数
+
+传递参数的方式不变，也不需要声明接受，但解析参数需要使用 `useSearchParams()` 接收参数。该方法返回一个包含两个元素的数组：`searchParams` 参数和修改 `setSearchParams` 参数的方法（名字随意，尽可能规范取名）。
+
+```jsx
+// 点击跳转
+<Link to="/profile?name=mofan">Profile</Link>;
+
+// Profile 组件
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
+function Profile() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    console.log(searchParams.get('name')); // mofan
+  }, []);
+
+  return <h1>Profile</h1>;
+}
+
+export default Profile;
+```
+
+#### state 参数
+
+使用 `state` 参数传递数据的方法比直接在 URL 中传递参数更灵活和安全，特别适合传递复杂数据。你可以通过 `Link` 或 `navigate` 方法来设置 `state` 参数，并通过 `useLocation` 钩子来获取它。
+
+```js
+<Link to="/profile" state={{ userId: 1, userName: 'John' }}>
+  Profile
+</Link>
+```
+
+```js title="Profile 组件"
+import React, { useEffect } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+
+function Profile() {
+  const state = useLocation();
+
+  useEffect(() => {
+    console.log(state);
+  }, []);
+
+  return <h1>Profile</h1>;
+}
+
+export default Profile;
+/**
+* {
+    "pathname": "/profile",
+    "search": "",
+    "hash": "",
+    "state": {
+        "userId": 1,
+        "userName": "John"
+    },
+    "key": "wwwfnyn1"
+}
+*/
+```
+
+### 编程式路由导航
+
+编程式路由导航是指在 React 中通过编程方式（而不是通过用户点击链接或按钮）进行页面导航。在 React Router 中，你可以使用 `useNavigate` 对象来实现编程式导航。
+
+```jsx
+import React, { useState } from 'react';
+import { useNavigate, useRoutes } from 'react-router-dom';
+import routes from './routes';
+
+const App = () => {
+  const element = useRoutes(routes);
+  const [path, setPath] = useState();
+  // default
+  const navigate = useNavigate();
+
+  // default-start
+  const handleNavigate = () => {
+    navigate(path);
+  };
+  // default-end
+
+  return (
+    <div>
+      <input
+        placeholder="请输入路径"
+        onChange={event => setPath(event.target.value)}
+      />
+      <button onClick={handleNavigate}>导航</button>
+
+      {element}
+    </div>
+  );
+};
+
+export default App;
+```
+
+使用 `useNavigate` 进行路由导航时，可以通过第二个参数来传递额外的数据，这些数据可以在目标路由组件中进行接收和处理。第二参数是一个可选对象，有如下属性：
+
+<Tabs>
+  <TabItem value="replace">
+    指定 `replace: true` 将导致导航替换历史堆栈中的当前条目，而不是添加新条目。
+
+    <CodeDemo filePath="/react/useNavigate1.txt"/>
+
+  </TabItem>
+  <TabItem value="state">
+    您可以包含一个可选的 `state` 值来存储在历史状态中，然后您可以通过 `useLocation` 在目标路由上访问该值。
+    
+    <CodeDemo filePath="/react/useNavigate2.txt"/>
+
+  </TabItem>
+  <TabItem value="preventScrollReset">
+    使用 `<ScrollRestoration/>` 组件时，您可以通过 `options.preventScrollReset` 禁用将滚动重置到页面顶部
+  </TabItem>
+
+  <TabItem value="relative">
+    默认情况下，导航是相对于路由层次结构 `relative: "route"` 的，因此 `..` 将上升一个 Route 级别。有时，您可能会发现匹配的 URL 模式对于嵌套没有意义，并且您更愿意使用相对路径路由。您可以使用 `relative: "path"` 选择此行为：
+
+    <CodeDemo filePath="/react/useNavigate3.txt"/>
+
+  </TabItem>
+</Tabs>
+
+`useNavigate` 可以传递数字，代表前进或后退几步。
+
+```js
+const navigate = useNavigate();
+
+function back() {
+  navigate(1);
+}
+
+function forward() {
+  navigate(-1);
+}
+```
+
+### 路由拦截
+
+在React中实现路由拦截通常涉及到使用React Router库来管理路由，以及在需要时添加自定义逻辑来拦截和处理路由跳转或访问。
+
+封装一个通用的权限组件，在是否获取到权限时，渲染目标组件还是登录组件。
+
+```jsx title="PermissionRoute.jsx"
+import React from 'react';
+import { Navigate, Route, useNavigate } from 'react-router-dom';
+
+function PermissionRoute({ Component }) {
+  const navigate = useNavigate();
+
+  function getToken() {
+    return localStorage.getItem('token') || false;
+  }
+
+  if (!getToken()) {
+    return <Navigate to="/login" />;
+  }
+
+  return Component;
+}
+
+export default PermissionRoute;
+```
+
+```jsx title="App.js"
+const App = () => {
+  return (
+    <div>
+      <Link to="/home">Home</Link>
+      <Link to="/about">About</Link>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/home" element={<Home />} />
+        {/* 需要权限才能访问的组件 */}
+        <Route
+          path="/about"
+          element={<PermissionRoute Component={<About />} />}
+        />
+      </Routes>
+    </div>
+  );
+};
+
+export default App;
+```
+
+### 类组件跳转
+
+在 React Router v6 中，`withRouter` 高阶组件已经被移除，但你仍然可以在类组件中实现编程式导航。为了在类组件中使用导航功能，可以通过 `useNavigate` 钩子创建一个函数组件包装器，将导航功能注入到类组件中。
+
+首先，我们需要创建一个 `withRouter` 高阶组件来将 `navigate` 函数注入到类组件的 `props` 中。
+
+```jsx title="withRouter.jsx"
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export const withRouter = Component => {
+  const Wrapper = props => {
+    const navigate = useNavigate();
+    return <Component {...props} navigate={navigate} />;
+  };
+
+  return Wrapper;
+};
+```
+
+```jsx title="示例"
+import React from 'react';
+import withRouter from './withRouter.jsx';
+
+class About extends React.Component {
+  handleClick() {
+    this.navigate('/home');
+  }
+
+  render() {
+    return <h1 onClick={() => this.handleClick()}>About</h1>;
+  }
+}
+
+export default withRouter(About);
+```
+
+### 路由 Hooks
+
+路由钩子（Hooks）提供了一种简单且强大的方式来访问和操作路由信息。这些钩子使得在函数组件中操作路由变得更加方便。
+
+**常用路由钩子**
+
+- [ ] `useNavigate`
+- [ ] `useParams`
+- [ ] `useLocation`
+- [ ] `useSearchParams`
+- [ ] `useRoutes`
+
+**其它 hooks**
+
+<Tabs>
+  <TabItem value="useOutlet">
+
+    `useOutlet` 用于在布局组件中渲染子路由的内容。通常用于嵌套路由中。
+
+    <CodeDemo filePath="/react/useOutlet.txt"/>
+
+  </TabItem>
+  <TabItem value="useOutletContext">
+    
+    `useOutletContext` 用于在子路由组件中获取父路由通过 `<Outlet/>` 提供的上下文。
+
+    <CodeDemo filePath="/react/useOutletContext.txt"/>
+
+  </TabItem>
+  <TabItem value="useResolvedPath">
+    
+    `useResolvedPath` 用于解析给定路径并返回包含路径信息的对象。主要用于创建自定义导航逻辑。
+
+    <CodeDemo filePath="/react/useResolvedPath.txt"/>
+
+  </TabItem>
+  <TabItem value="useMatch">
+
+    `useMatch` 用于检查当前 URL 是否与给定的路径匹配，并返回匹配的详细信息。
+
+    <CodeDemo filePath="/react/useMatch.txt"/>
+
+  </TabItem>
+  
+  <TabItem value="useNavigationType">
+
+    `useNavigationType` 用于获取当前导航的类型（PUSH、POP 或 REPLACE），主要用于对导航行为进行更细粒度的控制。
+
+    <CodeDemo filePath="/react/useNavigationType.txt"/>
+
+  </TabItem>
+</Tabs>
+
 ## 错误边界
 
 ### 什么是错误边界
