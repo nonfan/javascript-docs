@@ -1996,6 +1996,123 @@ export default function App() {
 
 ## 错误边界
 
+### 什么是错误边界
+
+错误边界是一个组件，用于捕获其子组件中发生的错误，一旦捕获到错误，错误边界就可以提供一个回退 UI 并记录错误，还可以为用户提供一种不需要刷新浏览器窗口就能够恢复使用 UI 的方法。
+
+### 实现错误边界
+
+在 React 中，错误边界不是特定的函数或组件。相反，任何组件都可以定义一个静态的 `getDerivedStateFromError` 或 `componentDidCatch` 生命周期方法（或两者兼而有之）。因为错误边界使用生命周期方法，所以它们必须是类组件。一旦定义了 ErrorBoundary 组件，就可以根据需要多次重用它。因此，如果需要，ErrorBoundary 组件可以是唯一需要编写的类组件。
+
+```js title="构建 ErrorBoundary 组件"
+import React from 'react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      hasError: false,
+    };
+  }
+
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+    };
+  }
+
+  componentDidCatch(error, info) {
+    // 记录日志
+    console.log(error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>遇到错误了，请稍后尝试刷新</h1>;
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+```
+
+**1. getDerivedStateFromError 是一种静态方法**
+
+静态方法通常用于定义整个类的功能，例如实用程序。在 React 中，`getDerivedStateFromError` 生命周期方法被定义为静态方法，是为了使它们更难产生副作用。
+
+**2. getDerivedStateFromError 在渲染阶段运行**
+
+在组件生命周期中的渲染阶段运行，不允许执行具有副作用的操作，如记录错误。执行副作用的正确时间是在渲染阶段之前或之后。如果要执行副作用，可以借助 `componentDidCatch` 生命周期。
+
+**3. getDerivedStateFromError 将错误作为参数接收**
+
+当使用 `getDerivedStateFromError` 的组件的后代组件中发生错误时，将调用该方法并传递错误消息。错误消息时一个字符串，包含有关错误发生的位置和错误内容。
+
+**4. getDerivedStateFromError 应返回一个对象以更新状态**
+
+`getDerivedStateFromError` 的返回值将用于更新状态。除了更新 hasError 的值，也可能将错误本身存储在状态中。
+
+```jsx
+class ErrorBoundary extends React.Component {
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+      error,
+    };
+  }
+}
+```
+
+**5. 使用 componentDidCatch() 记录错误**
+
+当 React 组件树中发生错误时，要尽量减少它对用户的影响，但如果能实际了解错误发生的原因和位置，将有助于防止未来再次发生错误。这就是 `componentDidCatch` 生命周期方法能发挥作用的地方。
+
+**6. 使用日志记录服务**
+
+在开发过程中，将错误记录到控制台时可以的，但一旦应用程序上线并被其他人使用，控制台窗口中显示的所有日志消息将保留在用户的控制台中，这没有任何好处。
+
+要了解实际用户遇到的错误，要么需要用户来告诉你（除非错误非常严重，否则这是不可能的），要么需要实现一个系统，能够在用户浏览器外自动记录错误。
+
+基于云的日志记录服务可以捕获应用程序中发生的事件（如错误），并提供报告，你可以使用这些报告来改进应用程序或获取有关用户如何使用应用程序的信息。
+
+**7. 重置状态**
+
+如果触发错误边界的错误是临时错误，例如在网络服务不可用时，那么提供一种让用户重试的方法可以改善用户体验。
+
+由于 ErrorBoundary 组件根据 hasError 状态值确定是否渲染回退UI或其子组件，因此重置 hasError 的值将导致它再次尝试渲染子组件。
+
+渲染因网络请求发生错误的组件，可以在 ErrorBoundary 组件添加一个重试按钮，以重新渲染子组件。
+
+```jsx title="示例"
+class ErrorBoundary extends React.Component {
+  render() {
+    if (this.state.hasError) {
+      return (
+        <h1>
+          遇到错误了，
+          <button onClick={() => this.setState({ hasError: false })}>
+            请重试
+          </button>
+        </h1>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+### 错误边界无法捕获的错误
+
+错误边界是捕获组件中大多数常见错误的绝佳工具，但错误边界无法处理某些类型的错误，如下：
+
+- ErrorBoundary 中的错误
+- 事件处理程序中的错误
+- 服务器端渲染中的错误
+- 异步代码中的错误
+
 ## Context API
 
 在 React 中将数据从父组件传递子组件的主要方法是通过 props。然而，在某些情况下，props 用起来会很繁琐，并且会导致代码更难阅读和维护。为此，Context API 应运而生。
