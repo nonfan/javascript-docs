@@ -2018,6 +2018,56 @@ root.render(
 );
 ```
 
+`BrowserRouter` 和 `HashRouter` 是 React Router 提供的两种不同的路由器，它们在处理 URL 以及与浏览器的交互方式上有所不同。
+
+#### BrowserRouter
+
+`BrowserRouter` 使用 HTML5 的 history API 进行 URL 操作，这种方式支持干净的 URL，不会在 URL 中显示 # 号。
+
+由于 URL 是标准路径，服务器需要配置以支持客户端路由。如果服务器未正确配置，当用户直接访问一个深层次的 URL 时，可能会返回 404 错误。
+
+#### HashRouter
+
+`HashRouter` 使用 URL 的哈希部分（#）进行路由操作，这种方式不需要服务器配置即可支持客户端路由。
+
+由于所有路由都在 URL 的哈希部分，服务器始终返回相同的页面，不需要额外配置。
+
+#### 服务器配置示例
+
+如果你使用 `BrowserRouter`，需要在服务器上进行一些配置，以确保所有路由都指向同一个 HTML 文件。下面是一些常见服务器的配置示例：
+
+<Tabs>
+  <TabItem value="Apache">
+
+    在 `.htaccess` 文件中添加以下内容：
+
+    ```apache
+    <IfModule mod_rewrite.c>
+      RewriteEngine On
+      RewriteBase /
+      RewriteRule ^index\.html$ - [L]
+      RewriteCond %{REQUEST_FILENAME} !-f
+      RewriteCond %{REQUEST_FILENAME} !-d
+      RewriteRule . /index.html [L]
+    </IfModule>
+    ```
+
+  </TabItem>
+  <TabItem value="Nginx">
+    在 Nginx 配置文件中添加以下内容：
+    
+   <CodeDemo filePath="/react/nginx.txt" />
+
+  </TabItem>
+  <TabItem value="Express.js">
+
+    在 Express.js 服务器中添加以下内容：
+
+    <CodeDemo filePath="/react/express.txt" />
+
+  </TabItem>
+</Tabs>
+
 ### 添加导航
 
 在 `App.js` 组件导入 `Link` 并添加一些全局导航，帮助应用实现跳转。
@@ -2605,6 +2655,56 @@ export default withRouter(About);
 
   </TabItem>
 </Tabs>
+
+### 路由懒加载
+
+如果路由组件直接引入的话，在页面刚载入时，就会将全部组件进行加载，这样很容器造成页面白屏，故让路由组件使用懒加载的形式，用到就去加载。
+
+`Suspense` 组件用于包裹路由组件，当路由组件在加载时，会先去渲染绑定在 `<Suspense fallback={<Loading/>} /> `的 `Loading` 组件，且它不能使用懒加载的形式。
+
+```js
+// default
+import React, { Component, lazy, Suspense } from 'react';
+import { BrowserRouter, Route, Link } from 'react-router-dom';
+import Loading from './components/Loading';
+
+// default-start
+const Home = lazy(() => import('./components/Home'));
+const About = lazy(() => import('./components/About'));
+// default-end
+
+export default class extends Component {
+  render() {
+    return (
+      <BrowserRouter>
+        <Link to="/home">Home</Link>
+        <Link to="/about">About</Link>
+
+        <Suspense fallback={<Loading />}>
+          <Route path="/home" component={Home} />
+          <Route path="/about" component={About} />
+        </Suspense>
+      </BrowserRouter>
+    );
+  }
+}
+```
+
+:::warning
+懒加载组件必须最后导入，切勿将 Loading 组件在其后导入。
+:::
+
+### React Router v5
+
+React Router v5 仍然在使用中，但 React Router v6 已经发布，并引入了一些新的特性和改进。尽管如此，React Router v5 仍然是许多现有项目的选择，因为它稳定且广泛支持。
+
+#### 安装
+
+```bash npm2yarn
+npm i react-router-dom@5
+```
+
+---
 
 ## 错误边界
 
