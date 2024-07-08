@@ -10,7 +10,19 @@ const siderbar: SidebarsConfig = {
         id: 'javascript-libraries-and-frameworks/frameworks/index',
       },
       items: [
-        'javascript-libraries-and-frameworks/frameworks/react',
+        {
+          type: 'category',
+          label: 'React',
+          description: '用于构建 Web 和原生交互界面的库。',
+          items: [
+            'javascript-libraries-and-frameworks/frameworks/react/basic-concepts',
+            'javascript-libraries-and-frameworks/frameworks/react/deep-component',
+            'javascript-libraries-and-frameworks/frameworks/react/advanced-concepts',
+            'javascript-libraries-and-frameworks/frameworks/react/state-management',
+            'javascript-libraries-and-frameworks/frameworks/react/performance-optimization',
+            'javascript-libraries-and-frameworks/frameworks/react/project-in-action',
+          ],
+        },
         'javascript-libraries-and-frameworks/frameworks/nextjs',
         'javascript-libraries-and-frameworks/frameworks/vue',
         'javascript-libraries-and-frameworks/frameworks/svelte',

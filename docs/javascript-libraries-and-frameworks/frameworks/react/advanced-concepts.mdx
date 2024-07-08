@@ -1,0 +1,1398 @@
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import CodeDemo from '@site/src/components/CodeDemo';
+
+# 高级概念
+
+## Hooks
+
+### 什么是Hooks？
+
+Hooks 是 React 中的一种特性，允许你在函数式组件中使用 React 的状态（state）和生命周期特性。通过 Hooks，可以在不编写类组件的情况下，复用状态逻辑、副作用逻辑（如数据获取、订阅等），以及更好地组织和抽象组件的逻辑。Hooks 的引入使得 React 组件的编写更加简洁、灵活，并提高了代码的可维护性和复用性。
+
+#### Hooks 规则
+
+在使用 React Hooks 时，有一些重要的规则需要遵循，以确保 Hooks 能够正确地工作和发挥其作用。以下是使用 React Hooks 的主要规则：
+
+**1. 只在最顶层使用 Hook:**
+
+不要在循环，条件或嵌套函数中调用 Hook， 确保总是在你的 React 函数的最顶层以及任何 return 之前调用他们。遵守这条规则，你就能确保 Hook 在每一次渲染中都按照同样的顺序被调用。这让 React 能够在多次的 `useState` 和 `useEffect` 调用之间保持 hook 状态的正确。
+
+**2. 只在 React 函数或 Hook 中调用 Hook:**
+
+Hooks 只能在 React 的函数式组件中使用，以及自定义 Hook 中调用 Hooks。不能在普通的 JavaScript 函数中使用，也不能在类组件中使用。
+
+**3. 按顺序调用 Hooks:**
+
+在每次渲染时，Hooks 的调用顺序必须始终保持一致。React 依赖于 Hooks 调用顺序来正确地管理组件的状态和副作用。
+
+**4. 命名规则：**
+
+自定义 Hook 必须以 `use` 开头，这是 React 对自定义 Hook 的约定。例如，`useEffect`、`useState` 是 React 提供的内置 Hook 名称，而你自己定义的 Hook 应该遵循相同的命名规则，例如 `useCustomHook`。
+
+### useState
+
+在包含 `useState` hook 的函数组件进行第一次渲染时，它会根据传递给它的参数创建一个有状态的值，同时创建一个用于更新该值的函数。
+
+<Tabs>
+  <TabItem value="设置初始状态">
+    需要将初始值传递给 `useState`。接收单个参数，该参数可以是 JavaScript 的任何数据类型（或计算结果为单个值的表达式）或函数。
+
+    如果不向 `useState` 传递参数，则将创建初始值为 undefind 的状态变量。
+
+    初始值只会在组件的初始渲染中起作用，后续渲染时会被忽略。React称之为惰性初始状态。
+    <CodeDemo filePath="/react/useState1.txt"/>
+
+  </TabItem>
+  <TabItem value="使用 Setter 函数">
+
+    `useState` 返回的 setter 函数将触发渲染。如果将 setter 函数向下传递给子组件并从该子组件调用它，它仍然会操作创建它的原始变量。
+
+    <CodeDemo filePath="/react/useState2.txt"/>
+
+  </TabItem>
+  <TabItem value="向 Setter 传递值">
+
+    `useState` 返回的 setter 函数将触发渲染。如果将 setter 函数向下传递给子组件并从该子组件调用它，它仍然会操作创建它的原始变量。
+
+    <CodeDemo filePath="/react/useState3.txt"/>
+
+  </TabItem>
+  <TabItem value="向 Setter 传递函数">
+
+    当变量的新状态是基于变量之前的状态计算得出时，应该使用这种方法。通过传递一个函数，可以确保 setter 函数总是接收到变量的最新值。
+
+    <CodeDemo filePath="/react/useState4.txt"/>
+
+  </TabItem>
+</Tabs>
+
+### useReducer
+
+useReducer hook 是 useState 的替代方案，它适用于复杂的状态更新或新状态依赖于旧状态的情况。useState 仅接收一个初始状态作为其参数，但 useReducer 接收一个初始状态和 reducer 作为实参。reducer 是一个纯函数，它接收当前状态和一个名为 action 的对象，并返回新状态。
+
+```js title="reducer 函数签名"
+(state, action) => newState;
+```
+
+useReducer hook 返回一个值和 dispatch 函数。dispatch 函数可用于响应事件，但它不使用值来设置状态变量，而是 action 对象。action 对象具有类型和可选的有效负载。
+
+```jsx title="示例"
+import { useReducer } from 'react';
+
+const initialState = {
+  count: 0,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'increment':
+      // 这种方式确保了原始状态对象不会被修改，从而保持状态的不可变性，使得 React 能够正确地检测和响应状态的变化。
+      // default
+      return { ...state, count: state.count + 1 };
+
+    case 'decrement':
+      // default
+      return { ...state, count: state.count - 1 };
+
+    default:
+      throw new Error('错误的 action');
+  }
+}
+
+const App = () => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <div>
+      <h1>计算器 {state.count}</h1>
+      <button onClick={() => dispatch({ type: 'increment' })}>increment</button>
+      <button onClick={() => dispatch({ type: 'decrement' })}>decrement</button>
+    </div>
+  );
+};
+
+export default App;
+```
+
+### useContext
+
+全局数据是程序中所有组件或多个组件都使用的数据，如主题或用户偏好。对于 React 应用程序中的每一个组件，将全局数据从父组件传递到子组件可能是件麻烦事，特别是当组件树有多个层级时。
+
+React Context 提供了一种在组件之间共享全局数据的方法，而不必将值作为 `props` 手动传递。`useContext` hook 接收一个 Context 对象作为参数，并返回该对象的最新值。
+
+```jsx title="示例"
+import { useContext } from 'react';
+import themeContext from './themeContext.js';
+const App = () => {
+  const theme = useContext(themeContext);
+  return <h1>Hello World! {theme.name}</h1>;
+};
+
+export default App;
+```
+
+### useRef
+
+`useRef` hook 会返回一个带有可变属性 current 的 `ref` 对象。`ref` 对象的一个用途是以命令式访问 DOM。当附加了 `ref` 的 DOM 节点发生变化时，`ref` 对象的当前属性将被更新。而对 `ref` 的更改不会导致组件重新渲染。
+
+`useRef` 它能帮助引用一个不需要渲染的值。
+
+```js
+const ref = useRef(initialValue);
+```
+
+<Tabs>
+  <TabItem value="使用用 ref 引用一个值">
+
+    在组件顶层调用 `useRef` 声明一个或多个 `ref`。
+
+    ```jsx
+    import { useRef } from 'react';
+    const intervalRef = useRef(0);
+    ```
+
+    `useRef` 返回一个具有单个 current 属性 的 `ref` 对象，并初始化为你提供的初始值。
+
+    在后续的渲染中，`useRef` 将返回相同的对象。你可以改变它的 current 属性来存储信息，并在之后读取它。这会让人联想到 `state`，但是有一个重要的区别。
+
+    改变 `ref` 不会触发重新渲染。这意味着 `ref` 是存储一些不影响组件视图输出信息的完美选择。例如，如果需要存储一个 interval ID 并在以后检索它，那么可以将它存储在 `ref` 中。只需要手动改变它的 current 属性 即可修改 `ref` 的值：
+
+    <CodeDemo filePath="/react/useRef1.txt" />
+
+  </TabItem>
+  <TabItem value="通过 ref 操作 DOM">
+
+    使用 `ref` 操作 DOM 是非常常见的行为。React 内置了对它的支持。
+
+
+    <CodeDemo filePath="/react/useRef2.txt" />
+
+  </TabItem>
+  <TabItem value="避免重复创建 ref 的内容">
+
+    虽然 `new User()` 的结果只会在首次渲染时使用，但是依然在每次渲染时都在调用这个方法。如果是创建昂贵的对象，这可能是一种浪费。
+
+    <CodeDemo filePath="/react/useRef3-1.txt" title="重复创建 ref"/>
+
+    为了解决这个问题，你可以像这样初始化 `ref`：
+
+    <CodeDemo filePath="/react/useRef3-2.txt"/>
+
+  </TabItem>
+  <TabItem value="获取自定义组件的 ref">
+
+    如果尝试像这样传递 `ref` 到自定义组件：你可能会在控制台中得到这样的错误：
+
+    > Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
+
+    ```jsx
+    const inputRef = useRef(null);
+
+    return <MyInput ref={inputRef} />;
+    ```
+
+    默认情况下，自定义组件不会暴露它们内部 DOM 节点的 `ref`。 为了解决这个问题，首先，找到想获得 `ref` 的组件，然后像这样将其包装在 `forwardRef` 里。
+
+
+    <CodeDemo filePath="/react/useRef4.txt"/>
+
+  </TabItem>
+</Tabs>
+
+### useEffect
+
+`useEffect` hook 接收一个函数作为从参数，默认情况下，它将在每次渲染函数组件后运行该函数。`useEffect` hook 可以用来模拟类组件中的 `componentDidMount()`、`componentDidUpdate()` 和 `componentWillUnmount()` 生命周期方法。
+
+useEffect 的目的时允许你在函数组件中运行具有副作用的命令式代码。这些副作用在函数组件中时不允许存在的，比如网络请求、设置计时器和直接操作 DOM。这些类型的操作在函数组件中时不可能实现的，原因是函数组件本质上只是组件的 render 方法。render 方法中不应该产生副作用，即使在类组件中也是如此，因为 render 方法可能会覆盖任何副作用的结果。相反，副作用应该在 render 方法运行后和更新 DOM 后执行。
+
+这就是为什么要在生命周期方法内处理副作用的原因。
+
+<Tabs>
+  <TabItem value="默认行为">
+    `useEffect` 最基本的形式中，只接收一个函数，并在每次渲染完成后执行该函数。
+    <CodeDemo filePath="/react/useEffect0.txt" />
+  </TabItem>
+  <TabItem value="模拟 componentDidMount 方法">
+
+    `useEffect` 默认行为上每次渲染组件都运行函数，如果你只希望在初始渲染上使用 `useEffect`，可以自定义 `useEffect` 行为，向它传递可选的第二个实参。当将空数组作为第二参数传递时，它模拟了 `componentDidMount()` 生命周期方法。
+
+    <CodeDemo filePath="/react/useEffect1.txt" />
+
+  </TabItem>
+  <TabItem value="模拟 componentDidUpdate 方法">
+
+    向 `useEffect` 第二参数传递依赖项，当依赖性更新，触发 `useEffect`。
+
+    <CodeDemo filePath="/react/useEffect2.txt" />
+
+  </TabItem>
+  <TabItem value="模拟 componentWillUnmount 方法">
+
+    如果使用 `useEffect` 来设置订阅、设置事件监听器或创建计时器，那么就有可能将内存泄露问题引入应用程序员中，故需要在组件卸载前清理它们。在函数组件中使用 `useEffect` 后如果要进行清理，可以从传递给 `useEffect` 的函数中返回一个函数，这个返回的函数会在组件从用户界面中被移除前运行。
+
+    <CodeDemo filePath="/react/useEffect3.txt" />
+
+  </TabItem>
+</Tabs>
+
+因为 `useEffect` 是异步的，并且在组件渲染后运行，所以它是执行异步任务（例如获取数据）的理想场所。
+
+```js title="异步代码执行"
+useEffect(() => {
+  async function getData() {
+    const result = await fetch('http://localhost:8080/api/v3');
+  }
+  getData();
+}, []);
+```
+
+### useCallback
+
+通常，你在组件中定义的函数会在每次渲染时重新创建。这通常不是问题。然而，有时候需要（或出于性能原因）返回函数的缓存版本，以使其在渲染之前保持可用。这就是 `useCallback` 的作用。
+
+使用 `useCallback` hook 去包裹函数，获取函数的缓存，在函数的依赖项更新时，再重新创建函数。
+
+```jsx title="试验组件定义的函数是否每次渲染会重新创建"
+import { useEffect, useState } from 'react';
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  // default-start
+  const handleSomething = () => {
+    console.log('触发了 handleSomething');
+  };
+  // default-end
+
+  // default-start
+  useEffect(() => {
+    handleSomething();
+  }, [handleSomething]);
+  // default-end
+
+  return (
+    <button onClick={() => setCount(prev => prev + 1)}>触发组件渲染</button>
+  );
+}
+
+export default App;
+```
+
+在上诉代码中，`useEffect` 依赖于 handleSomething 更新，如果重新渲染会导致重新创建 handleSomething 函数，那么就会触发 `useEffect`。结果不言而已会触发 `useEffect`。
+
+```jsx
+import { useCallback, useEffect, useState } from 'react';
+
+function App() {
+  const [count, setCount] = useState(0);
+  // success
+  const [list, setList] = useState([]);
+
+  // success-start
+  const handleSomething = useCallback(() => {
+    console.log('触发了 handleSomething');
+  }, [list]);
+  // success-end
+
+  // default-start
+  useEffect(() => {
+    handleSomething();
+  }, [handleSomething]);
+  // default-end
+
+  return (
+    <div>
+      <button onClick={() => setCount(prev => prev + 1)}>触发组件渲染</button>
+      // success
+      <button onClick={() => setList(prev => [...prev, prev.length])}>
+        更新 list，触发函数重新创建
+      </button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+### useMemo
+
+使用 `useMemo` hook 可以在函数组件的渲染之间存储值。它的用法与 `useCallback` 相同，只是它可以缓存任何值类型，而不仅限于函数。
+
+和 `useCallback` 一样，使用 `useMemo` 有两个原因：
+
+- 解决不必要的渲染问题
+- 解决与计算成本昂贵有关的性能问题
+
+在某些情况下，组件可能会因为父组件的重新渲染而不必要地重新渲染。`useMemo` 可以用来缓存计算结果，避免不必要的渲染。
+
+```jsx title="解决不必要的渲染问题"
+import React, { useState, useMemo } from 'react';
+
+const ChildComponent = ({ count }) => {
+  console.log('ChildComponent rendered');
+  return <div>Count: {count}</div>;
+};
+
+const ParentComponent = () => {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState('');
+
+  const memoizedCount = useMemo(() => {
+    return count;
+  }, [count]);
+
+  return (
+    <div>
+      <input
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="Type something"
+      />
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <ChildComponent count={memoizedCount} />
+    </div>
+  );
+};
+
+export default ParentComponent;
+```
+
+有些计算非常耗时，如果每次渲染都重新计算，会影响性能。`useMemo` 可以缓存计算结果，只有在依赖项变化时才重新计算。
+
+```jsx title="解决与计算成本昂贵有关的性能问题"
+import React, { useState, useMemo } from 'react';
+
+const expensiveCalculation = num => {
+  console.log('Calculating...');
+  // 模拟耗时计算
+  for (let i = 0; i < 1000000000; i++) {}
+  return num * 2;
+};
+
+const ExpensiveComponent = () => {
+  const [count, setCount] = useState(0);
+  const [text, setText] = useState('');
+
+  const calculatedValue = useMemo(() => {
+    return expensiveCalculation(count);
+  }, [count]);
+
+  return (
+    <div>
+      <input
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="Type something"
+      />
+      <button onClick={() => setCount(count + 1)}>Increment</button>
+      <div>Calculated Value: {calculatedValue}</div>
+    </div>
+  );
+};
+
+export default ExpensiveComponent;
+```
+
+### useDebugValue
+
+`useDebugValue` 是 React 提供的一个 Hook，用于在 React 开发者工具中*显示自定义 Hook* 的标签和调试信息。它主要是为了提高*自定义 Hook 的可调试性和可读性*，使得在调试复杂应用程序时更容易理解和分析 Hook 的行为。
+
+`useDebugValue` 接受一个参数，可以是任意类型的值，用来描述当前 Hook 的状态或一些调试信息。
+
+```js title="示例"
+import React, { useState, useEffect, useDebugValue } from 'react';
+
+function useFriendStatus(friendID) {
+  const [isOnline, setIsOnline] = useState(null);
+
+  useEffect(() => {
+    function handleStatusChange(status) {
+      setIsOnline(status.isOnline);
+    }
+
+    // 假设有一个订阅函数来监听好友状态
+    ChatAPI.subscribeToFriendStatus(friendID, handleStatusChange);
+    return () => {
+      ChatAPI.unsubscribeFromFriendStatus(friendID, handleStatusChange);
+    };
+  }, [friendID]);
+
+  // 在开发者工具中显示调试信息
+  useDebugValue(isOnline ? 'Online' : 'Offline');
+
+  return isOnline;
+}
+```
+
+### useSyncExternalStore
+
+`useSyncExternalStore` 是 React 18 引入的一个 Hook，用于订阅外部存储（如全局状态管理器、WebSocket 数据源等），并确保在更新时同步获取最新的存储值。它提供了一种方式，让组件可以安全、同步地读取外部存储的数据。
+
+<Tabs>
+  <TabItem value="语法">
+    `useSyncExternalStore` 接受三个参数：
+
+    `subscribe`
+    > 一个函数，用于订阅存储的变化。它返回一个取消订阅的函数。
+
+    `getSnapshot`
+    > 一个函数，用于获取当前的存储值。
+
+    <p className="optional">`getServerSnapshot`</p>
+    > 一个函数，用于在服务器渲染时获取当前的存储值。
+
+  </TabItem>
+  <TabItem value="示例">
+    <CodeDemo filePath="/react/useSyncExternalStore.txt"/>
+  </TabItem>
+</Tabs>
+
+### 自定义 Hook
+
+自定义 hook 是利用内置 hook 来封装可重用功能的函数。通过创建自定义 Hook，可以将组件中的复杂逻辑提取到独立的函数中，从而使代码更模块化和可重用。自定义 Hook 使得 React 组件更具可读性和可维护性。
+
+自定义 hook，像内置 hook 一样，名称以 use 开发，这是一种约定俗成，而不是强制要求。要编写自定义 hook，在函数内至少使用一个或多个内置 hook，并从该函数导出一个值。
+
+```js title="hook 示例：useCustomHook.js"
+import { useState } from 'react';
+
+function useCustomHook(initalValue = 0) {
+  const [count, setCount] = useState(initalValue);
+  const increment = () => {
+    setCount(prev => prev + 1);
+  };
+
+  const decrement = () => {
+    setCount(prev => prev - 1);
+  };
+
+  return [count, increment, decrement];
+}
+
+export default useCustomHook;
+```
+
+自定义 Hook 可以返回任意类型的值，包括状态、函数、对象、数组等。返回值将被解构或直接使用在组件中。
+
+可以非常简单使用计数器功能，且可以简单复用。
+
+```jsx title="使用 useCustomHook"
+import useCustomHook from './useCustomHook.ts';
+
+export default function App() {
+  const [count, increment, decrement] = useCustomHook();
+
+  return (
+    <div>
+      <h1>计数器 {count}</h1>
+
+      <button onClick={increment}>+</button>
+      <button onClick={decrement}>-</button>
+    </div>
+  );
+}
+```
+
+## 路由
+
+React Router是为React（一个用于构建用户界面的 JavaScript 库）设计的一个功能齐全的可以用在客户端和服务端的路由库，它可以在React运行的地方运行，在web上，node.js在服务器上，以及React Native上。
+
+### 安装
+
+```bash npm2yarn
+npm install react-router-dom@6 history@5
+```
+
+### 连接路由
+
+首先，我们想把你的应用连接到路由: `BrowserRouter`，并用它包裹你的整个应用。
+
+```js
+import { BrowserRouter } from 'react-router-dom';
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>,
+);
+```
+
+`BrowserRouter` 和 `HashRouter` 是 React Router 提供的两种不同的路由器，它们在处理 URL 以及与浏览器的交互方式上有所不同。
+
+#### BrowserRouter
+
+`BrowserRouter` 使用 HTML5 的 history API 进行 URL 操作，这种方式支持干净的 URL，不会在 URL 中显示 # 号。
+
+由于 URL 是标准路径，服务器需要配置以支持客户端路由。如果服务器未正确配置，当用户直接访问一个深层次的 URL 时，可能会返回 404 错误。
+
+#### HashRouter
+
+`HashRouter` 使用 URL 的哈希部分（#）进行路由操作，这种方式不需要服务器配置即可支持客户端路由。
+
+由于所有路由都在 URL 的哈希部分，服务器始终返回相同的页面，不需要额外配置。
+
+#### 服务器配置示例
+
+如果你使用 `BrowserRouter`，需要在服务器上进行一些配置，以确保所有路由都指向同一个 HTML 文件。下面是一些常见服务器的配置示例：
+
+<Tabs>
+  <TabItem value="Apache">
+
+    在 `.htaccess` 文件中添加以下内容：
+
+    ```apache
+    <IfModule mod_rewrite.c>
+      RewriteEngine On
+      RewriteBase /
+      RewriteRule ^index\.html$ - [L]
+      RewriteCond %{REQUEST_FILENAME} !-f
+      RewriteCond %{REQUEST_FILENAME} !-d
+      RewriteRule . /index.html [L]
+    </IfModule>
+    ```
+
+  </TabItem>
+  <TabItem value="Nginx">
+    在 Nginx 配置文件中添加以下内容：
+
+    <CodeDemo filePath="/react/nginx.txt" />
+
+  </TabItem>
+  <TabItem value="Express.js">
+
+    在 Express.js 服务器中添加以下内容：
+
+    <CodeDemo filePath="/react/express.txt" />
+
+  </TabItem>
+</Tabs>
+
+### 添加导航
+
+在 `App.js` 组件导入 `Link` 并添加一些全局导航，帮助应用实现跳转。
+
+```js title="App.js"
+import { Link } from 'react-router-dom';
+
+function App() {
+  return (
+    <div>
+      <Link to="/">Home</Link>
+      <Link to="/about">About</Link>
+      <Link to="/profile">Profile</Link>
+    </div>
+  );
+}
+
+export default App;
+```
+
+你还可以使用 `NavLink`，它是 `Link` 组件的升级版，用于给当前点击链接，追加一个calss类名样式，默认active
+
+```css title="App.css"
+.active {
+  color: red;
+}
+```
+
+当前激活的链接会自动高亮红色链接。
+
+```js title="App.js"
+import { NavLink } from 'react-router-dom';
+import './App.css';
+
+function App() {
+  return (
+    <div>
+      <NavLink to="/">Home</NavLink>
+      <NavLink to="/about">About</NavLink>
+      <NavLink to="/profile">Profile</NavLink>
+    </div>
+  );
+}
+
+export default App;
+```
+
+如果需要修改默认类名，向 className 传入一个回调函数，函数接收 isActive 参数，渲染高亮类名。
+
+```jsx
+<NavLink
+  to="/home"
+  className={({ isActive }) => {
+    return isActive ? 'custom-active' : '';
+  }}
+>
+  Home
+</NavLink>
+```
+
+### 注册路由
+
+使用 Route 将组件注册成路由组件，并通过匹配 URL 来切换路由组件时，需要将它们包裹在 Routes 组件中，以便监视 URL 的变化。
+
+```js title="App.js"
+import React from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+
+const Home = () => <h2>Home Page</h2>;
+const About = () => <h2>About Page</h2>;
+const Profile = () => <h2>Profile Page</h2>;
+
+function App() {
+  return (
+    <div>
+      <ul>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/profile">Profile</Link>
+      </ul>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;
+```
+
+### 添加“无匹配”路由
+
+如果您单击一些链接使页面变为空白，并没有像您预期的那样进行，那是因为我们定义的所有路由都匹配不到我们点击的 URL.
+
+```jsx
+const NotFoundPage = () => <h2>NotFoundPage</h2>;
+
+<Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/about" element={<About />} />
+  <Route path="/profile" element={<Profile />} />
+  <Route path="*" element={<NotFoundPage />} />
+</Routes>;
+```
+
+### 嵌套路由
+
+设置二级路由链接时，可以是 `to="son1"`、`to="./son1"`，但不能是 `to="/son1"`，因为它会重置为一级路由。
+
+```jsx
+import React from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+
+// default-start
+const Home = () => (
+  <div>
+    <h1>Home Page </h1>
+    <Link to="son1">son1</Link>
+    <Link to="son2">son2</Link>
+  </div>
+);
+// default-end
+
+const About = () => <h2>About Page</h2>;
+const Profile = () => <h2>Profile Page</h2>;
+const Son1 = () => <h3>Son1</h3>;
+const Son2 = () => <h3>Son2</h3>;
+
+function App() {
+  return (
+    <div>
+      <ul>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/profile">Profile</Link>
+      </ul>
+
+      <Routes>
+        // default-start
+        <Route path="/" element={<Home />}>
+          <Route path="son1" element={<Son1 />} />
+          <Route path="son2" element={<Son2 />} />
+        </Route>
+        // default-end
+        <Route path="/about" element={<About />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </div>
+  );
+}
+
+export default App;
+```
+
+嵌套路由中，需要使用 `<Outlet>` 设置子路由的路由的位置，即在何处渲染子路由。
+
+```jsx
+import { Outlet } from 'react-router-dom';
+
+const Home = () => (
+  <div>
+    <h1>Home Page </h1>
+    <Link to="/son1">son1</Link>
+    <Link to="/son2">son2</Link>
+    <Outlet />
+  </div>
+);
+```
+
+### 默认路由
+
+在路由组件内再次注册子路由，使用 `index` 指定默认渲染子路由（ 或者 `path` 为空）。
+
+```js
+<Route path="/" element={<Home />}>
+  <Route index element={<Son1 />} />
+  <Route path="son1" element={<Son1 />} />
+  <Route path="son2" element={<Son2 />} />
+</Route>
+```
+
+### 路由表
+
+创建一个路由表是管理复杂应用中的路由配置的好方法。路由表将所有的路由集中在一个地方，便于维护和修改。
+
+```js title="路由表（routes.js）"
+import { Link, Outlet } from 'react-router-dom';
+
+const Home = () => (
+  <div>
+    <h1>Home Page </h1>
+    <Link to="/son1">son1</Link>
+    <Link to="/son2">son2</Link>
+    <Outlet />
+  </div>
+);
+const About = () => <h2>About Page</h2>;
+const Profile = () => <h2>Profile Page</h2>;
+const Son1 = () => <h3>Son1</h3>;
+const Son2 = () => <h3>Son2</h3>;
+const NotFoundPage = () => <h2>NotFoundPage</h2>;
+
+const routes = [
+  {
+    path: '/',
+    element: <Home />,
+    children: [
+      {
+        path: '',
+        element: <Son1 />,
+      },
+      {
+        path: 'son1',
+        element: <Son1 />,
+      },
+      {
+        path: 'son2',
+        element: <Son2 />,
+      },
+    ],
+  },
+  {
+    path: '/about',
+    element: <About />,
+  },
+  {
+    path: '/profile',
+    element: <Profile />,
+  },
+  {
+    path: '*',
+    element: <NotFoundPage />,
+  },
+];
+
+export default routes;
+```
+
+借助 `useRoutes` hook 可以帮你快速将路由表进行注册。
+
+```js title="App.js"
+import React from 'react';
+import { Link, useRoutes } from 'react-router-dom';
+import routes from './routes';
+
+function App() {
+  // default
+  const element = useRoutes(routes);
+  return (
+    <div>
+      <ul>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+        <Link to="/profile">Profile</Link>
+      </ul>
+      {element}
+    </div>
+  );
+}
+
+export default App;
+```
+
+类组件不能使用 React 的 Hooks，因此无法使用 `useRoutes`。但是，我们可以通过传统的方法，比如使用 map 函数，将路由表渲染出来。
+
+```jsx
+import routes from './routes';
+
+<Routes>
+  {routes.map((route, index) => (
+    <Route key={index} path={route.path} element={route.element} />
+  ))}
+</Routes>;
+```
+
+### 路由参数
+
+#### params 参数
+
+在注册路由或路由表绑定 `path` 来传递 params 参数，在函数组件使用 `useParams` hook 获取解析。
+
+```js title="注册路"
+<Route path="/profile/:id"></Route>
+```
+
+`:id` 被 `useParams` 解析，通过 `params.id` 获取。
+
+```js title="Profile 组件"
+import React, { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+
+function Profile() {
+  const params = useParams();
+
+  useEffect(() => {
+    console.log(params);
+  }, []);
+
+  return <h1>Profile</h1>;
+}
+
+export default Profile;
+```
+
+#### search 参数
+
+传递参数的方式不变，也不需要声明接受，但解析参数需要使用 `useSearchParams()` 接收参数。该方法返回一个包含两个元素的数组：`searchParams` 参数和修改 `setSearchParams` 参数的方法（名字随意，尽可能规范取名）。
+
+```jsx
+// 点击跳转
+<Link to="/profile?name=mofan">Profile</Link>;
+
+// Profile 组件
+import React, { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
+function Profile() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    console.log(searchParams.get('name')); // mofan
+  }, []);
+
+  return <h1>Profile</h1>;
+}
+
+export default Profile;
+```
+
+#### state 参数
+
+使用 `state` 参数传递数据的方法比直接在 URL 中传递参数更灵活和安全，特别适合传递复杂数据。你可以通过 `Link` 或 `navigate` 方法来设置 `state` 参数，并通过 `useLocation` 钩子来获取它。
+
+```js
+<Link to="/profile" state={{ userId: 1, userName: 'John' }}>
+  Profile
+</Link>
+```
+
+```js title="Profile 组件"
+import React, { useEffect } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+
+function Profile() {
+  const state = useLocation();
+
+  useEffect(() => {
+    console.log(state);
+  }, []);
+
+  return <h1>Profile</h1>;
+}
+
+export default Profile;
+/**
+* {
+    "pathname": "/profile",
+    "search": "",
+    "hash": "",
+    "state": {
+        "userId": 1,
+        "userName": "John"
+    },
+    "key": "wwwfnyn1"
+}
+*/
+```
+
+### 编程式路由导航
+
+编程式路由导航是指在 React 中通过编程方式（而不是通过用户点击链接或按钮）进行页面导航。在 React Router 中，你可以使用 `useNavigate` 对象来实现编程式导航。
+
+```jsx
+import React, { useState } from 'react';
+import { useNavigate, useRoutes } from 'react-router-dom';
+import routes from './routes';
+
+const App = () => {
+  const element = useRoutes(routes);
+  const [path, setPath] = useState();
+  // default
+  const navigate = useNavigate();
+
+  // default-start
+  const handleNavigate = () => {
+    navigate(path);
+  };
+  // default-end
+
+  return (
+    <div>
+      <input
+        placeholder="请输入路径"
+        onChange={event => setPath(event.target.value)}
+      />
+      <button onClick={handleNavigate}>导航</button>
+
+      {element}
+    </div>
+  );
+};
+
+export default App;
+```
+
+使用 `useNavigate` 进行路由导航时，可以通过第二个参数来传递额外的数据，这些数据可以在目标路由组件中进行接收和处理。第二参数是一个可选对象，有如下属性：
+
+<Tabs>
+  <TabItem value="replace">
+    指定 `replace: true` 将导致导航替换历史堆栈中的当前条目，而不是添加新条目。
+
+    <CodeDemo filePath="/react/useNavigate1.txt"/>
+
+  </TabItem>
+  <TabItem value="state">
+    您可以包含一个可选的 `state` 值来存储在历史状态中，然后您可以通过 `useLocation` 在目标路由上访问该值。
+
+    <CodeDemo filePath="/react/useNavigate2.txt"/>
+
+  </TabItem>
+  <TabItem value="preventScrollReset">
+    使用 `<ScrollRestoration/>` 组件时，您可以通过 `options.preventScrollReset` 禁用将滚动重置到页面顶部
+  </TabItem>
+
+  <TabItem value="relative">
+    默认情况下，导航是相对于路由层次结构 `relative: "route"` 的，因此 `..` 将上升一个 Route 级别。有时，您可能会发现匹配的 URL 模式对于嵌套没有意义，并且您更愿意使用相对路径路由。您可以使用 `relative: "path"` 选择此行为：
+
+    <CodeDemo filePath="/react/useNavigate3.txt"/>
+
+  </TabItem>
+</Tabs>
+
+`useNavigate` 可以传递数字，代表前进或后退几步。
+
+```js
+const navigate = useNavigate();
+
+function back() {
+  navigate(1);
+}
+
+function forward() {
+  navigate(-1);
+}
+```
+
+### 路由拦截
+
+在React中实现路由拦截通常涉及到使用React Router库来管理路由，以及在需要时添加自定义逻辑来拦截和处理路由跳转或访问。
+
+封装一个通用的权限组件，在是否获取到权限时，渲染目标组件还是登录组件。
+
+```jsx title="PermissionRoute.jsx"
+import React from 'react';
+import { Navigate, Route, useNavigate } from 'react-router-dom';
+
+function PermissionRoute({ Component }) {
+  const navigate = useNavigate();
+
+  function getToken() {
+    return localStorage.getItem('token') || false;
+  }
+
+  if (!getToken()) {
+    return <Navigate to="/login" />;
+  }
+
+  return Component;
+}
+
+export default PermissionRoute;
+```
+
+```jsx title="App.js"
+const App = () => {
+  return (
+    <div>
+      <Link to="/home">Home</Link>
+      <Link to="/about">About</Link>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/home" element={<Home />} />
+        {/* 需要权限才能访问的组件 */}
+        <Route
+          path="/about"
+          element={<PermissionRoute Component={<About />} />}
+        />
+      </Routes>
+    </div>
+  );
+};
+
+export default App;
+```
+
+### 类组件跳转
+
+在 React Router v6 中，`withRouter` 高阶组件已经被移除，但你仍然可以在类组件中实现编程式导航。为了在类组件中使用导航功能，可以通过 `useNavigate` 钩子创建一个函数组件包装器，将导航功能注入到类组件中。
+
+首先，我们需要创建一个 `withRouter` 高阶组件来将 `navigate` 函数注入到类组件的 `props` 中。
+
+```jsx title="withRouter.jsx"
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export const withRouter = Component => {
+  const Wrapper = props => {
+    const navigate = useNavigate();
+    return <Component {...props} navigate={navigate} />;
+  };
+
+  return Wrapper;
+};
+```
+
+```jsx title="示例"
+import React from 'react';
+import withRouter from './withRouter.jsx';
+
+class About extends React.Component {
+  handleClick() {
+    this.navigate('/home');
+  }
+
+  render() {
+    return <h1 onClick={() => this.handleClick()}>About</h1>;
+  }
+}
+
+export default withRouter(About);
+```
+
+### 路由 Hooks
+
+路由钩子（Hooks）提供了一种简单且强大的方式来访问和操作路由信息。这些钩子使得在函数组件中操作路由变得更加方便。
+
+**常用路由钩子**
+
+- [ ] `useNavigate`
+- [ ] `useParams`
+- [ ] `useLocation`
+- [ ] `useSearchParams`
+- [ ] `useRoutes`
+
+**其它 hooks**
+
+<Tabs>
+  <TabItem value="useOutlet">
+
+    `useOutlet` 用于在布局组件中渲染子路由的内容。通常用于嵌套路由中。
+
+    <CodeDemo filePath="/react/useOutlet.txt"/>
+
+  </TabItem>
+  <TabItem value="useOutletContext">
+
+    `useOutletContext` 用于在子路由组件中获取父路由通过 `<Outlet/>` 提供的上下文。
+
+    <CodeDemo filePath="/react/useOutletContext.txt"/>
+
+  </TabItem>
+  <TabItem value="useResolvedPath">
+
+    `useResolvedPath` 用于解析给定路径并返回包含路径信息的对象。主要用于创建自定义导航逻辑。
+
+    <CodeDemo filePath="/react/useResolvedPath.txt"/>
+
+  </TabItem>
+  <TabItem value="useMatch">
+
+    `useMatch` 用于检查当前 URL 是否与给定的路径匹配，并返回匹配的详细信息。
+
+    <CodeDemo filePath="/react/useMatch.txt"/>
+
+  </TabItem>
+
+  <TabItem value="useNavigationType">
+
+    `useNavigationType` 用于获取当前导航的类型（PUSH、POP 或 REPLACE），主要用于对导航行为进行更细粒度的控制。
+
+    <CodeDemo filePath="/react/useNavigationType.txt"/>
+
+  </TabItem>
+</Tabs>
+
+### 路由懒加载
+
+如果路由组件直接引入的话，在页面刚载入时，就会将全部组件进行加载，这样很容器造成页面白屏，故让路由组件使用懒加载的形式，用到就去加载。
+
+`Suspense` 组件用于包裹路由组件，当路由组件在加载时，会先去渲染绑定在 `<Suspense fallback={<Loading/>} /> `的 `Loading` 组件，且它不能使用懒加载的形式。
+
+```js
+// default
+import React, { Component, lazy, Suspense } from 'react';
+import { BrowserRouter, Route, Link } from 'react-router-dom';
+import Loading from './components/Loading';
+
+// default-start
+const Home = lazy(() => import('./components/Home'));
+const About = lazy(() => import('./components/About'));
+// default-end
+
+export default class extends Component {
+  render() {
+    return (
+      <BrowserRouter>
+        <Link to="/home">Home</Link>
+        <Link to="/about">About</Link>
+
+        <Suspense fallback={<Loading />}>
+          <Route path="/home" component={Home} />
+          <Route path="/about" component={About} />
+        </Suspense>
+      </BrowserRouter>
+    );
+  }
+}
+```
+
+:::warning
+懒加载组件必须最后导入，切勿将 Loading 组件在其后导入。
+:::
+
+### React Router v5
+
+React Router v5 仍然在使用中，但 React Router v6 已经发布，并引入了一些新的特性和改进。尽管如此，React Router v5 仍然是许多现有项目的选择，因为它稳定且广泛支持。
+
+#### 安装
+
+```bash npm2yarn
+npm i react-router-dom@5
+```
+
+## 错误边界
+
+### 什么是错误边界
+
+错误边界是一个组件，用于捕获其子组件中发生的错误，一旦捕获到错误，错误边界就可以提供一个回退 UI 并记录错误，还可以为用户提供一种不需要刷新浏览器窗口就能够恢复使用 UI 的方法。
+
+### 实现错误边界
+
+在 React 中，错误边界不是特定的函数或组件。相反，任何组件都可以定义一个静态的 `getDerivedStateFromError` 或 `componentDidCatch` 生命周期方法（或两者兼而有之）。因为错误边界使用生命周期方法，所以它们必须是类组件。一旦定义了 ErrorBoundary 组件，就可以根据需要多次重用它。因此，如果需要，ErrorBoundary 组件可以是唯一需要编写的类组件。
+
+```js title="构建 ErrorBoundary 组件"
+import React from 'react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      hasError: false,
+    };
+  }
+
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+    };
+  }
+
+  componentDidCatch(error, info) {
+    // 记录日志
+    console.log(error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>遇到错误了，请稍后尝试刷新</h1>;
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+```
+
+**1. getDerivedStateFromError 是一种静态方法**
+
+静态方法通常用于定义整个类的功能，例如实用程序。在 React 中，`getDerivedStateFromError` 生命周期方法被定义为静态方法，是为了使它们更难产生副作用。
+
+**2. getDerivedStateFromError 在渲染阶段运行**
+
+在组件生命周期中的渲染阶段运行，不允许执行具有副作用的操作，如记录错误。执行副作用的正确时间是在渲染阶段之前或之后。如果要执行副作用，可以借助 `componentDidCatch` 生命周期。
+
+**3. getDerivedStateFromError 将错误作为参数接收**
+
+当使用 `getDerivedStateFromError` 的组件的后代组件中发生错误时，将调用该方法并传递错误消息。错误消息时一个字符串，包含有关错误发生的位置和错误内容。
+
+**4. getDerivedStateFromError 应返回一个对象以更新状态**
+
+`getDerivedStateFromError` 的返回值将用于更新状态。除了更新 hasError 的值，也可能将错误本身存储在状态中。
+
+```jsx
+class ErrorBoundary extends React.Component {
+  static getDerivedStateFromError(error) {
+    return {
+      hasError: true,
+      error,
+    };
+  }
+}
+```
+
+**5. 使用 componentDidCatch() 记录错误**
+
+当 React 组件树中发生错误时，要尽量减少它对用户的影响，但如果能实际了解错误发生的原因和位置，将有助于防止未来再次发生错误。这就是 `componentDidCatch` 生命周期方法能发挥作用的地方。
+
+**6. 使用日志记录服务**
+
+在开发过程中，将错误记录到控制台时可以的，但一旦应用程序上线并被其他人使用，控制台窗口中显示的所有日志消息将保留在用户的控制台中，这没有任何好处。
+
+要了解实际用户遇到的错误，要么需要用户来告诉你（除非错误非常严重，否则这是不可能的），要么需要实现一个系统，能够在用户浏览器外自动记录错误。
+
+基于云的日志记录服务可以捕获应用程序中发生的事件（如错误），并提供报告，你可以使用这些报告来改进应用程序或获取有关用户如何使用应用程序的信息。
+
+**7. 重置状态**
+
+如果触发错误边界的错误是临时错误，例如在网络服务不可用时，那么提供一种让用户重试的方法可以改善用户体验。
+
+由于 ErrorBoundary 组件根据 hasError 状态值确定是否渲染回退UI或其子组件，因此重置 hasError 的值将导致它再次尝试渲染子组件。
+
+渲染因网络请求发生错误的组件，可以在 ErrorBoundary 组件添加一个重试按钮，以重新渲染子组件。
+
+```jsx title="示例"
+class ErrorBoundary extends React.Component {
+  render() {
+    if (this.state.hasError) {
+      return (
+        <h1>
+          遇到错误了，
+          <button onClick={() => this.setState({ hasError: false })}>
+            请重试
+          </button>
+        </h1>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+### 错误边界无法捕获的错误
+
+错误边界是捕获组件中大多数常见错误的绝佳工具，但错误边界无法处理某些类型的错误，如下：
+
+- ErrorBoundary 中的错误
+- 事件处理程序中的错误
+- 服务器端渲染中的错误
+- 异步代码中的错误
+
+## Context API
+
+在 React 中将数据从父组件传递子组件的主要方法是通过 props。然而，在某些情况下，props 用起来会很繁琐，并且会导致代码更难阅读和维护。为此，Context API 应运而生。
+
+### 什么是 Prop drilling
+
+Prop drilling（属性传递）指的是将属性从一个组件传递到另一个组件的过程，特别是在组件层级较深时可能会出现的一种情况。这种情况通常发生在父组件需要将属性传递给深层次的子组件，而中间的组件并不需要这些属性，但需要将它们传递下去的情况。
+
+### Context API
+
+属性传递不一定是一个问题。在大多数情况下，这正是你应该使用的方法。然而，如果应用程序中有数据或函数可以视为“全局的”（或者对于特定的组件树是全局的），那么使用 Context 可以避免连续属性传递带来的问题。
+
+#### 创建 Context
+
+要创建 Context，可以使用 `React.createContext`.
+
+```js title="ThemeContext.js"
+import React from 'react';
+
+let defaultValue = {
+  theme: 'dark',
+};
+
+const ThemeContext = React.createContext(defaultValue);
+
+export default ThemeContext;
+```
+
+`React.createContext` 方法返回一个 Context 对象。传递给 createContext 的 defaultValue 参数是在没有匹配的 Provider 时将提供给后代的数据。由于默认值很可能永远都用不上，许多开发人员将默认值保留为 `undefined`, 或者将其设置为某个示例对象。
+
+#### 创建 Provider
+
+Context Provider 是一个组件，它将对上下文数据的变化发布给后代组件。Provider 组件接收一个名为 value 的属性，该属性将重写 `React.createContext` 中设置的 defaultValue。
+
+```jsx
+return (
+  <ThemeContext.Provider value={{ theme: 'light' }}>
+    <OtherComponent />
+  </ThemeContext.Provider>
+);
+```
+
+Provider 组件可以根据需要多次使用，并且可以嵌套在组件树中。使用 Context 的组件将会访问最近的 Provider 祖先组件，如果没有 Provider 祖先组件，则会使用 Context 的默认值。
+
+#### 使用 Context
+
+一旦有了 Context 和 Provider，后代组件就可以成为 Context 的 Consumer（消费者）。Context Consumer 将在 Provider 的值发生变化时重新渲染。
+
+在函数组件和类组件中，它们消费的方式有所不同：
+
+<Tabs>
+  <TabItem value="函数组件">
+    可以通过使用 `Context.Consumer` 组件或使用 `useContext` hook 在函数组件中使用 Context。
+
+    <CodeDemo filePath="/react/useContext1.txt" title="Context.Consumer 示例"/>
+
+    <CodeDemo filePath="/react/useContext2.txt" title="useContext 示例"/>
+
+  </TabItem>
+  <TabItem value="类组件">
+
+    在类组件中使用 Context 有两种方式：设置类的 `contextType` 属性和使用 `Context.Consumer` 组件。
+
+    <CodeDemo filePath="/react/useContext3.txt" title="contextType 示例"/>
+
+    <CodeDemo filePath="/react/useContext4.txt" title="Context.Consumer 示例"/>
+
+  </TabItem>
+</Tabs>
+
+## 表单处理
