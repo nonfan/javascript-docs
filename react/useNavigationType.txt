@@ -1,0 +1,15 @@
+import React from "react";
+import { useNavigationType } from "react-router-dom";
+
+const NavigationTypeDisplay = () => {
+  const navigationType = useNavigationType();
+
+  return (
+    <div>
+      <h2>Navigation Type</h2>
+      <p>Current Navigation Type: {navigationType}</p>
+    </div>
+  );
+};
+
+export default NavigationTypeDisplay;
