@@ -963,6 +963,36 @@ function InputField() {
 
 ## React 样式化
 
+在 React 中，你可以使用多种方式来为组件添加样式，以下是几种常见的方法：
+
+### 内联样式
+
+```js title="基本样式"
+const MyComponent = () => {
+  return <div style={{ color: 'blue', fontSize: '20px' }}>Hello, world!</div>;
+};
+```
+
+### CSS 文件
+
+创建一个独立的 CSS 文件（例如 App.css），然后在组件中导入它。
+
+```css
+/* App.css */
+.my-component {
+  color: blue;
+  font-size: 20px;
+}
+```
+
+```js
+import './App.css';
+
+const App = () => {
+  return <div className="my-component">Hello, world!</div>;
+};
+```
+
 ### CSS Module
 
 CSS Module 是一种让 CSS 变得模块化的解决方案，它允许你将 CSS 文件中的类名（class 名）映射为一个局部作用域内的对象。这意味着每个类名在引入它们的组件中都是唯一的，并且不会污染全局命名空间。
@@ -996,6 +1026,146 @@ export default ButtonComponent;
   background-color: var(--primary-color);
   color: white;
 }
+```
+
+### CSS-in-JS
+
+CSS-in-JS 是一种将 CSS 样式直接编写在 JavaScript 文件中的技术。它提供了一种在组件级别管理样式的方式，使得样式和逻辑能够紧密结合，促进组件的可维护性和可重用性。
+
+#### Styled Components
+
+Styled Components 是一个流行的库，允许你使用 JavaScript 创建样式化的组件。
+
+```bash npm2yarn
+npm install styled-components
+```
+
+```js title="示例"
+import styled from 'styled-components';
+
+const StyleH1 = styled.h1`
+  color: red;
+`;
+
+function App() {
+  return <StyleH1>Hello World</StyleH1>;
+}
+
+export default App;
+```
+
+#### Emotion
+
+Emotion 是另一个流行的 CSS-in-JS 库，类似于 Styled Components。
+
+```bash npm2yarn
+npm install @emotion/react @emotion/styled
+```
+
+```js title="@emotion/react 示例"
+/** @jsxImportSource @emotion/react */
+import { css } from '@emotion/react';
+
+const myStyle = css`
+  color: red;
+`;
+
+function App() {
+  return <h1 css={myStyle}>Hello World</h1>;
+}
+
+export default App;
+```
+
+在使用 Emotion 时，`/** @jsxImportSource @emotion/react */` 注释用于告诉编译器在编写 JSX 时应该使用 Emotion 提供的 css 函数来处理样式。这个注释是为了替代传统的 `/** @jsx jsx */` 注释，目的是更好地支持新的 JSX 转换方法。
+
+```js title="@emotion/styled 示例"
+// default
+import styled from '@emotion/styled';
+
+const StyleH1 = styled.h1`
+  color: red;
+`;
+
+function App() {
+  return <StyleH1>Hello World</StyleH1>;
+}
+
+export default App;
+```
+
+#### JSS
+
+JSS 是一种 CSS-in-JS 解决方案，允许你使用 JavaScript 对象来定义样式。
+
+```bash npm2yarn
+npm install jss react-jss
+```
+
+```js title="示例"
+import React from 'react';
+import { createUseStyles } from 'react-jss';
+
+const useStyles = createUseStyles({
+  button: {
+    backgroundColor: '#4caf50',
+    color: 'white',
+    padding: '15px 32px',
+    fontSize: '16px',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: '#45a049',
+    },
+  },
+});
+
+const App = () => {
+  const classes = useStyles();
+  return <button className={classes.button}>Click Me</button>;
+};
+
+export default App;
+```
+
+### Tailwind CSS
+
+Tailwind CSS 是一个功能类优先的 CSS 框架，你可以通过添加类名快速应用样式。
+
+```bash
+npm install tailwindcss
+npx tailwindcss init
+```
+
+配置 `tailwind.config.js` 并导入 Tailwind CSS：
+
+```js title="tailwind.config.js"
+module.exports = {
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
+
+在你的 CSS 文件中导入 Tailwind 的基本样式：
+
+```css title="App.css"
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+```js title="示例"
+import './App.css';
+
+const App = () => {
+  return <div className="text-blue-500 text-xl">Hello, world!</div>;
+};
+
+export default App;
 ```
 
 ## 状态管理
