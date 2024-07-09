@@ -1,1 +1,64 @@
 # ECAMScript 14
+
+ECMAScript 2023（ECMAScript 14 或 ES14）它引入了若干新特性和改进，进一步增强了语言的功能和开发者体验。以下是 ECMAScript 2023 的一些主要更新内容及其详细描述：
+
+## 哈希带单位的 Symbol
+
+允许在创建 `Symbol` 时添加描述性标签，这有助于在调试和日志记录时更好地理解和区分 `Symbol`。
+
+```js
+const sym1 = Symbol('description1');
+const sym2 = Symbol('description2');
+
+console.log(sym1.description); // 输出 'description1'
+console.log(sym2.description); // 输出 'description2'
+```
+
+## 函数参数解构默认值
+
+在函数参数解构时，支持设置默认值。
+
+```js
+function example({ a = 1, b = 2 } = {}) {
+  console.log(a, b);
+}
+
+example(); // 输出 1 2
+example({ a: 3 }); // 输出 3 2
+```
+
+## 正则表达式装饰器
+
+正则表达式装饰器是一种新的语法，允许你在正则表达式中使用更加灵活和可读的模式。
+
+## 元素后置断言
+
+元素后置断言允许你在数组或字符串中断言某个元素在另一个元素之后。
+
+## 扩展对象解构
+
+对象解构支持嵌套解构和默认值设置。
+
+```js
+const obj = { a: { b: 2 } };
+
+const {
+  a: { b, c = 3 },
+} = obj;
+console.log(b); // 输出 2
+console.log(c); // 输出 3
+```
+
+## 新增 API
+
+_Array.prototype.findLast()_
+
+_Array.prototype.findLastIndex()_
+
+_TypedArray.prototype.findLast()_
+
+_TypedArray.prototype.findLastIndex()_
+
+_Object.groupBy()_
+
+_Object.groupByToMap()_
