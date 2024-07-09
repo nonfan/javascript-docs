@@ -4,7 +4,7 @@ import CodeDemo from '../../../src/components/CodeDemo';
 
 # Function
 
-## Function.prototype.apply
+## Function.prototype.apply()
 
 Function 实例的 `apply()` 方法会以给定的 `this` 值和作为数组（或类数组对象）提供的 `arguments` 调用该函数。
 
@@ -31,7 +31,7 @@ Function 实例的 `apply()` 方法会以给定的 `this` 值和作为数组（�
   </TabItem>
 </Tabs>
 
-## Function.prototype.bind
+## Function.prototype.bind()
 
 Function 实例的 `bind()` 方法创建一个新函数，当调用该新函数时，它会调用原始函数并将其 this 关键字设置为给定的值，同时，还可以传入一系列指定的参数，这些参数会插入到调用新函数时传入的参数的前面。
 
@@ -69,7 +69,7 @@ Function 实例的 `bind()` 方法创建一个新函数，当调用该新函数�
   </TabItem>
 </Tabs>
 
-## Function.prototype.call
+## Function.prototype.call()
 
 Function 实例的 `call()` 方法会以给定的 `this` 值和逐个提供的参数调用该函数。
 
@@ -102,7 +102,7 @@ Function 实例的 `call()` 方法会以给定的 `this` 值和逐个提供的�
 这个函数几乎与 `apply()` 相同，只是函数的参数以列表的形式逐个传递给 `call()`，而在 `apply()` 中它们被组合在一个对象中，通常是一个数组——例如：`func.call(this, "eat", "bananas")` 与 `func.apply(this, ["eat", "bananas"])`。
 :::
 
-## Function.prototype.toString
+## Function.prototype.toString()
 
 Function 实例的 `toString()` 方法返回一个表示该函数源码的字符串。
 
@@ -120,9 +120,7 @@ console.log(Math.abs.toString());
 // Expected output: "function abs() { [native code] }"
 ```
 
-## 属性
-
-_length_
+## function.prototype.length
 
 表示函数的形参个数（不包括剩余参数和默认参数）。
 
@@ -138,7 +136,7 @@ function example(a, b = 1, c) {}
 console.log(example.length); // 输出: 1
 ```
 
-_name_
+## function.prototype.name
 
 表示函数的名称。如果是匿名函数，则返回空字符串。
 

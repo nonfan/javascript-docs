@@ -3,3 +3,36 @@ import Tabs from '@theme/Tabs';
 import CodeDemo from '@site/src/components/CodeDemo';
 
 # Symbol
+
+## Symbol.for()
+
+`Symbol.for(key)` 方法会根据给定的键 key，来从运行时的 symbol 注册表中找到对应的 symbol，如果找到了，则返回它，否则，新建一个与该键关联的 symbol，并放入全局 symbol 注册表中。
+
+```js title="示例"
+let symFoo = Symbol.for('foo'); // 创建了以 foo 为键的 Symbol
+let symFoo2 = Symbol.for('foo'); // 找到了以 foo 为键的 Symbol
+
+console.log(symFoo === symFoo2); // true，证明上述为真
+
+Symbol('bar') === Symbol('bar'); // false，Symbol() 函数每次都会返回新的一个 symbol
+
+let sym = Symbol.for('mario');
+sym.toString();
+// "Symbol(mario)"，mario 既是该 symbol 在 symbol 注册表中的键名，又是该 symbol 自身的描述字符串
+```
+
+## Symbol.keyFor()
+
+`Symbol.keyFor(sym)` 方法用来获取全局 symbol 注册表中与某个 symbol 关联的键。
+
+```js title="示例"
+// 创建一个全局 Symbol
+let globalSym = Symbol.for('foo');
+Symbol.keyFor(globalSym); // "foo"
+
+let localSym = Symbol();
+Symbol.keyFor(localSym); // undefined，
+
+// 以下 Symbol 不是保存在全局 Symbol 注册表中
+Symbol.keyFor(Symbol.iterator); // undefined
+```

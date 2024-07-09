@@ -4,7 +4,7 @@ import CodeDemo from '../../../src/components/CodeDemo';
 
 # Object
 
-## Object.create
+## Object.create()
 
 `Object.create()` 静态方法以一个现有对象作为原型，创建一个新对象。
 
@@ -41,7 +41,7 @@ import CodeDemo from '../../../src/components/CodeDemo';
   </TabItem>
 </Tabs>
 
-## Object.assign
+## Object.assign()
 
 从一个或多个源对象复制所有可枚举的自有属性到目标对象，并返回目标对象。
 
@@ -78,7 +78,7 @@ import CodeDemo from '../../../src/components/CodeDemo';
   </TabItem>
 </Tabs>
 
-## Object.keys
+## Object.keys()
 
 `Object.keys()` 静态方法返回一个由给定对象自身的可枚举的字符串键*属性名组成的数组*。
 
@@ -92,7 +92,7 @@ const person = {
 console.log(Object.keys(person)); // [ 'name', 'age', 'address' ]
 ```
 
-## Object.values
+## Object.values()
 
 `Object.values()` 静态方法返回一个给定对象的自有可枚举字符串键属性值组成的数组。
 
@@ -106,7 +106,7 @@ const person = {
 console.log(Object.values(person)); // [ 'mofan', '23', 'China' ]
 ```
 
-## Object.entries
+## Object.entries()
 
 `Object.entries()` 静态方法返回一个包含给定对象自有的可枚举字符串键属性的键值对的数值（二维数组）。
 
@@ -120,7 +120,7 @@ const person = {
 console.log(Object.entries(person)); // [ [ 'name', 'mofan' ], [ 'age', '23' ], [ 'address', 'China' ] ]
 ```
 
-## Object.fromEntries
+## Object.fromEntries()
 
 `Object.fromEntries()` 静态方法将键值对列表转换为一个对象。
 
@@ -134,7 +134,7 @@ const person = [
 console.log(Object.fromEntries(person)); // { name: 'mofan', age: '23', address: 'China' }
 ```
 
-## Object.freeze
+## Object.freeze()
 
 `Object.freeze()` 静态方法可以使一个对象被冻结。冻结对象可以防止扩展，并使现有的属性不可写入和不可配置。被冻结的对象不能再被更改：不能添加新的属性，不能移除现有的属性，不能更改它们的可枚举性、可配置性、可写性或值，对象的原型也不能被重新指定。`freeze()` 返回与传入的对象相同的对象。
 
@@ -158,7 +158,7 @@ console.log(freezePerson === person); // true
 person.age = 30;
 ```
 
-## Object.seal
+## Object.seal()
 
 `Object.seal()` 静态方法密封一个对象。密封一个对象会阻止其扩展并且使得现有属性不可配置。密封对象有一组固定的属性：不能添加新属性、不能删除现有属性或更改其可枚举性和可配置性、不能重新分配其原型。_只要现有属性的值是可写的，它们仍然可以更改_。`seal()` 返回传入的同一对象。
 
@@ -188,7 +188,7 @@ console.log(person); // { name: 'coder_mofan', age: '23', address: 'China' }
 前者冻结对象，防止修改对象及其属性。已冻结的对象不可添加新属性，不可删除现有属性，也不可修改属性的值。后者密封对象，防止添加或删除属性，但可以修改现有属性。
 :::
 
-## Object.getOwnPropertyDescriptor
+## Object.getOwnPropertyDescriptor()
 
 `Object.getOwnPropertyDescriptor()` 静态方法返回一个对象，该对象描述给定对象上特定属性（即直接存在于对象上而不在对象的原型链中的属性）的配置。返回的对象是可变的，但对其进行更改不会影响原始属性的配置。
 
@@ -211,7 +211,7 @@ console.log(descriptor.value); // wohu
 console.log(person.name); // mofan
 ```
 
-## Object.getOwnPropertyDescriptors
+## Object.getOwnPropertyDescriptors()
 
 `Object.getOwnPropertyDescriptors()` 静态方法返回给定对象的所有自有属性描述符。
 
@@ -245,7 +245,7 @@ console.log(descriptors);
  */
 ```
 
-## Object.getPrototypeOf
+## Object.getPrototypeOf()
 
 `Object.getPrototypeOf()` 静态方法返回指定对象的原型（即内部 `[[Prototype]]` 属性的值）。它返回对象的原型对象，或者 `null` 如果该对象没有继承属性。
 
@@ -266,7 +266,7 @@ console.log(Object.getPrototypeOf(obj) === proto); // true
 console.log(obj.greet()); // "Hello!"
 ```
 
-## Object.defineProperty
+## Object.defineProperty()
 
 `Object. ()` 静态方法会直接在一个对象上定义一个新属性，或修改其现有属性，并返回此对象。
 
