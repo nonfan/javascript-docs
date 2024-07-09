@@ -1,1 +1,40 @@
 # ECAMScript 13
+
+ECMAScript 2022（也称为 ES13）是 JavaScript 的一个重要版本，引入了一些新的语言特性和改进。以下是 ECMAScript 2022 的主要内容：
+
+## 顶层 await
+
+允许顶层使用 `await`，而无需将其放在 `async` 函数内，需要在 ES 模块中使用，保存为 `.mjs` 文件或修改 `package.json` 为模块。这简化了异步代码的编写。
+
+```json title="package.json"
+{
+  "type": "module"
+}
+```
+
+```js title="示例"
+// 顶层 await 示例
+const response = await fetch(
+  'https://v1.hitokoto.cn/?c=d&c=i&encode=json&lang=cn',
+);
+const data = await response.json();
+console.log(data); // 随机诗句
+```
+
+## 正则表达式匹配索引
+
+正则表达式匹配索引功能允许你在使用正则表达式匹配字符串时获取匹配结果的索引。通过使用 `.matchAll` 方法，你可以获得每个匹配项的详细索引信息。
+
+```js
+const regex = /t(e)(st(\d?))/g;
+const str = 'test1test2';
+
+const matches = [...str.matchAll(regex)];
+console.log(matches[0].indices); // 输出 [[0, 5], [1, 2], [3, 5], [4, 5]]
+```
+
+## 新增 API
+
+_Array.prototype.at()_
+
+`Array.prototype.at` 方法允许你使用正负整数来访问数组的元素。负整数从数组末尾开始计数，使得访问最后一个元素变得更加方便。
