@@ -122,7 +122,7 @@ const config: Config = {
     },
     footer: {
       style: 'light',
-      copyright: `Copyright © 2024 by MoFan. Licensed under CC BY-NC 4.0.`,
+      copyright: `Copyright © 2024 MoFan.`,
     },
     prism: {
       theme: prismThemes.github,

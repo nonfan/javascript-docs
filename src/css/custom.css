@@ -84,3 +84,10 @@ em {
   white-space: nowrap;
   color: var(--code-optional-color);
 }
+
+.markdown img {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 350px;
+}

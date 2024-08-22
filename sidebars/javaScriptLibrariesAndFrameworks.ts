@@ -34,6 +34,7 @@ const siderbar: SidebarsConfig = {
       items: [
         'javascript-libraries-and-frameworks/libraries/axios',
         'javascript-libraries-and-frameworks/libraries/nprogress',
+        'javascript-libraries-and-frameworks/libraries/tailwind-css',
         'javascript-libraries-and-frameworks/libraries/lodash',
         'javascript-libraries-and-frameworks/libraries/moment',
       ],

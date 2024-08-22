@@ -200,6 +200,41 @@ const ref = useRef(initialValue);
   </TabItem>
 </Tabs>
 
+### useImperativeHandle
+
+`useImperativeHandle` 钩子用于在使用 `forwardRef` 时，自定义暴露给父组件的实例值。它允许你定义暴露给父组件的实例方法或属性。
+
+```js
+import React, { useRef, forwardRef, useImperativeHandle } from 'react';
+
+const CustomInput = forwardRef((props, ref) => {
+  const inputRef = useRef(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current.focus();
+    },
+    clear: () => {
+      inputRef.current.value = '';
+    },
+  }));
+
+  return <input ref={inputRef} {...props} />;
+});
+
+function ParentComponent() {
+  const inputRef = useRef(null);
+
+  return (
+    <div>
+      <CustomInput ref={inputRef} />
+      <button onClick={() => inputRef.current.focus()}>Focus</button>
+      <button onClick={() => inputRef.current.clear()}>Clear</button>
+    </div>
+  );
+}
+```
+
 ### useEffect
 
 `useEffect` hook 接收一个函数作为从参数，默认情况下，它将在每次渲染函数组件后运行该函数。`useEffect` hook 可以用来模拟类组件中的 `componentDidMount()`、`componentDidUpdate()` 和 `componentWillUnmount()` 生命周期方法。
@@ -1396,3 +1431,92 @@ Provider 组件可以根据需要多次使用，并且可以嵌套在组件树�
 </Tabs>
 
 ## 表单处理
+
+## Refs
+
+`Refs` 是 React 提供的一个功能，用于访问 DOM 元素或 React 类组件的实例。在函数组件中，我们通常使用 [useRef](#useref) 钩子来创建 refs，而在类组件中，我们使用 `React.createRef()`。
+
+当使用 refs 时，可以通过 `current` 属性访问 DOM 元素或类组件的实例。
+
+```js title="在类组件中创建 Refs"
+import React from 'react';
+
+class MyComponent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.inputRef = React.createRef();
+  }
+
+  componentDidMount() {
+    this.inputRef.current.focus();
+  }
+
+  render() {
+    return <input ref={this.inputRef} type="text" />;
+  }
+}
+```
+
+### forwardRef
+
+`React.forwardRef` 是一个高阶组件，用于将 ref 转发到子组件内部的 DOM 元素或类组件实例。 用法与函数组件*获取自定义组件的ref* 相同。
+
+## Portal
+
+在 React 中，Portal 是一种特殊的组件渲染技术，允许你将子组件渲染到 DOM 中的任意位置，而不受父组件层级的限制。这在处理一些特定的 UI 情况下非常有用，例如在模态框、弹出菜单或者悬浮组件中。
+
+首先，在项目中创建一个 Portal 组件，通常是一个简单的函数组件，用于渲染它的子组件到指定的 DOM 节点上。
+
+```html title="index.html"
+<!-- public/index.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    ...
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="portal-root"></div>
+  </body>
+</html>
+```
+
+```jsx title="创建 Portal 组件"
+// Portal.jsx
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+const Portal = ({ children }) => {
+  const portalRoot = document.getElementById('portal-root'); // 这里的 'portal-root' 是一个在 public/index.html 中定义的 div id
+  return ReactDOM.createPortal(children, portalRoot);
+};
+
+export default Portal;
+```
+
+在需要使用 Portal 渲染的组件中，将子组件包裹在 Portal 组件中。
+
+```jsx title="在组件中使用 Portal"
+import React from 'react';
+import Portal from './Portal.jsx';
+const App = () => {
+  return (
+    <Portal>
+      <div className="modal">
+        <h2>Modal Title</h2>
+        <p>This is the content of the modal.</p>
+      </div>
+    </Portal>
+  );
+};
+
+export default App;
+```
+
+### 冒泡问题
+
+Portal 可以渲染组件到任意节点下，即使渲染到 body 节点下与 root 跟节点成为兄弟节点，在 Portal 组件触发事件，仍然会冒泡触发 root 节点事件。
+
+:::tip 深入探讨
+在 React 中，事件处理是通过合成事件系统管理的，而 Portal 本质上是将组件渲染到 DOM 树中的不同位置，但在 React 组件层次结构中，它仍然被认为是 root 根节点的子节点。因此，如果你在 Portal 中创建了一个节点并且在该节点上触发了事件，事件会冒泡到 Portal 的直接父级组件，然后继续向上冒泡直到根节点。这样确保了事件在 React 组件树中正确地传递和处理。
+:::

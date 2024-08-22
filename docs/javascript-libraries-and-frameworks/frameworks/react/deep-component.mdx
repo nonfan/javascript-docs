@@ -1131,7 +1131,7 @@ export default App;
 
 ### Tailwind CSS
 
-Tailwind CSS 是一个功能类优先的 CSS 框架，你可以通过添加类名快速应用样式。
+[Tailwind CSS](/javascript-libraries-and-frameworks/libraries/tailwind-css/) 是一个功能类优先的 CSS 框架，你可以通过添加类名快速应用样式。
 
 ```bash
 npm install tailwindcss
@@ -1362,63 +1362,3 @@ function Example() {
   return <div>Hello, world!</div>;
 }
 ```
-
-## Portal
-
-在 React 中，Portal 是一种特殊的组件渲染技术，允许你将子组件渲染到 DOM 中的任意位置，而不受父组件层级的限制。这在处理一些特定的 UI 情况下非常有用，例如在模态框、弹出菜单或者悬浮组件中。
-
-首先，在项目中创建一个 Portal 组件，通常是一个简单的函数组件，用于渲染它的子组件到指定的 DOM 节点上。
-
-```html title="index.html"
-<!-- public/index.html -->
-<!doctype html>
-<html lang="en">
-  <head>
-    ...
-  </head>
-  <body>
-    <div id="root"></div>
-    <div id="portal-root"></div>
-  </body>
-</html>
-```
-
-```jsx title="创建 Portal 组件"
-// Portal.jsx
-import React from 'react';
-import ReactDOM from 'react-dom';
-
-const Portal = ({ children }) => {
-  const portalRoot = document.getElementById('portal-root'); // 这里的 'portal-root' 是一个在 public/index.html 中定义的 div id
-  return ReactDOM.createPortal(children, portalRoot);
-};
-
-export default Portal;
-```
-
-在需要使用 Portal 渲染的组件中，将子组件包裹在 Portal 组件中。
-
-```jsx title="在组件中使用 Portal"
-import React from 'react';
-import Portal from './Portal.jsx';
-const App = () => {
-  return (
-    <Portal>
-      <div className="modal">
-        <h2>Modal Title</h2>
-        <p>This is the content of the modal.</p>
-      </div>
-    </Portal>
-  );
-};
-
-export default App;
-```
-
-### 冒泡问题
-
-Portal 可以渲染组件到任意节点下，即使渲染到 body 节点下与 root 跟节点成为兄弟节点，在 Portal 组件触发事件，仍然会冒泡触发 root 节点事件。
-
-:::tip 深入探讨
-在 React 中，事件处理是通过合成事件系统管理的，而 Portal 本质上是将组件渲染到 DOM 树中的不同位置，但在 React 组件层次结构中，它仍然被认为是 root 根节点的子节点。因此，如果你在 Portal 中创建了一个节点并且在该节点上触发了事件，事件会冒泡到 Portal 的直接父级组件，然后继续向上冒泡直到根节点。这样确保了事件在 React 组件树中正确地传递和处理。
-:::
