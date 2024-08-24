@@ -1,1 +1,108 @@
 # 客户端检测
+
+虽然浏览器厂商齐心协力想要实现一致的接口，但事实上仍然是每家浏览器都有自己的长处与不足。跨平台的浏览器尽管版本相同，但总会存在不同的问题。这些差异迫使 Web 开发者要么面向最大公约数而设计，要么(更常见地)使用各种方法来检测客户端，以克服或避免这些缺陷。
+
+客户端检测一直是 Web 开发中饱受争议的话题，这些话题普遍围绕所有浏览器应支持一系列公共特性，理想情况下是这样的。而现实当中，浏览器之间的差异和莫名其妙的行为，让客户端检测变成一种补救措施，而且也成为了开发策略的重要一环。如今，浏览器之间的差异相对 IE 大溃败以前已经好很多了，但浏览器间的不一致性依旧是 Web 开发中的常见主题。
+
+要检测当前的浏览器有很多方法，每一种都有各自的长处和不足。问题的关键在于知道客户端检测应该是解决问题的最后一个举措。任何时候，只要有更普适的方案可选，都应该毫不犹豫地选择。首先要设计最常用的方案，然后再考虑为特定的浏览器进行补救。
+
+## 能力检测
+
+能力检测(又称特性检测)即在 JavaScript 运行时中使用一套简单的检测逻辑，测试浏览器是否支持某种特性。这种方式不要求事先知道特定浏览器的信息，只需检测自己关心的能力是否存在即可。能力检测的基本模式如下:
+
+```js
+if (object.propertyInQuestion) {
+  // 使用object.propertyInQuestion
+}
+```
+
+### 安全能力检测
+
+能力检测最有效的场景是检测能力是否存在的同时，验证其是否能够展现出预期的行为。前一节中的例子依赖将测试对象的成员转换类型，然后再确定它是否存在。虽然这样能够确定检测的对象成员存 8 在，但不能确定它就是你想要的。来看下面的例子，这个函数尝试检测某个对象是否可以排序:
+
+```js
+// 不要这样做!错误的能力检测，只能检测到能力是否存在
+function isSortable(object) {
+  return !!object.sort;
+}
+```
+
+这个函数尝试通过检测对象上是否有 `sort()` 方法来确定它是否支持排序。问题在于，即使这个对象有一个 sort 属性，这个函数也会返回 true:
+
+```js
+let result = isSortable({ sort: true });
+```
+
+简单地测试到一个属性存在并不代表这个对象就可以排序。更好的方式是检测 sort 是不是函数:
+
+```js
+// 好一些，检测 sort 是不是函数
+function isSortable(object) {
+  return typeof object.sort == 'function';
+}
+```
+
+### 基于能力检测进行浏览器分析
+
+虽然可能有人觉得能力检测类似于黑科技，但恰当地使用能力检测可以精准地分析运行代码的浏览器。使用能力检测而非用户代理检测的优点在于，伪造用户代理字符串很简单，而伪造能够欺骗能力检测的浏览器特性却很难。
+
+#### 检测特性
+
+可以按照能力将浏览器归类。如果你的应用程序需要使用特定的浏览器能力，那么最好集中检测所有能力，而不是等到用的时候再重复检测。比如:
+
+```js
+// 检测浏览器是否支持 Netscape 式的插件
+let hasNSPlugins = !!(navigator.plugins && navigator.plugins.length);
+// 检测浏览器是否具有 DOM Level 1 能力
+let hasDOM1 = !!(
+  document.getElementById &&
+  document.createElement &&
+  document.getElementsByTagName
+);
+```
+
+这个例子完成了两项检测:一项是确定浏览器是否支持 Netscape 式的插件，另一项是检测浏览器是否具有 DOM Level 1 能力。保存在变量中的布尔值可以用在后面的条件语句中，这样比重复检测省事多了。
+
+#### 检测浏览器
+
+检测浏览器的确可以通过对浏览器特性的检测来确认用户使用的是什么浏览器。这种方法通常比依赖用户代理字符串的代码嗅探更可靠，因为它直接检测实际支持的特性，而不是依赖于浏览器自报的身份。以下是关于浏览器特性检测的详细说明：
+
+```js title="特性检测的示例"
+// 检测是否支持 ES6 的箭头函数
+function supportsArrowFunctions() {
+  try {
+    new Function('() => {}');
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 检测是否支持 CSS Grid 布局
+function supportsCSSGrid() {
+  return 'grid' in document.createElement('div').style;
+}
+
+// 检测浏览器是否支持 Service Worker
+function supportsServiceWorker() {
+  return 'serviceWorker' in navigator;
+}
+
+if (supportsArrowFunctions()) {
+  console.log('浏览器支持箭头函数');
+} else {
+  console.log('浏览器不支持箭头函数');
+}
+
+if (supportsCSSGrid()) {
+  console.log('浏览器支持 CSS Grid');
+} else {
+  console.log('浏览器不支持 CSS Grid');
+}
+
+if (supportsServiceWorker()) {
+  console.log('浏览器支持 Service Worker');
+} else {
+  console.log('浏览器不支持 Service Worker');
+}
+```
