@@ -416,16 +416,256 @@ export const canvas2 = () => {
 
 ### 变换
 
+上下文变换可以操作绘制在画布上的图像。2D 绘图上下文支持所有常见的绘制变换。在创建绘制上下文时，会以默认值初始化变换矩阵，从而让绘制操作如实应用到绘制结果上。对绘制上下文应用变换，可以导致以不同的变换矩阵应用绘制操作，从而产生不同的结果。
+
+- `rotate(angle)`:围绕原点把图像旋转 angle 弧度。
+- `scale(scaleX, scaleY)`:通过在 x 轴乘以 scaleX、在 y 轴乘以 scaleY 来缩放图像。scaleX 和 scaleY 的默认值都是 1.0。
+- `translate(x, y)`: 把原点移动到(x, y)。执行这个操作后，坐标(0, 0)就会变成(x, y)。
+- `transform(m1_1, m1_2, m2_1, m2_2, dx, dy)`: 像下面这样通过矩阵乘法直接修改矩阵。m1_1 m1_2 dx m2_1 m2_2 dy 001
+- `setTransform(m1_1, m1_2, m2_1, m2_2, dx, dy)`: 把矩阵重置为默认值，再以传入的参数调用 transform()。
+
 ### 绘制图像
+
+2D 绘图上下文内置支持操作图像。如果想把现有图像绘制到画布上，可以使用 drawImage() 方法。 这个方法可以接收 3 组不同的参数，并产生不同的结果。最简单的调用是传入一个 HTML 的 `<img>` 元素， 以及表示绘制目标的 x 和 y 坐标，结果是把图像绘制到指定位置。
+
+```js
+let image = document.images[0];
+context.drawImage(image, 10, 10);
+```
+
+绘制出来的图像与原来的图像一样大。如果想改变所绘制图像的大小，可以再传入另外两个参数:目标宽度和目标高度。这里的缩放只影响绘制的图像，不影响上下文的变换矩阵。
+
+```js
+context.drawImage(image, 50, 10, 20, 30);
+```
+
+还可以只把图像绘制到上下文中的一个区域。此时，需要给 `drawImage()` 提供 9 个参数: 要绘制的图像、源图像 x 坐标、源图像 y 坐标、源图像宽度、源图像高度、目标区域 x 坐标、目标区域 y 坐标、 目标区域宽度和目标区域高度。这个重载后的 `drawImage()` 方法可以实现最大限度的控制，比如:
+
+```js
+context.drawImage(image, 0, 10, 50, 50, 0, 100, 40, 60);
+```
 
 ### 阴影
 
+2D 上下文可以根据以下属性的值自动为已有形状或路径生成阴影。
+
+- [ ] `shadowColor`:CSS 颜色值，表示要绘制的阴影颜色，默认为黑色。
+- [ ] `shadowOffsetX`:阴影相对于形状或路径的 x 坐标的偏移量，默认为 0。
+- [ ] `shadowOffsetY`:阴影相对于形状或路径的 y 坐标的偏移量，默认为 0。
+- [ ] `shadowBlur`:像素，表示阴影的模糊量。默认值为 0，表示不模糊。
+
+这些属性都可以通过 context 对象读写。只要在绘制图形或路径前给这些属性设置好适当的值，阴影就会自动生成。
+
+```js
+let canvas = document.getElementById('drawing');
+// 确保浏览器支持<canvas>
+if (canvas.getContext) {
+  let context = canvas.getContext('2d');
+
+  context.shadowOffsetX = 5;
+  context.shadowOffsetY = 5;
+  context.shadowBlur = 4;
+  context.shadowColor = 'rgba(0, 0, 0, 0.5)';
+
+  // 绘制红色矩形
+  context.fillStyle = '#ff0000';
+  context.fillRect(10, 10, 50, 50);
+  // 绘制蓝色矩形 26
+  context.fillStyle = 'rgba(0,0,255,1)';
+  context.fillRect(30, 30, 50, 50);
+}
+```
+
 ### 渐变
+
+渐变通过 CanvasGradient 的实例表示，在 2D 上下文中创建和修改都非常简单。要创建一个新的线性渐变，可以调用上下文的 `createLinearGradient()` 方法。这个方法接收 4 个参数:起点 x 坐标、 起点 y 坐标、终点 x 坐标和终点 y 坐标。调用之后，该方法会以指定大小创建一个新的 CanvasGradient 对象并返回实例。
+
+有了 gradient 对象后，接下来要使用 `addColorStop()` 方法为渐变指定色标。这个方法接收两个参数:色标位置和 CSS 颜色字符串。色标位置通过 0~1 范围内的值表示，0 是第一种颜色，1 是最后一种颜色。
+
+```js
+let gradient = context.createLinearGradient(30, 30, 70, 70);
+gradient.addColorStop(0, 'white');
+gradient.addColorStop(1, 'black');
+```
+
+这个 `gradient` 对象现在表示的就是在画布上从(30, 30)到(70, 70)绘制一个渐变。渐变的起点颜色为白色，终点颜色为黑色。可以把这个对象赋给 `fillStyle` 或 `strokeStyle` 属性，从而以渐变填充或描画绘制的图形
+
+```js
+let canvas = document.getElementById('drawing');
+// 确保浏览器支持<canvas>
+if (canvas.getContext) {
+  let context = canvas.getContext('2d');
+
+  let gradient = context.createLinearGradient(30, 30, 70, 70);
+  gradient.addColorStop(0, 'white');
+  gradient.addColorStop(1, 'black');
+
+  // 绘制红色矩形
+  context.fillStyle = '#ff0000';
+  context.fillRect(10, 10, 50, 50); // 绘制渐变矩形
+  context.fillStyle = gradient;
+  context.fillRect(30, 30, 50, 50);
+}
+```
+
+**径向渐变**(或放射性渐变)要使用 `createRadialGradient()` 方法来创建。这个方法接收 6 个参数，分别对应两个圆形圆心的坐标和半径。前 3 个参数指定起点圆形中心的 x、y 坐标和半径，后 3 个参 20 数指定终点圆形中心的 x、y 坐标和半径。在创建径向渐变时，可以把两个圆形想象成一个圆柱体的两个圆形表面。把一个表面定义得小一点，另一个定义得大一点，就会得到一个圆锥体。然后，通过移动两个圆形的圆心，就可以旋转这个圆锥体。
+
+```js
+let gradient = context.createRadialGradient(55, 55, 10, 55, 55, 30);
+gradient.addColorStop(0, 'white');
+gradient.addColorStop(1, 'black'); // 绘制红色矩形
+context.fillStyle = '#ff0000';
+context.fillRect(10, 10, 50, 50); // 绘制渐变矩形
+context.fillStyle = gradient;
+context.fillRect(30, 30, 50, 50);
+```
 
 ### 图案
 
+图案是用于填充和描画图形的重复图像。要创建新图案，可以调用 `createPattern()` 方法并传入两个参数:一个 HTML `<img>` 元素和一个表示该如何重复图像的字符串。第二个参数的值与 CSS 的 background-repeat 属性是一样的，包括"repeat"、"repeat-x"、"repeat-y"和"no-repeat"。
+
+```js
+let image = document.images[0];
+let pattern = context.createPattern(image, 'repeat');
+// 绘制矩形
+context.fillStyle = pattern;
+context.fillRect(10, 10, 150, 150);
+```
+
+传给 `createPattern()` 方法的第一个参数也可以是 `<video>` 元素或者另一个 `<canvas>` 元素。
+
 ### 图像数据
+
+2D 上下文中比较强大的一种能力是可以使用 `getImageData()` 方法获取原始图像数据。这个方法接收 4 个参数: 要取得数据中第一个像素的左上角坐标和要取得的像素宽度及高度。
+
+返回的对象是一个 ImageData 的实例。每个 ImageData 对象都包含 3 个属性:width、height 和 data，其中，data 属性是包含图像的原始像素信息的数组。每个像素在 data 数组中都由 4 个值表示，分别代表红、绿、蓝和透明度值。换句话说，第一个像素的信息包含在第 0 到第 3 个值中，比如:
+
+```js
+let imageData = context.getImageData(10, 5, 50, 50);
+
+let data = imageData.data,
+  red = data[0],
+  green = data[1],
+  blue = data[2],
+  alpha = data[3];
+```
+
+这个数组中的每个值都在 0~255 范围内(包括 0 和 255)。对原始图像数据进行访问可以更灵活地操作图像。例如，通过更改图像数据可以创建一个简单的灰阶过滤器:
+
+```js title="完整示例"
+let drawing = document.getElementById('drawing');
+// 确保浏览器支持 <canvas>
+if (drawing.getContext) {
+  let context = drawing.getContext('2d'),
+    image = document.images[0],
+    imageData,
+    data,
+    i,
+    len,
+    average;
+
+  // 确保图片已加载完成
+  image.onload = function () {
+    // 将图像绘制到 <canvas> 上
+    context.drawImage(image, 0, 0);
+
+    // 获取图像的宽度和高度
+    let width = image.width;
+    let height = image.height;
+
+    // 取得图像数据
+    imageData = context.getImageData(0, 0, width, height);
+    data = imageData.data;
+
+    // 遍历每个像素，将其转换为灰度
+    for (i = 0, len = data.length; i < len; i += 4) {
+      let red = data[i];
+      let green = data[i + 1];
+      let blue = data[i + 2];
+
+      // 计算 RGB 平均值
+      average = Math.floor((red + green + blue) / 3);
+
+      // 设置 R, G, B 为平均值 (灰度)，保持 alpha 不变
+      data[i] = average; // R
+      data[i + 1] = average; // G
+      data[i + 2] = average; // B
+      // alpha 值不变 data[i + 3] = alpha;
+    }
+
+    // 将修改后的数据写回 ImageData 并应用到 <canvas> 上显示出来
+    context.putImageData(imageData, 0, 0);
+  };
+
+  // 如果图片已经加载，可以直接执行灰度转换
+  if (image.complete) {
+    image.onload();
+  }
+}
+```
+
+> 这个例子首先在画布上绘制了一个图像，然后又取得了其图像数据。for 循环遍历了图像数据中的每个像素，注意每次循环都要给 i 加上 4。每次循环中取得红、绿、蓝的颜色值，计算出它们的平均值。 然后再把原来的值修改为这个平均值，实际上相当于过滤掉了颜色信息，只留下类似亮度的灰度信息。 之后将 data 数组重写回 imageData 对象。最后调用 `putImageData()` 方法，把图像数据再绘制到画布上。结果就得到了原始图像的黑白版。
 
 ### 合成
 
+2D 上下文中绘制的所有内容都会应用两个属性: `globalAlpha` 和 `globalCompositionOperation`，其中，globalAlpha 属性是一个范围在 0~1 的值(包括 0 和 1)，用于指定所有绘制内容的透明度，默认值为 0。如果所有后来的绘制都需要使用同样的透明度，那么可以将 globalAlpha 设置为适当的值，执行绘制，然后再把 globalAlpha 设置为 0。比如:
+
+```js
+// 绘制红色矩形
+context.fillStyle = '#ff0000';
+context.fillRect(10, 10, 50, 50);
+// 修改全局透明度
+context.globalAlpha = 0.5;
+// 绘制蓝色矩形
+context.fillStyle = 'rgba(0,0,255,1)';
+context.fillRect(30, 30, 50, 50);
+// 重置
+context.globalAlpha = 0;
+```
+
+`globalCompositionOperation` 属性表示新绘制的形状如何与上下文中已有的形状融合。这个属性是一个字符串，可以取下列值。
+
+| 属性值             | 描述                                                                     |
+| ------------------ | ------------------------------------------------------------------------ |
+| `source-over`      | 默认值，新图形绘制在原有图形上面。                                       |
+| `source-in`        | 新图形只绘制出与原有图形重叠的部分，画布上其余部分全部透明。             |
+| `source-out`       | 新图形只绘制出不与原有图形重叠的部分，画布上其余部分全部透明。           |
+| `source-atop`      | 新图形只绘制出与原有图形重叠的部分，原有图形不受影响。                   |
+| `destination-over` | 新图形绘制在原有图形下面，重叠部分只有原图形透明像素下的部分可见。       |
+| `destination-in`   | 新图形绘制在原有图形下面，画布上只剩下二者重叠的部分，其余部分完全透明。 |
+| `destination-out`  | 新图形与原有图形重叠的部分完全透明，原图形其余部分不受影响。             |
+| `destination-atop` | 新图形绘制在原有图形下面，原有图形与新图形不重叠的部分完全透明。         |
+| `lighter`          | 新图形与原有图形重叠部分的像素值相加，使该部分变亮。                     |
+| `copy`             | 新图形将擦除并完全取代原有图形。                                         |
+| `xor`              | 新图形与原有图形重叠部分的像素执行“异或”计算。                           |
+
+```js title="合成效果示例"
+// 绘制红色矩形
+context.fillStyle = '#ff0000';
+context.fillRect(10, 10, 50, 50);
+// 设置合成方式
+context.globalCompositeOperation = 'destination-over'; // 绘制蓝色矩形
+context.fillStyle = 'rgba(0,0,255,1)';
+context.fillRect(30, 30, 50, 50);
+```
+
 ## WebGL
+
+WebGL 是画布的 3D 上下文。与其他 Web 技术不同，WebGL 不是 W3C 制定的标准，而是 Khronos Group 的标准。根据官网描述，“Khronos Group 是非营利性、会员资助的联盟，专注于多平台和设备下并行计算、图形和动态媒体的无专利费开放标准”。Khronos Group 也制定了其他图形 API，包括作为浏览器中 WebGL 基础的 OpenGL ES 2.0。
+
+### WebGL 上下文
+
+在完全支持的浏览器中，WebGL 2.0 上下文的名字叫"webgl2"，WebGL 1.0 上下文的名字叫 "webgl1"。如果浏览器不支持 WebGL，则尝试访问 WebGL 上下文会返回 null。在使用上下文之前， 应该先检测返回值是否存在:
+
+```js
+let drawing = document.getElementById('drawing');
+// 确保浏览器支持<canvas>
+if (drawing.getContext) {
+  let gl = drawing.getContext('webgl');
+  if (gl) {
+    // 使用WebGL
+  }
+}
+```
+
+这里把 WebGL context 对象命名为 gl。大多数 WebGL 应用和例子遵循这个约定，因为 OpenGL ES 2.0 方法和值通常以"gl"开头。这样可以让 JavaScript 代码看起来更接近 OpenGL 程序。
