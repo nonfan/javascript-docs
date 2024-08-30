@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import styles from './styles.module.css';
 
 interface Props {
-  callback: () => void;
+  callback?: () => void;
   children: ReactNode;
   minHeight?: number;
   url: string;
@@ -28,7 +28,7 @@ export default function BrowserWindow({
   bodyStyle,
 }: Props): JSX.Element {
   useEffect(() => {
-    callback();
+    callback && callback();
   }, []);
 
   return (
