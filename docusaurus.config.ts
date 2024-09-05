@@ -102,7 +102,7 @@ const config: Config = {
           type: 'docSidebar',
           position: 'left',
           sidebarId: 'javascript-libraries-and-frameworks',
-          label: 'JavaScript 库和框架',
+          label: '库与框架',
         },
         {
           href: `https://github.com/${username}/${repository}`,

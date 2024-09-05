@@ -1,0 +1,71 @@
+import BrowserWindow from '../../../../src/components/BrowserWindow';
+
+# 入门
+
+## 什么是 Express？
+
+Express 是一个基于 Node.js 的 Web 应用框架，旨在简化开发过程。它提供了一组强大的功能和工具，使得构建 Web 应用和 API 更加高效。Express 是一个轻量级的框架，以其简洁的 API 和高度的可定制性受到开发者的喜爱。
+
+## Express 与 Node.js 的关系
+
+Node.js 是一个基于 Chrome V8 引擎的 JavaScript 运行时，主要用于构建高性能的网络应用。而 Express 是构建在 Node.js 之上的一个框架，它简化了使用 Node.js 进行 Web 开发的过程。Node.js 提供了基础的服务器功能，而 Express 则在其上提供了更高层次的抽象和功能，例如路由、请求处理、模板渲染等。
+
+## 安装和基本设置
+
+要开始使用 Express，你需要首先安装 Node.js。接下来，可以使用 npm（Node 包管理器）来安装 Express。
+
+### 安装 Express
+
+打开终端并运行以下命令来创建一个新的项目目录并初始化一个新的 Node.js 项目：
+
+```bash
+mkdir my-express-app
+cd my-express-app
+npm init -y
+```
+
+```bash title="安装 Express"
+npm install express
+```
+
+### 创建基本的 Express 应用
+
+在项目目录中创建一个名为 app.js 的文件，并添加以下代码来创建一个基本的 Express 应用：
+
+```js
+const express = require('express');
+const app = express();
+const port = 3000;
+
+// 定义一个简单的路由
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+// 启动服务器
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
+```
+
+### 运行应用
+
+在终端中运行以下命令启动服务器：
+
+```bash
+node app.js
+```
+
+<BrowserWindow>Hello World!</BrowserWindow>
+
+## nodemon 工具
+
+在编写调试 Node.js 项目的时候，如果修改了项目的代码，则需要频繁的手动关闭，然后再重新启动，非常繁琐。现在，我们可以使用 nodemon 这个工具，它能够监听项目文件的变动，当代码被修改后，nodemon 会自动帮我们重启项目，极大方便了开发和调试。
+
+```bash title="全局安装工具"
+npm install nodemon -g
+```
+
+```bash title="启动服务"
+nodemon app.js
+```

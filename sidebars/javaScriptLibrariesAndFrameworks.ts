@@ -26,6 +26,21 @@ const siderbar: SidebarsConfig = {
         'javascript-libraries-and-frameworks/frameworks/nextjs',
         'javascript-libraries-and-frameworks/frameworks/vue',
         'javascript-libraries-and-frameworks/frameworks/svelte',
+        {
+          type: 'category',
+          label: 'Express',
+          description: '基于 Node.js 平台，快速、开放、极简的 Web 开发框架',
+          items: [
+            'javascript-libraries-and-frameworks/frameworks/express/getting-started',
+            'javascript-libraries-and-frameworks/frameworks/express/core',
+            'javascript-libraries-and-frameworks/frameworks/express/restful-api',
+            'javascript-libraries-and-frameworks/frameworks/express/template-engine',
+            'javascript-libraries-and-frameworks/frameworks/express/database-integration',
+            'javascript-libraries-and-frameworks/frameworks/express/auth',
+            'javascript-libraries-and-frameworks/frameworks/express/deploy',
+            'javascript-libraries-and-frameworks/frameworks/express/examples',
+          ],
+        },
       ],
     },
     {
