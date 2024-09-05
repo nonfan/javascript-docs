@@ -1,1 +1,100 @@
 # 处理 XML
+
+XML 曾一度是在互联网上存储和传输结构化数据的标准。XML 的发展反映了 Web 的发展，因为 DOM 标准不仅是为了在浏览器中使用，而且还为了在桌面和服务器应用程序中处理 XML 数据结构。在没有 DOM 标准的时候，很多开发者使用 JavaScript 编写自己的 XML 解析器。自从有了 DOM 标准，所有浏览器都开始原生支持 XML、XML DOM 及很多其他相关技术。
+
+## 浏览器对 XML DOM 的支持
+
+因为很多浏览器在正式标准问世之前就开始实现 XML 解析方案，所以不同浏览器对标准的支持不仅有级别上的差异，也有实现上的差异。DOM Level 3 增加了解析和􏰀列化能力。不过，在 DOM Level 3 制定完成时，大多数浏览器也已实现了自己的解析方案。
+
+### DOM Level 2 Core
+
+DOM Level 2 增加了 `document.implementation` 的 `createDocument()` 方法。可以像下面这样创建空 XML 文档:
+
+```js
+let xmldom = document.implementation.createDocument(
+  namespaceUri,
+  root,
+  doctype,
+);
+```
+
+在 JavaScript 中处理 XML 时，root 参数通常只会使用一次，因为这个参数定义的是 XML DOM 中 document 元素的标签名。namespaceUri 参数用得很少，因为在 JavaScript 中很难管理命名空间。 doctype 参数则更是少用。
+
+要创建一个 document 对象标签名为 `<root>` 的新 XML 文档，可以使用以下代码:
+
+```js
+let xmldom = document.implementation.createDocument('', 'root', null);
+console.log(xmldom.documentElement.tagName); // "root"
+
+let child = xmldom.createElement('child');
+xmldom.documentElement.appendChild(child);
+```
+
+要检查浏览器是否支持 DOM Level 2 XML，可以使用如下代码:
+
+```js
+let hasXmlDom = document.implementation.hasFeature('XML', '2.0');
+```
+
+实践中，很少需要凭空创建 XML 文档，然后使用 DOM 方法来系统创建 XML 数据结构。更多是把 XML 文档解析为 DOM 结构，或者相反。因为 DOM Level 2 并未提供这种功能，所以出现了一些事实标准。
+
+### DOMParser类型
+
+Firefox 专门为把 XML 解析为 DOM 文档新增了 DOMParser 类型，后来所有其他浏览器也实现了该类型。要使用 DOMParser，需要先创建它的一个实例，然后再调用 `parseFromString()` 方法。这个方法接收两个参数:要解析的 XML 字符串和内容类型(始终应该是"text/html")。返回值是 Document 的实例。
+
+```js title="示例"
+let parser = new DOMParser();
+let xmldom = parser.parseFromString('<root><child/></root>', 'text/xml');
+
+console.log(xmldom.documentElement.tagName); // "root"
+console.log(xmldom.documentElement.firstChild.tagName); // "child"
+
+let anotherChild = xmldom.createElement('child');
+xmldom.documentElement.appendChild(anotherChild);
+let children = xmldom.getElementsByTagName('child');
+console.log(children.length); // 2
+```
+
+DOMParser 只能解析格式良好的 XML，因此不能把 HTML 解析为 HTML 文档。在发生解析错误时， 不同浏览器的行为也不一样。Firefox、Opera、Safari 和 Chrome 在发生解析错误时，`parseFromString()` 方法仍会返回一个 Document 对象，只不过其 document 元素是 `<parsererror>`，该元素的内容为解析错误的描述。下面是一个解析错误的示例:
+
+```html title="错误示例"
+<parsererror xmlns="http://www.mozilla.org/newlayout/xml/parsererror.xml">
+  <div>XML 解析错误: 标签未闭合</div>
+</parsererror>
+```
+
+### XMLSerializer类型
+
+与 DOMParser 相对，Firefox 也增加了 XMLSerializer 类型用于提供相反的功能:把 DOM 文档 􏰀列化为 XML 字符串。此后，XMLSerializer 也得到了所有主流浏览器的支持。
+
+要序列化 DOM 文档，必须创建 XMLSerializer 的新实例，然后把文档传给 `serializeToString()` 方法，如下所示:
+
+```js
+let serializer = new XMLSerializer();
+let xml = serializer.serializeToString(xmldom);
+console.log(xml);
+```
+
+`serializeToString()` 方法返回的值是打印效果不好的字符串，因此肉眼看起来有点困难。XMLSerializer 能够序列化任何有效的 DOM 对象，包括个别节点和 HTML 文档。在把 HTML 文 档传给 `serializeToString()` 时，这个文档会被当成 XML 文档，因此得到的结果是格式良好的。
+
+## 浏览器对 XPath 的支持
+
+XPath 是为了在 DOM 文档中定位特定节点而创建的，因此它对 XML 处理很重要。在 DOM Level 3 之前，XPath 相关的 API 没有被标准化。DOM Level 3 开始着手标准化 XPath。很多浏览器实现了 DOM Level 3 XPath 标准，但 IE 决定按照自己的方式实现。
+
+### DOM Level 3 XPath
+
+DOM Level 3 XPath 规范定义了接口，用于在 DOM 中求值 XPath 表达式。要确定浏览器是否支持 DOM Level 3 XPath，可以使用以下代码:
+
+```js
+let supportsXPath = document.implementation.hasFeature('XPath', '3.0');
+```
+
+虽然这个规范定义了不少类型，但其中最重要的两个是 XPathEvaluator 和 XPathResult。 XPathEvaluator 用于在特定上下文中求值 XPath 表达式，包含三个方法。
+
+| **方法**                                               | **说明**                                                                                              |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `createExpression(xpath, namespace)`                   | 创建一个 `XPathExpression` 对象，用于在特定的上下文中执行 XPath 表达式。                              |
+| `createNSResolver(nodeResolver)`                       | 创建一个 `XPathNSResolver` 对象，用于处理 XPath 表达式中的命名空间。                                  |
+| `evaluate(xpath, contextNode, resolver, type, result)` | 在指定上下文中执行 XPath 表达式，并返回一个 `XPathResult`。支持多种返回类型，如节点、布尔值、数字等。 |
+
+## 浏览器对 XSLT 的支持
