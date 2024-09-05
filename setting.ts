@@ -1,6 +1,6 @@
 export const username: string = 'nonfan';
 export const repository: string = 'javascript-docs';
-export const title: string = 'JavaScript';
+export const title: string = 'JavaScript Docs';
 export const logoSrc: string = './images/logoDark.svg';
 export const logoSrcDark: string = './images/logo.svg';
 export const favicon: string = './images/favicon.png';
