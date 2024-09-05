@@ -66,6 +66,11 @@ const config: Config = {
   ],
 
   themeConfig: {
+    colorMode: {
+      defaultMode: 'light', // 默认模式，可选 'light' 或 'dark'
+      disableSwitch: false, // 如果为 true，则不显示切换按钮
+      respectPrefersColorScheme: true, // 是否根据用户系统设置自动切换主题
+    },
     tableOfContents: {
       minHeadingLevel: 2,
       maxHeadingLevel: 5,
