@@ -83,6 +83,7 @@ const sidebars: SidebarsConfig = {
     'modules',
     'worker-thread',
     'strict-mode',
+    'features',
   ],
   ...allSidebar,
 };

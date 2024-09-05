@@ -72,7 +72,7 @@ const config: Config = {
     },
     docs: {
       sidebar: {
-        hideable: true,
+        // hideable: true,
         autoCollapseCategories: true,
       },
     },
@@ -87,12 +87,6 @@ const config: Config = {
         height: 32,
       },
       items: [
-        {
-          type: 'docSidebar',
-          position: 'left',
-          sidebarId: 'features',
-          label: '新特性',
-        },
         {
           type: 'docSidebar',
           position: 'left',
