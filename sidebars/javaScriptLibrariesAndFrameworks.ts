@@ -38,6 +38,7 @@ const siderbar: SidebarsConfig = {
             'javascript-libraries-and-frameworks/frameworks/express/database-integration',
             'javascript-libraries-and-frameworks/frameworks/express/auth',
             'javascript-libraries-and-frameworks/frameworks/express/deploy',
+            'javascript-libraries-and-frameworks/frameworks/express/test',
             'javascript-libraries-and-frameworks/frameworks/express/examples',
           ],
         },

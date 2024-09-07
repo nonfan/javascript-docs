@@ -1,4 +1,94 @@
+import BrowserWindow from '../../../../src/components/BrowserWindow';
+
 # 模板引擎
 
-使用模板引擎（如 EJS、Pug）
-动态渲染页面
+**模板引擎**使您能够在应用程序中使用静态模板文件。在运行时，模板引擎将模板文件中的变量替换为实际值，并将模板转换为发送给客户端的 HTML 文件。这种方法使得 HTML 页面的设计变得更加容易。
+
+一些与 Express 配合使用的流行模板引擎有Pug 、 Mustache和EJS 。 Express 应用程序生成器使用Pug作为默认值，但它也支持其他几种。
+
+要渲染模板文件，请设置以下应用程序设置属性，在生成器创建的默认应用程序的app.js中设置：
+
+- `views`：模板文件所在的目录，默认为应用程序根目录中的 views 目录。
+
+```js
+app.set('views', './views');
+```
+
+- `view engine`：要使用的模板引擎。
+
+例如，要使用 Pug 模板引擎：`app.set('view engine', 'pug')`
+
+## Pug
+
+安装对应的模板引擎 npm 包
+
+```bash
+npm install pug --save
+```
+
+设置视图引擎后，您无需在应用程序中指定引擎或加载模板引擎模块；
+
+```js
+app.set('view engine', 'pug');
+```
+
+在 views 目录下创建一个名为 index.pug 的Pug模板文件，内容如下：
+
+```pug
+html
+  head
+    title= title
+  body
+    h1= message
+```
+
+然后创建一个路由来渲染 index.pug 文件。如果未设置 view engine 属性，则必须指定 view 文件的扩展名。否则，您可以省略它。
+
+```js
+app.get('/', function (req, res) {
+  res.render('index', { title: 'Hey', message: 'Hello there!' });
+});
+```
+
+## 开发模板引擎
+
+使用 `app.engine(ext, callback)` 方法创建您自己的模板引擎。 `ext` 指文件扩展名， `callback` 是模板引擎函数，它接受以下各项作为参数：文件位置、选项对象和回调函数。
+
+```js title="模板引擎的简单示例"
+const express = require('express');
+const app = express();
+
+var fs = require('fs');
+app.engine('mofan', function (filePath, options, callback) {
+  fs.readFile(filePath, function (err, content) {
+    if (err) return callback(err);
+    var rendered = content
+      .toString()
+      .replace('#title#', '<span>' + options.title + '</span>')
+      .replace('#message#', '<h1>' + options.message + '</h1>');
+    return callback(null, rendered);
+  });
+});
+app.set('views', './views');
+app.set('view engine', 'mofan');
+```
+
+在views目录中创建一个名为 index.mofan 的文件，其中包含以下内容。
+
+```
+#title#
+#message#
+```
+
+然后，在您的应用程序中创建以下路由。
+
+```js title=""
+app.get('/', function (req, res) {
+  res.render('index', { title: 'Hey', message: 'Hello there!' });
+});
+```
+
+<BrowserWindow>
+  <span>Hey</span>
+  <h1>Hello there!</h1>
+</BrowserWindow>

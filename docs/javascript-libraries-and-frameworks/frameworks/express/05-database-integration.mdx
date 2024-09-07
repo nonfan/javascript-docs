@@ -1,5 +1,394 @@
 # 数据库集成
 
-连接 MongoDB（使用 Mongoose）
-连接 SQL 数据库（使用 Sequelize）
-实现 CRUD 操作
+添加将数据库连接到 Express 应用程序的功能只需为应用程序中的数据库加载适当的 Node.js 驱动程序即可。
+
+## SQLite
+
+SQLite 是一种轻量级、嵌入式的关系型数据库管理系统。它的设计目标是提供一个零配置、无服务器、跨平台的数据库解决方案。以下是 SQLite 的一些关键特性和限制：
+
+| 特性               | 描述                                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **轻量级**         | SQLite 是一个非常小的数据库系统，整个库的源代码不到 500 KB。无需安装或配置，所有操作都在单个文件中完成。                                                |
+| **嵌入式**         | SQLite 是一个嵌入式数据库，直接集成到应用程序中，不需要独立的数据库服务器。操作由应用程序中的 SQLite 引擎直接处理。                                     |
+| **零配置**         | 不需要安装、配置或启动数据库服务，所有操作通过直接读写数据库文件完成。适合小型应用和开发过程中。                                                        |
+| **事务支持**       | 支持完整的事务功能，包括 ACID（原子性、一致性、隔离性、持久性）事务，支持多种隔离级别来控制事务的并发操作。                                             |
+| **跨平台**         | 可以在几乎所有操作系统上运行，包括 Windows、macOS、Linux、iOS、Android 等。数据库文件是跨平台的。                                                       |
+| **自包含**         | 数据库引擎的所有功能都包含在一个库文件中，无需外部依赖，数据库文件本身即为整个数据库。                                                                  |
+| **只读和只写支持** | 支持只读和只写操作，可以在只读环境中运行，也可以在需要写入的环境中使用，支持并发读操作和适度的并发写操作。                                              |
+| **SQL 支持**       | 支持大部分标准 SQL 语法，包括复杂的查询、联接、索引、触发器、视图等，支持 SQL 数据定义语言（DDL）、数据操纵语言（DML）和数据控制语言（DCL）的主要功能。 |
+
+| 限制                        | 描述                                                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **并发写操作限制**          | 虽然 SQLite 支持多个并发读操作，但写操作的并发支持有限。在高并发写操作场景中，SQLite 可能会成为瓶颈。               |
+| **不支持存储过程和触发器**  | SQLite 不支持存储过程，但支持触发器。                                                                               |
+| **不支持所有 SQL 标准功能** | 尽管 SQLite 支持大部分标准 SQL 功能，但并不完全符合所有 SQL 标准（例如，不支持完全的外键约束和一些高级 SQL 特性）。 |
+
+### 安装与使用
+
+```bash
+npm install sqlite3
+```
+
+创建一个 SQLite 数据库文件并进行基本操作的示例代码：
+
+```js
+const sqlite3 = require('sqlite3').verbose();
+
+// 创建 SQLite3 数据库连接
+const db = new sqlite3.Database('./example.db', err => {
+  if (err) {
+    console.error('Database connection error:', err.message);
+  } else {
+    console.log('Database connected');
+  }
+});
+
+// 创建表
+db.run(
+  'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)',
+  err => {
+    if (err) {
+      console.error('Table creation error:', err.message);
+    } else {
+      console.log('Table created');
+    }
+  },
+);
+
+// 插入数据
+db.run(
+  'INSERT INTO users (name, email) VALUES (?, ?)',
+  ['Alice', 'alice@example.com'],
+  function (err) {
+    if (err) {
+      console.error('Insert error:', err.message);
+    } else {
+      console.log(`Row inserted with ID ${this.lastID}`);
+    }
+  },
+);
+
+// 查询数据
+db.all('SELECT * FROM users', [], (err, rows) => {
+  if (err) {
+    console.error('Query error:', err.message);
+  } else {
+    console.log('Rows:', rows);
+  }
+});
+
+// 关闭数据库连接
+db.close(err => {
+  if (err) {
+    console.error('Close error:', err.message);
+  } else {
+    console.log('Database connection closed');
+  }
+});
+```
+
+### Typeorm
+
+:::info 版本
+`0.3.20`
+:::
+
+在使用 Express.js 搭配 SQLite 时，结合 TypeORM 作为 ORM（对象关系映射）可以极大简化数据库操作。TypeORM 允许你通过 JavaScript 或 TypeScript 来映射 SQLite 数据库表，直接操作对象而不是写原生 SQL 语句，从而提高开发效率。
+
+以下是 Express.js 与 SQLite 数据库结合 TypeORM 的完整示例，涵盖基本的 CRUD 操作。
+
+#### 安装依赖
+
+```bash
+npm install typeorm reflect-metadata sqlite3
+npm install typescript ts-node @types/node --save-dev
+```
+
+- `typeorm`: ORM 工具
+- `reflect-metadata`: TypeScript 的元数据反射库（TypeORM 依赖）
+- `sqlite3`: SQLite 数据库驱动
+- `typescript` 和 `ts-node`: TypeScript 编译工具
+
+#### TypeORM 配置
+
+在项目 src 目录下创建一个 `data-source.ts` 文件，这是 TypeORM 的配置文件。可以指定数据库的类型、路径等。
+
+```js title="data-source.ts"
+import 'reflect-metadata';
+import { DataSource } from 'typeorm';
+import { User } from './entity/User';
+
+export const AppDataSource = new DataSource({
+  type: 'sqlite',
+  database: 'database.sqlite',
+  synchronize: true,
+  logging: false,
+  entities: [User],
+  migrations: [],
+  subscribers: [],
+});
+```
+
+`synchronize: true` 会自动同步数据库结构到实体类中，这在开发阶段是非常有用的，但在生产环境中应设置为 false，以避免数据丢失。
+
+如果你将 logging 设置为 true，可以帮助你在开发过程中看到 TypeORM 执行的 SQL 语句，便于调试。
+
+在 `src/entity` 创建实体类:
+
+```js title="User.ts"
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+
+@Entity()
+export class User {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  name: string;
+
+  @Column()
+  email: string;
+}
+```
+
+在 `src/app.ts` 初始化数据：
+
+```js title="app.ts"
+import 'reflect-metadata';
+import express, { Request, Response } from 'express';
+import { AppDataSource } from './data-source';
+
+const app = express();
+app.use(express.json());
+
+AppDataSource.initialize()
+  .then(() => {
+    // 启动服务器
+    app.listen(1234, () => {
+      console.log('Server is running on port 1234');
+    });
+  })
+  .catch(error => console.log(error));
+```
+
+#### CRUD 操作
+
+通过 `AppDataSource.initialize()` 来初始化数据库连接，在 `then` 内实现 CRUD 路由。
+
+```js
+import { User } from "./entity/User";
+
+AppDataSource.initialize()
+  .then(() => {
+    const userRepository = AppDataSource.getRepository(User);
+
+    // 创建用户
+    app.post("/users", async (req: Request, res: Response, next) => {
+      try {
+        const { name, email } = req.body;
+
+        console.log(name);
+
+        const user = new User();
+        user.name = name;
+        user.email = email;
+
+        await userRepository.save(user);
+        res.json(user);
+      } catch (err) {
+        next(err);
+      }
+    });
+
+    // 获取所有用户
+    app.get("/users", async (req, res) => {
+      const users = await userRepository.find();
+      res.json(users);
+    });
+
+    // 根据ID获取单个用户
+    app.get("/users/:id", async (req, res) => {
+      const user = await userRepository.findOne({
+        where: { id: JSON.parse(req.params.id) },
+      });
+      if (user) {
+        res.json(user);
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    });
+
+    // 更新用户
+    app.put("/users/:id", async (req, res) => {
+      const user = await userRepository.findOne({
+        where: { id: JSON.parse(req.params.id) },
+      });
+      if (user) {
+        userRepository.merge(user, req.body);
+        const result = await userRepository.save(user);
+        res.json(result);
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    });
+
+    // 删除用户
+    app.delete("/users/:id", async (req, res) => {
+      const result = await userRepository.delete(req.params.id);
+      res.json(result);
+    });
+
+    // 启动服务器
+    app.listen(1234, () => {
+      console.log("Server is running on port 1234");
+    });
+  })
+  .catch((error) => console.log(error));
+```
+
+### Sequelize
+
+:::info 版本
+`6.37.3`
+:::
+
+使用 Sequelize 作为 ORM（对象关系映射）来结合 Express.js 和 SQLite，能够方便地与数据库交互并简化复杂的 SQL 操作。Sequelize 是一个支持多种数据库的 ORM 工具，能通过模型与数据库表进行映射，并提供了丰富的 API 来实现各种数据库操作。
+
+#### 安装依赖
+
+```bash
+npm install express sequelize sqlite3
+npm install typescript ts-node @types/node @types/express --save-dev
+```
+
+- `express`: Web 框架
+- `sequelize`: ORM 工具
+- `sqlite3`: SQLite 数据库驱动
+- `typescript` 和 `ts-node`: TypeScript 编译工具
+
+#### Sequelize 配置
+
+在项目 src 目录下创建一个 `database.ts` 文件，用于初始化 Sequelize 并连接 SQLite 数据库。
+
+```js title="database.ts"
+import { Sequelize } from 'sequelize';
+
+// 初始化 Sequelize 实例，连接 SQLite 数据库
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'database.sqlite', // SQLite 数据库文件的路径
+});
+
+export default sequelize;
+```
+
+#### 创建模型
+
+在 `src/models` 目录下创建一个 User.ts 文件，定义用户模型。Sequelize 模型类似于数据库中的表，允许我们通过 JavaScript 进行增删改查操作
+
+```ts title="User.ts"
+import { DataTypes, Model } from 'sequelize';
+import sequelize from '../database';
+
+// 定义 User 模型
+class User extends Model {
+  public id!: number;
+  public name!: string;
+  public email!: string;
+}
+
+User.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    sequelize,
+    modelName: 'User',
+    tableName: 'users',
+    timestamps: false, // 如果不需要 Sequelize 自动生成 createdAt 和 updatedAt
+  },
+);
+
+export default User;
+```
+
+#### 初始化 Sequelize
+
+在 `src/app.ts` 文件中初始化 Sequelize 并创建基本的路由以执行 CRUD 操作。
+
+```ts title="app.ts"
+import express, { Request, Response } from 'express';
+import sequelize from './database';
+import User from './models/User';
+
+const app = express();
+app.use(express.json());
+
+// 连接数据库并同步模型
+sequelize.sync().then(() => {
+  console.log('Database synced successfully');
+});
+
+// 获取所有用户
+app.get('/users', async (req: Request, res: Response) => {
+  const users = await User.findAll();
+  res.json(users);
+});
+
+// 创建新用户
+app.post('/users', async (req: Request, res: Response) => {
+  const { name, email } = req.body;
+  const user = await User.create({ name, email });
+  res.json(user);
+});
+
+// 根据ID获取单个用户
+app.get('/users/:id', async (req: Request, res: Response) => {
+  const user = await User.findByPk(req.params.id);
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
+// 更新用户
+app.put('/users/:id', async (req: Request, res: Response) => {
+  const user = await User.findByPk(req.params.id);
+  if (user) {
+    user.name = req.body.name;
+    user.email = req.body.email;
+    await user.save();
+    res.json(user);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
+// 删除用户
+app.delete('/users/:id', async (req: Request, res: Response) => {
+  const result = await User.destroy({ where: { id: req.params.id } });
+  res.json(result);
+});
+
+// 启动服务器
+app.listen(1234, () => {
+  console.log('Server is running on port 1234');
+});
+```
+
+## Mysql
+
+## MongoDB

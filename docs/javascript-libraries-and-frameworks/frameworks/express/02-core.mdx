@@ -1,18 +1,920 @@
+import BrowserWindow from '../../../../src/components/BrowserWindow';
+import { Tag } from 'antd';
+
 # 核心概念
 
-请求和响应
-路由（Routing）
-中间件（Middleware）
-内置中间件
-第三方中间件
-自定义中间件 4. 错误处理
-捕获与处理错误
-404 页面
-全局错误处理
+## express()
 
-# 跨域资源共享（CORS）
+创建 Express 应用程序。 `express()` 函数是 express 模块导出的顶级函数，它用于创建一个 Express 应用程序实例。
 
-理解 CORS
-使用 cors 中间件解决跨域问题
+```js
+const express = require('express');
+const app = express();
+```
 
-静态文件服务
+## 请求和响应
+
+在 Express 中，**请求（Request）**和**响应（Response）** 是处理客户端与服务器交互的基础。客户端通过 HTTP 请求发送数据到服务器，服务器处理请求并发送响应。
+
+### 请求对象 (request)
+
+`request` (简写 req) 包含客户端请求的所有信息，如请求方法、URL、查询参数、请求体、头信息等。常见的属性包括：：
+
+| 属性         | 说明                                                                           |
+| ------------ | ------------------------------------------------------------------------------ |
+| `req.method` | 请求的 HTTP 方法（如 GET、POST、PUT 等）。                                     |
+| `req.url`    | 请求的路径（如 `/users`）。                                                    |
+| `req.params` | 获取路径中的参数（如 `/user/:id`，其中 `id` 是路径参数）。                     |
+| `req.query`  | 获取查询参数（如 `/search?query=express`，其中 `query` 是查询参数）。          |
+| `req.body`   | 请求体的数据（用于 POST 或 PUT 请求，需使用中间件解析，如 `express.json()`）。 |
+
+### 响应对象 (response)
+
+`response` (简写 res) 对象用于向客户端发送响应。常见的方法包括：
+
+| 方法             | 说明                                        |
+| ---------------- | ------------------------------------------- |
+| `res.send()`     | 发送响应内容，可以是字符串、HTML、JSON 等。 |
+| `res.json()`     | 发送 JSON 格式的响应。                      |
+| `res.status()`   | 设置响应的 HTTP 状态码。                    |
+| `res.redirect()` | 重定向客户端到另一个 URL。                  |
+| `res.sendFile()` | 发送文件作为响应。                          |
+
+```js title="示例：处理请求和发送响应"
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/user/:id', (req, res) => {
+  // 获取路径参数
+  const userId = req.params.id;
+
+  // 获取查询参数
+  const search = req.query.search;
+
+  // 获取请求体（需使用中间件解析，如 express.json()）
+  const userData = req.body;
+
+  // 发送响应
+  res.status(200).json({ message: `User ID: ${userId}`, search, userData });
+});
+
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
+```
+
+## 路由
+
+路由是 Express 应用程序根据请求的路径和方法来执行特定操作的机制。通过路由，开发者可以定义不同 URL 对应的处理逻辑。
+
+### 基本路由定义
+
+在 Express 中，路由定义遵循 app.METHOD(PATH, HANDLER) 的形式：
+
+- METHOD 是 HTTP 方法（如 GET、POST、PUT、DELETE 等）。
+- PATH 是请求路径。
+- HANDLER 是一个函数，处理匹配到的请求。
+
+```js title="示例"
+// 处理 GET 请求的路由
+app.get('/', (req, res) => {
+  res.send('Hello, Express!');
+});
+
+// 处理 POST 请求的路由
+app.post('/submit', (req, res) => {
+  res.send('Form submitted');
+});
+```
+
+有一个特殊的路由方法 `app.all()` ，用于在所有HTTP 请求方法的路径上加载中间件函数。例如，无论使用 GET、POST、PUT、DELETE 还是 http 模块中支持的任何其他 HTTP 请求方法，都会对路由“/secret”的请求执行以下处理程序。
+
+```js
+app.all('/secret', function (req, res) {
+  console.log('Accessing the secret section ...');
+});
+```
+
+### 路由路径
+
+路由路径与请求方法结合，定义可发出请求的端点。路由路径可以是字符串、字符串模式或正则表达式。
+
+在路由定义中，字符 `?`、`+`、`*` 和 `()` 是正则表达式的元字符，但在字符串路径中它们会被解释为普通字符。下面是它们在正则表达式中的作用以及它们在字符串路径中的解释方式：
+
+`?`：表示前面的字符或子表达式是可选的（即出现零次或一次）。
+
+```js
+app.get('/users?/:userId?', (req, res) => {
+  res.send(`User ID: ${req.params.userId || 'none'}`);
+});
+```
+
+`+`：表示前面的字符或子表达式至少出现一次。
+
+```js
+app.get('/users+/123', (req, res) => {
+  res.send('Matched /users+/123');
+});
+```
+
+`*`：表示前面的字符或子表达式出现零次或多次。
+
+```js
+app.get('/files/*', (req, res) => {
+  res.send(`Requested path: ${req.params[0]}`);
+});
+```
+
+`()`：用于分组字符或子表达式。
+
+```js
+app.get('/items/(a|b)', (req, res) => {
+  res.send('Matched /items/a or /items/b');
+});
+```
+
+**字符串路径中的解释**
+
+`?`、`+`、`*` 和 `()`：在字符串路径中，这些字符被视为字面量字符，而不是正则表达式的特殊符号。例如：
+
+```js
+app.get('/files/*', (req, res) => {
+  res.send('Matched /files/* literally');
+});
+```
+
+`-` 和 `.`：这些字符在字符串路径中也是字面量字符，不会被解释为特殊含义：
+
+```js
+app.get('/files/123-456', (req, res) => {
+  res.send('Matched /files/123-456');
+});
+
+app.get('/files/abc.def', (req, res) => {
+  res.send('Matched /files/abc.def');
+});
+```
+
+总结来说，在定义路径时，如果使用正则表达式的特性（如 `?`、`+`、`*` 和 `()`），你可以利用它们的特殊含义来匹配复杂的路径。而在字符串路径中，这些字符会被视为普通字符，不具有正则表达式中的特殊功能。
+
+### 路由参数
+
+路由参数用于在路径中动态捕获变量，通常使用 `:` 语法定义。通过 `req.params` 获取路由参数。
+
+```js
+app.get('/user/:id', (req, res) => {
+  const userId = req.params.id;
+  res.send(`User ID: ${userId}`);
+});
+```
+
+访问 `http://localhost:3000/user/123` 时，会返回 User ID: 123。
+
+<BrowserWindow url={'http://localhost:3000/user/123'}>
+  User ID: 123
+</BrowserWindow>
+
+### 查询参数
+
+通过 `req.query` 对象，可以获取到URL上的请求参数，默认是空对象
+
+```js
+app.get('/user', (req, res) => {
+  const userId = req.query.id;
+  res.send(`User ID: ${userId}`);
+});
+```
+
+访问 `http://localhost:3000/user?id=123` 时，会返回 User ID: 123。
+
+<BrowserWindow url={'http://localhost:3000/user?id=123'}>
+  User ID: 123
+</BrowserWindow>
+
+### 路由分组与模块化
+
+为了方便对路由进行模块化的管理，Express 不建议将路由直接挂载到 app 上，而是推荐将路由抽离为单独的模块。将路由抽离为单独模块的步骤如下：
+
+1. 创建路由模块对应的 `.js` 文件
+2. 调用 `express.Router()` 函数创建路由对象
+3. 向路由对象上挂载具体的路由
+4. 使用 `module.exports` 向外共享路由对象
+5. 在app.js使用 `app.use()` 函数注册路由模块
+
+```js title="路由模块文件"
+const express = require('express');
+const router = express.Router();
+
+// 定义用户相关的路由
+router.get('/', (req, res) => {
+  res.send('用户列表');
+});
+
+router.get('/:id', (req, res) => {
+  res.send(`用户ID: ${req.params.id}`);
+});
+
+// 共享路由对象，暴露成员
+module.exports = router;
+```
+
+```js title="app.js"
+const express = require('express');
+const userRouter = require('./routes/user.js');
+const app = express();
+const port = 3000;
+
+app.use(userRouter);
+
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
+```
+
+在主应用中添加前缀, 所有相关的路由都会带上前缀。
+
+```js title="示例: 为路由模块添加前缀"
+const userRouter = require('./routes/user.js');
+app.use('/api', userRouter);
+```
+
+## 中间件
+
+中间件是 Express 的核心功能之一，用于处理请求和响应。在路由处理前或后，执行中间件函数以添加功能。
+
+中间件函数是可以访问请求对象(req)、响应对象(res) 以及应用程序请求-响应周期中的下一个中间件函数的函数。下一个中间件函数通常由名为 next 变量表示。
+
+中间件功能可以执行以下任务：
+
+- **执行任意代码**: 可以在请求处理中执行任何类型的逻辑，例如身份验证、日志记录、数据库查询等。
+- **更改请求和响应对象**: 可以修改请求（req）和响应（res）对象的内容，比如添加或删除属性，以便后续的中间件或路由能够使用这些信息。
+- **结束请求(Request)-响应周期(Response)**: 如果中间件完成了所有必要的操作，可以通过发送响应来结束请求(响应周期)，而无需调用后续的中间件或路由。
+- **调用堆栈中的下一个中间件函数**: 如果当前中间件不结束请求-响应周期，应该通过调用 `next()` 函数将控制权交给下一个中间件。
+
+如果当前的中间件函数没有结束请求-响应周期，即没有调用 `res.send()`、`res.json()`、`res.end()` 等方法将数据发回客户端 ，则必须调用 `next()` 将控制权传递给下一个中间件函数。否则，请求将被挂起。
+
+Express 应用程序可以使用以下类型的中间件：
+
+- [ ] 应用层中间件
+- [ ] 路由器级中间件
+- [ ] 错误处理中间件
+- [ ] 内置中间件
+- [ ] 第三方中间件
+
+### 应用层中间件
+
+使用 `app.use()` 和 `app.METHOD()` 函数将应用程序级中间件绑定到 app 对象的实例，其中METHOD是中间件函数处理的请求的 HTTP 方法（例如 GET、PUT 或POST) 小写。
+
+没有配置请求路径的中间件函数。每次应用程序收到请求时都会执行该函数。
+
+```js
+const express = require('express');
+const app = express();
+
+app.use(function (req, res, next) {
+  console.log('Time:', Date.now());
+  next();
+});
+```
+
+配置请求 `/user/:id` 路径上的中间件函数。该函数针对 `/user/:id` 路径上的任何类型的 HTTP 请求执行。
+
+```js
+app.use('/user/:id', function (req, res, next) {
+  console.log('Request Type:', req.method);
+  next();
+});
+```
+
+一个路由及其处理函数（中间件系统）。该函数处理对 `/user/:id` 路径的 GET 请求。
+
+```js
+app.get('/user/:id', function (req, res, next) {
+  res.send('USER');
+});
+```
+
+下面是一个在挂载点加载一系列中间件函数的示例，并带有挂载路径。它说明了一个**中间件子堆栈**，该子堆栈将任何类型的 HTTP 请求的请求信息打印到 `/user/:id` 路径。
+
+> 在 Express 中，中间件子堆栈（middleware sub-stacks）指的是在处理请求时，应用程序可以创建多个中间件层，这些层可以按顺序进行处理。在每个中间件层中，可以使用不同的中间件函数来处理请求和响应对象。
+
+```js
+app.use(
+  '/user/:id',
+  function (req, res, next) {
+    console.log('Request URL:', req.originalUrl);
+    next();
+  },
+  function (req, res, next) {
+    console.log('Request Type:', req.method);
+    next();
+  },
+);
+```
+
+路由处理程序使您能够为路径定义多个路由。下面的示例定义了到 `/user/:id` 路径的 GET 请求的两条路由。第二条路由不会导致任何问题，但它永远不会被调用，因为第一条路由结束了请求-响应周期。
+
+```js
+app.get(
+  '/user/:id',
+  function (req, res, next) {
+    console.log('ID:', req.params.id);
+    next();
+  },
+  function (req, res, next) {
+    res.send('User Info');
+  },
+);
+
+// handler for the /user/:id path, which prints the user ID
+app.get('/user/:id', function (req, res, next) {
+  res.send(req.params.id);
+});
+```
+
+要跳过路由器中间件堆栈中的其余中间件函数，请调用 `next('route')` 将控制权传递给下一个路由。注意： `next('route')` 仅适用于使用 `app.METHOD()` 或`router.METHOD()` 函数加载的中间件函数。
+
+```js title="示例: 中间件子堆栈"
+app.get(
+  '/user/:id',
+  function (req, res, next) {
+    // if the user ID is 0, skip to the next route
+    if (req.params.id === '0') next('route');
+    // otherwise pass the control to the next middleware function in this stack
+    else next();
+  },
+  function (req, res, next) {
+    // send a regular response
+    res.send('regular');
+  },
+);
+
+// handler for the /user/:id path, which sends a special response
+app.get('/user/:id', function (req, res, next) {
+  res.send('special');
+});
+```
+
+中间件也可以在数组中声明以实现可重用。
+
+```js title="示例: 数组中间件堆栈"
+function logOriginalUrl(req, res, next) {
+  console.log('Request URL:', req.originalUrl);
+  next();
+}
+
+function logMethod(req, res, next) {
+  console.log('Request Type:', req.method);
+  next();
+}
+
+const logStuff = [logOriginalUrl, logMethod];
+app.get('/user/:id', logStuff, function (req, res, next) {
+  res.send('User Info');
+});
+```
+
+### 路由级别中间价
+
+路由器级中间件的工作方式与应用程序级中间件相同，只不过它绑定到 `express.Router()` 的实例。
+
+```js
+const router = express.Router();
+```
+
+使用 `router.use()` 和 `router.METHOD()` 函数加载路由器级中间件。
+
+```js
+const express = require('express');
+const app = express();
+const router = express.Router();
+
+router.use(function (req, res, next) {
+  console.log('Time:', Date.now());
+  next();
+});
+
+router.get(
+  '/user/:id',
+  function (req, res, next) {
+    // if the user ID is 0, skip to the next router
+    if (req.params.id === '0') next('route');
+    // otherwise pass control to the next middleware function in this stack
+    else next();
+  },
+  function (req, res, next) {
+    // render a regular page
+    res.render('regular');
+  },
+);
+
+router.get('/user/:id', function (req, res, next) {
+  console.log(req.params.id);
+  res.render('special');
+});
+
+// 挂载路由
+app.use('/', router);
+```
+
+### 错误处理中间件
+
+错误处理是指 Express 如何捕获和处理同步和异步发生的错误。 Express 附带一个默认的错误处理程序，因此您无需编写自己的错误处理程序即可开始使用。
+
+#### 捕获错误
+
+确保 Express 捕获运行路由处理程序和中间件时发生的所有错误非常重要。路由处理程序和中间件内的同步代码中发生的错误不需要额外的工作。如果同步代码抛出错误，Express 将捕获并处理它。例如：
+
+```js
+app.get('/', function (req, res) {
+  throw new Error('BROKEN'); // Express will catch this on its own.
+});
+```
+
+对于从路由处理程序和中间件调用的异步函数返回的错误，您必须将它们传递给 `next()` 函数，Express 将在其中捕获并处理它们。例如：
+
+```js
+app.get('/', function (req, res, next) {
+  fs.readFile('/file-does-not-exist', function (err, data) {
+    if (err) {
+      next(err); // Pass errors to Express.
+    } else {
+      res.send(data);
+    }
+  });
+});
+```
+
+从 Express 5 开始，返回 Promise 的路由处理程序和中间件在拒绝或抛出错误时将自动调用 `next(value)`。
+
+```js
+app.get('/user/:id', async function (req, res, next) {
+  const user = await getUserById(req.params.id);
+  res.send(user);
+});
+```
+
+如果您向 `next()` 函数传递任何内容（字符串'route'除外），Express 会将当前请求视为错误，并将跳过任何剩余的非错误处理路由和中间件函数。
+
+如果序列中的回调不提供数据，仅提供错误，您可以按如下方式简化此代码：
+
+```js
+app.get('/', [
+  function (req, res, next) {
+    fs.writeFile('/inaccessible-path', 'data', next);
+  },
+  function (req, res) {
+    res.send('OK');
+  },
+]);
+```
+
+#### 编写错误处理程序
+
+定义错误处理中间件函数的方式与其他中间件函数相同，除了使用四个参数而不是三个，特别是使用签名(err, req, res, next) )：
+
+```js
+app.use(function (err, req, res, next) {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+```
+
+:::warning
+
+错误处理中间件始终采用四个参数。您必须提供四个参数才能将其标识为错误处理中间件函数。即使不需要使用 next 一个对象，也必须指定它以维护签名。否则， next 对象将被解释为常规中间件并且无法处理错误。
+:::
+
+最后定义错误处理中间件，在其他 `app.use()` 和路由调用之后；例如：
+
+```js
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  }),
+);
+app.use(bodyParser.json());
+app.use(methodOverride());
+app.use(function (err, req, res, next) {
+  // logic
+});
+```
+
+出于组织（和更高级别的框架）目的，您可以定义多个错误处理中间件函数，就像使用常规中间件函数一样。例如，为使用XHR和不使用 XHR 发出的请求定义错误处理程序：
+
+```js
+var bodyParser = require('body-parser');
+var methodOverride = require('method-override');
+
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  }),
+);
+app.use(bodyParser.json());
+app.use(methodOverride());
+app.use(logErrors);
+app.use(clientErrorHandler);
+app.use(errorHandler);
+```
+
+```js title="clientErrorHandler"
+function clientErrorHandler(err, req, res, next) {
+  if (req.xhr) {
+    res.status(500).send({ error: 'Something failed!' });
+  } else {
+    next(err);
+  }
+}
+```
+
+```js title="errorHandler"
+function errorHandler(err, req, res, next) {
+  res.status(500);
+  res.render('error', { error: err });
+}
+```
+
+### 内置中间件
+
+Express 内置了以下中间件功能：
+
+- `express.static` 提供静态资源，例如 HTML 文件、图像等。
+- `express.json` 使用 JSON 有效负载解析传入请求。
+- `express.urlencoded` 使用 URL 编码的有效负载解析传入请求。
+
+在服务器，可以使用 `req.body` 来接收客户端发送过来的请求体数据。默认情况下，如果没有配置解析表单数据的中间件，则 `req.body` 为 `undefined`。
+
+可以通过内置中间件 `express.json` 来解析 application/json 格式数据。
+
+```js
+app.use(express.json());
+
+app.post('/add', (req, res) => {
+  res.send(req.body);
+});
+```
+
+可以通过内置中间件 `express.urlencoded` 来解析 application/x-www-form-urlencoded 格式数据。
+
+```js
+app.use(express.urlencoded({ extended: false }));
+
+app.post('/add', (req, res) => {
+  res.send(req.body);
+});
+```
+
+### 第三方中间件
+
+非 Express 官方内置的，而是由第三方开发出来的中间件，叫做第三方中间件。在项目中，大家可以按需下载并配置第三方中间件，从而提高项目的开发效率。
+
+在 `express@4.16.0` 之前的版本中，经常使用 body-parser 这个第三方中间件，来解析请求体数据。使用步骤如下：
+
+```bash
+npm install body-parser
+```
+
+```js
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json()); // 解析 JSON 表单格式数据
+app.use(bodyParser.urlencoded({ extended: false })); // 解析url-encoded 表单格式数据
+```
+
+### 自定义中间件
+
+除了内置和第三方中间件，开发者还可以根据需求编写自定义中间件。自定义中间件可以做权限验证、请求日志记录、数据预处理等。
+
+编写一个简单的 Express 中间件的步骤如下：
+
+- 中间件函数有三个参数：req（请求对象）、res（响应对象）和 next（传递控制权给下一个中间件函数）。
+- 在函数内部，通常会对请求做一些处理，然后调用 `next()` 来让下一个中间件继续处理请求。
+
+```js title="记录请求的时间"
+function requestTime(req, res, next) {
+  req.requestTime = Date.now();
+  next();
+}
+
+app.use(requestTime);
+
+app.get('/', (req, res) => {
+  res.send(`请求时间：${req.requestTime}`);
+});
+```
+
+```js title="权限验证中间件"
+function auth(req, res, next) {
+  const token = req.headers['authorization'];
+  if (token === 'secret-token') {
+    next(); // 验证通过，继续执行
+  } else {
+    res.status(403).send('权限不足');
+  }
+}
+
+app.use('/protected', auth); // 只保护 /protected 路径
+
+app.get('/protected', (req, res) => {
+  res.send('访问受保护资源');
+});
+```
+
+## 静态文件服务
+
+Express 可以通过 express.static 中间件提供静态文件服务，如 HTML、CSS、JS 和图片等文件。静态文件通常存放在 public 文件夹中，并通过特定路径对外公开。
+
+使用 express.static 提供静态文件。
+
+```js
+const express = require('express');
+const path = require('path');
+const app = express();
+
+// 提供 public 目录下的静态文件
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.listen(3000, () => {
+  console.log('Server is running at http://localhost:3000');
+});
+```
+
+在这个例子中，客户端可以通过 `http://localhost:3000/index.html` 访问 public 文件夹中的 index.html 文件。
+
+### 虚拟路径前缀
+
+你可以为静态文件服务设置虚拟路径前缀。例如，将所有静态文件都挂载到 /static 路径下。
+
+```js
+app.use('/static', express.static(path.join(__dirname, 'public')));
+```
+
+这样，`http://localhost:3000/static/index.html` 将会提供 public 目录中的 index.html 文件。
+
+## 覆盖 Express API
+
+覆盖 Express API 通常指的是对 Express 提供的核心功能（如请求处理、响应发送等）进行自定义修改或扩展。你可以通过编写自定义中间件、修改请求或响应对象，来达到覆盖或增强 Express 的 API 行为。
+
+**常见的覆盖方式：**
+
+- 覆盖 req 和 res 对象的属性或方法：你可以通过中间件向 req（请求）或 res（响应）对象添加自定义方法或属性。
+- 全局中间件：可以用来修改 API 的处理方式，比如添加统一的响应格式、捕获错误等。
+
+### 覆盖 res.send 方法
+
+你可以自定义 `res.send` 方法，使所有响应内容都按照某种统一的格式返回。
+
+```js
+const express = require('express');
+const app = express();
+
+// 覆盖 res.send 方法
+app.use((req, res, next) => {
+  const originalSend = res.send; // 保留原始的 send 方法
+  res.send = function (body) {
+    // 修改 send 方法，将响应数据封装成统一格式
+    body = {
+      success: true,
+      data: body,
+    };
+    originalSend.call(this, body); // 调用原始的 send 方法
+  };
+  next(); // 继续传递控制权
+});
+
+app.get('/', (req, res) => {
+  res.send('Hello World'); // 响应将变为 { success: true, data: "Hello World" }
+});
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
+```
+
+### 扩展 req 对象
+
+你也可以通过添加自定义属性或方法，扩展 req 对象。例如，在所有请求中添加用户的 IP 地址信息：
+
+```js
+app.use((req, res, next) => {
+  req.clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.send(`Client IP: ${req.clientIp}`);
+});
+```
+
+### 特性
+
+Express API 中的属性是：
+
+- 分配的属性（例如：`req.baseUrl` 、 `req.originalUrl` ）
+- 定义为 getter（例如：`req.secure`、`req.ip` ）
+
+由于分配的属性是在当前请求-响应周期的上下文中动态分配给 `request` 和 `response` 对象的，因此无法覆盖它们的行为。
+
+可以使用 Express API 扩展 API 覆盖getter属性。
+
+```js title="示例: 重写了如何导出req.ip的值"
+Object.defineProperty(app.request, 'ip', {
+  configurable: true,
+  enumerable: true,
+  get: function () {
+    return this.get('Client-IP');
+  },
+});
+```
+
+## 跨域资源共享（CORS）
+
+### 理解 CORS
+
+#### 什么是 CORS
+
+跨域资源共享（CORS，Cross-Origin Resource Sharing） 是一种机制，它允许受限的资源（如字体、API 等）从不同的域名进行访问。浏览器出于安全原因，通常会阻止网页向不同的域发送请求，这叫做同源策略。同源策略要求：
+
+- 协议（http/https）相同
+- 域名相同
+- 端口相同
+
+如果前端页面和后端服务器不在同一个域（即跨域），浏览器会拒绝请求，除非服务器明确允许跨域请求，这就需要使用 CORS 机制。
+
+#### CORS 的典型应用场景
+
+- 单页面应用（SPA）使用 API 时，前端和后端的域不同（如前端在 localhost:3000，后端 API 在 localhost:5000）。
+- 调用第三方服务的 API。
+
+#### CORS 工作原理
+
+- **简单请求**：如果请求是简单的（例如 GET、POST，不含复杂的自定义 HTTP 头），浏览器会直接发送请求并检查响应中的 CORS 头是否允许该请求。
+- **预检请求**（Preflight Request）：如果请求是复杂请求（如使用 PUT、DELETE，或携带自定义头），浏览器会先发送一个 OPTIONS 请求，询问服务器是否允许跨域访问。服务器若允许，会在响应头中返回允许跨域的相关信息。
+
+#### CORS 响应头
+
+1. `Access-Control-Allow-Origin`：指定允许访问资源的源（可以是具体的域名，或 `*` 允许所有域）。
+
+```js
+// 允许任意URL访问
+response.setHeader('Access-Control-Allow-Origin', '*');
+// 只允许 www.example.com 访问
+response.setHeader('Access-Control-Allow-Origin', 'http://www.example.com');
+```
+
+2. `Access-Control-Allow-Methods`：允许的 HTTP 方法（如 GET, POST, PUT, DELETE）。
+
+默认情况下，CORS 仅支持客户端发起 GET、POST、HEAD 请求。
+
+如果客户端希望通过 PUT、DELETE 等方式请求服务器的资源，则需要在服务器端，通过 Access-Control-Alow-Methods 来指明实际请求所允许使用的 HTTP 方法。
+
+```js
+// 只允许 POST, GET, DELETE, HEAD 请求方法
+response.setHeader('Access-Control-Allow-Methods', 'POST, GET, DELETE, HEAD');
+// 允许所有的 HTTP 请求方法
+response.setHeader('Access-Control-Allow-Methods', '*');
+```
+
+3. `Access-Control-Allow-Headers`：允许的自定义请求头。
+
+默认情况下，CORS 仅支持客户端向服务器发送如下的 9 个请求头：
+
+```http
+Accept、Accept-Language、Content-Language、DPR、Downlink、Save-Data、Viewport-Width、Width 、
+Content-Type （值仅限于 text/plain、multipart/form-data、application/x-www-form-urlencoded三者之一）
+```
+
+如果客户端向服务器发送了额外的请求头信息，则需要在服务器端，通过 Access-Control-Allow-Headers 对额外的请求头进行声明，否则这次请求会失败！
+
+```js
+// 运行客户端额外向服务器发送 Content-Type 请求头 和 X-Cutsom-Header 请求头
+// 注意： 多个请求头之间用逗号分隔
+response.setHeader(
+  'Access-Control-Allow-Headers',
+  'Content-Type, X-Custom-Header',
+);
+```
+
+4. `Access-Control-Allow-Credentials`：是否允许客户端发送凭据（如 Cookie）。
+
+```js
+response.setHeader('Access-Control-Allow-Credentials', true);
+```
+
+### 使用 cors 中间件解决跨域问题
+
+在 Express 中，可以使用 cors 中间件来方便地处理跨域请求。cors 是一个第三方中间件，允许你在服务器端设置 CORS 头，以便前端跨域访问。
+
+#### 基本使用
+
+```bash title="安装"
+npm install cors
+```
+
+在 Express 中使用 cors 中间件非常简单，直接调用 `app.use(cors())` 即可。这将允许所有的跨域请求。
+
+```js
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+// 使用 cors 中间件允许所有跨域请求
+app.use(cors());
+
+app.get('/data', (req, res) => {
+  res.json({ message: 'This is a CORS-enabled response' });
+});
+
+app.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
+```
+
+#### 限制特定域访问
+
+如果你只想允许某个特定的域访问资源，而不是允许所有跨域请求，可以在 cors 中指定 origin 选项。
+
+```js
+app.use(
+  cors({
+    origin: 'http://example.com', // 只允许来自 example.com 的跨域请求
+  }),
+);
+```
+
+#### 允许多域访问
+
+可以将 origin 选项设置为一个函数，允许来自多个域的请求：
+
+```js
+const allowedOrigins = ['http://example.com', 'http://another.com'];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  }),
+);
+```
+
+#### 允许携带凭据
+
+如果客户端需要发送凭据（如 Cookie 或认证信息），你需要配置 `Access-Control-Allow-Credentials`，并确保 origin 不能为 `*`，而是一个具体的域名。
+
+```js
+app.use(
+  cors({
+    origin: 'http://example.com',
+    credentials: true, // 允许携带凭据
+  }),
+);
+```
+
+#### 设置预检请求的缓存
+
+你可以通过设置 `Access-Control-Max-Age` 响应头来指定预检请求的缓存时间，以减少 OPTIONS 请求的频率。
+
+```js
+app.use(
+  cors({
+    origin: 'http://example.com',
+    maxAge: 86400, // 预检请求缓存一天
+  }),
+);
+```
+
+```js title="示例: 完整的 CORS 解决方案"
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+// 允许来自 http://example.com 的跨域请求，并允许发送凭据
+app.use(
+  cors({
+    origin: 'http://example.com',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // 允许的请求方法
+    allowedHeaders: ['Content-Type', 'Authorization'], // 允许的请求头
+    credentials: true, // 允许客户端发送凭据
+    maxAge: 600, // 预检请求缓存10分钟
+  }),
+);
+
+// 一个简单的路由
+app.get('/data', (req, res) => {
+  res.json({ message: 'CORS is enabled for this route' });
+});
+
+app.listen(3000, () => {
+  console.log('CORS-enabled web server is running at http://localhost:3000');
+});
+```
