@@ -11,17 +11,23 @@ jobs:
     steps:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
-        with:
-          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: npm   # ✅ 缓存依赖
+
+      - name: Configure npm retry
+        run: |
+          npm config set fetch-retries 5
+          npm config set fetch-retry-factor 2
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
 
       - name: Install and Build 🔧
         run: |
-          npm ci --registry=https://registry.npmjs.org
+          npm install --prefer-offline --no-audit --no-fund --registry=https://registry.npmjs.org
           npm run build
 
       - name: Deploy 🚀
@@ -30,4 +36,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: build
-          clean: true
