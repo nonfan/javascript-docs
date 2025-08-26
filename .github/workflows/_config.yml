@@ -16,19 +16,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: npm   # ✅ 缓存依赖
+          cache: 'npm'   # ✅ 缓存 npm 依赖
 
-      - name: Configure npm retry
-        run: |
-          npm config set fetch-retries 5
-          npm config set fetch-retry-factor 2
-          npm config set fetch-retry-mintimeout 20000
-          npm config set fetch-retry-maxtimeout 120000
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-modules-
 
-      - name: Install and Build 🔧
-        run: |
-          npm install --prefer-offline --no-audit --no-fund --registry=https://registry.npmjs.org
-          npm run build
+      - name: Install dependencies
+        run: npm ci --registry=https://registry.npmjs.org --no-audit --no-fund
+
+      - name: Build 🔧
+        run: npm run build
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
