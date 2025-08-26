@@ -95,12 +95,6 @@ const config: Config = {
         {
           type: 'docSidebar',
           position: 'left',
-          sidebarId: 'source-code',
-          label: '源码鉴赏',
-        },
-        {
-          type: 'docSidebar',
-          position: 'left',
           sidebarId: 'javascript-libraries-and-frameworks',
           label: '库与框架',
         },
