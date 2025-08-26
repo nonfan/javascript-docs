@@ -1,1 +1,777 @@
 # DOM2 和 DOM3
+
+DOM1（DOM Level 1）主要定义了 HTML 和 XML 文档的底层结构。DOM2（DOM Level 2）和DOM3（DOM Level 3）在这些结构之上加入更多交互能力，提供了更高级的 XML 特性。实际上，DOM2和 DOM3 是按照模块化的思路来制定标准的，每个模块之间有一定关联，但分别针对某个 DOM 子集。这些模式如下所示。
+
+- [ ] DOM Core：在 DOM1 核心部分的基础上，为节点增加方法和属性。
+- [ ] DOM Views：定义基于样式信息的不同视图。
+- [ ] DOM Events：定义通过事件实现 DOM 文档交互。
+- [ ] DOM Style：定义以编程方式访问和修改 CSS 样式的接口。
+- [ ] DOM Traversal and Range：新增遍历 DOM 文档及选择文档内容的接口。
+- [ ] DOM HTML：在 DOM1 HTML 部分的基础上，增加属性、方法和新接口。
+- [ ] DOM Mutation Observers：定义基于 DOM 变化触发回调的接口。这个模块是 DOM4 级模块，用于取代 Mutation Events。
+
+## DOM 的演进
+
+DOM2 和 DOM3 Core 模块的目标是扩展 DOM API，满足 XML 的所有需求并提供更好的错误处理和特性检测。很大程度上，这意味着支持 XML 命名空间的概念。DOM2 Core 没有新增任何类型，仅仅在 DOM1 Core 基础上增加了一些方法和属性。DOM3 Core 则除了增强原有类型，也新增了一些新类型。
+
+### XML 命名空间
+
+XML 命名空间可以实现在一个格式规范的文档中混用不同的 XML 语言，而不必担心元素命名冲突。严格来讲，XML 命名空间在 XHTML 中才支持，HTML 并不支持。因此，本节的示例使用 XHTML
+
+命名空间是使用 `xmlns` 指定的。XHTML 的命名空间是 `http://www.w3.org/1999/xhtml` ，应该包含在任何格式规范的 XHTML 页面的 `<html>` 元素中，如下所示：
+
+```xhtml
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Example XHTML page</title>
+  </head>
+  <body>
+    Hello world!
+  </body>
+</html>
+```
+
+### 其他变化
+
+## 样式
+
+HTML 中的样式有 3 种定义方式：外部样式表（通过 `<link>` 元素）、文档样式表（使用 `<style>` 元素）和元素特定样式（使用 `style` 属性）。DOM2 Style 为这 3 种应用样式的机制都提供了 API。
+
+### 存取元素样式
+
+任何支持 style 属性的 HTML 元素在 JavaScript 中都会有一个对应的 style 属性。这个 style 属性是 CSSStyleDeclaration 类型的实例，其中包含通过 HTML style 属性为元素设置的所有样式信息，但不包含通过层叠机制从文档样式和外部样式中继承来的样式。HTML style 属性中的 CSS 属性在 JavaScript style 对象中都有对应的属性。因为 CSS 属性名使用连字符表示法（用连字符分隔两个单词，如 background-image），所以在 JavaScript 中这些属性必须转换为驼峰大小写形式（如backgroundImage）。
+
+大多数属性名会这样直接转换过来。但有一个 CSS 属性名不能直接转换，它就是 float。因为 float 是 JavaScript 的保留字，所以不能用作属性名。DOM2 Style 规定它在 style 对象中对应的属性应该是 cssFloat。
+
+任何时候，只要获得了有效 DOM 元素的引用，就可以通过 JavaScript 来设置样式。
+
+```js title="示例"
+let myDiv = document.getElementById('myDiv');
+
+// 设置背景颜色
+myDiv.style.backgroundColor = 'red';
+
+// 修改大小
+myDiv.style.width = '100px';
+myDiv.style.height = '200px';
+
+// 设置边框
+myDiv.style.border = '1px solid black';
+```
+
+:::warning
+在标准模式下，所有尺寸都必须包含单位。在混杂模式下，可以把 `style.width` 设置为"20"，相当于"20px"。如果是在标准模式下，把 `style.width` 设置为"20"会被忽略，因为没有单位。实践中，最好一直加上单位。
+:::
+
+通过 style 属性设置的值也可以通过 style 对象获取。比如下面的 HTML：
+
+```html
+<div id="myDiv" style="background-color: blue; width: 10px; height: 25px"></div>
+```
+
+如果元素上没有 style 属性，则 style 对象包含所有可能的 CSS 属性的空值。
+
+#### 1.DOM 样式属性和方法
+
+DOM2 Style 规范也在 style 对象上定义了一些属性和方法。这些属性和方法提供了元素 style 属性的信息并支持修改，列举如下。
+
+- [ ] `cssText`: 用于获取或设置元素的整个内联样式（即 style 属性中的所有 CSS 规则）。
+- [ ] `parentRule`: 表示 CSS 信息的 CSSRule 对象。
+- [ ] `item(index)`: 返回索引为 index 的 CSS 属性名。
+- [ ] `length`: 应用给元素的 CSS 属性数量。
+- [ ] `getPropertyValue(propertyName)`: 返回属性 propertyName 的字符串值。
+- [ ] `getPropertyPriority(propertyName)`: 如果 CSS 属性 propertyName 使用了!important则返回"important"，否则返回空字符串。
+- [ ] `removeProperty(propertyName)`: 从样式中删除 CSS 属性 propertyName。
+- [ ] `setProperty(propertyName, value, priority)`: 设置 CSS 属性 propertyName 的值为 value，priority 是"important"或空字符串。
+
+```html title="cssText 示例"
+<div id="myDiv" style="background-color: red;width: 100px;height: 100px"></div>
+<script>
+  let myDiv = document.getElementById('myDiv');
+
+  console.log(myDiv.style); // CSSStyleDeclaration 对象，包含所有的css样式空值
+  console.log(myDiv.style.cssText); // background-color: red; width: 100px; height: 100px;
+
+  // 对style内联样式进行的是覆盖，而不是写入
+  myDiv.style.cssText = 'background-color: blue;';
+  console.log(myDiv.style.cssText); // background-color: blue;
+</script>
+```
+
+`length` 属性是跟 `item()` 方法一起配套迭代 CSS 属性用的。此时，style 对象实际上变成了一个集合，也可以用中括号代替 `item()` 取得相应位置的 CSS 属性名，使用 `getPropertyValue()` 以取得属性的值，如下所示：
+
+```js title="length、item() 和 getPropertyValue() 组合示例"
+// <div id="myDiv" style="background-color: red;width: 100px;height: 100px"></div>
+let myDiv = document.getElementById('myDiv');
+
+for (let i = 0, len = myDiv.style.length; i < len; i++) {
+  let cssName = myDiv.style[i];
+  let cssValue = myDiv.style.getPropertyValue(cssName);
+
+  console.log('属性名:', cssName, '属性值:', cssValue);
+  // 属性名: background-color 属性值: red
+  // 属性名: width 属性值: 100px
+  // 属性名: height 属性值: 100px
+}
+```
+
+`removeProperty()` 方法用于从元素样式中删除指定的 CSS 属性。使用这个方法删除属性意味着会应用该属性的默认（从其他样式表层叠继承的）样式。
+
+```js title="removeProperty() 示例"
+// <div id="myDiv" style="background-color: red;width: 100px;height: 100px"></div>
+let myDiv = document.getElementById('myDiv');
+
+myDiv.style.removeProperty('background-color');
+```
+
+#### 2.计算样式
+
+style 对象中包含支持 style 属性的元素为这个属性设置的样式信息，但不包含从其他样式表层叠继承的同样影响该元素的样式信息。DOM2 Style在 `document.defaultView `上增加了 `getComputedStyle()` 方法。
+
+这个方法接收两个参数：要取得计算样式的元素和伪元素字符串（如":after"）。如果不需要查询伪元素，则第二个参数可以传 `null`。`getComputedStyle()` 方法返回一个 CSSStyleDeclaration对象（与 style 属性的类型一样），包含元素的计算样式。
+
+```js title="getComputedStyle() 语法"
+/**
+ * @param element 用于获取计算样式的Element
+ * @param pseudoElt 指定一个要匹配的伪元素的字符串。必须对普通元素省略（或null）
+ */
+let style1 = window.getComputedStyle(element, [pseudoElt]);
+
+// 两者是等价的
+let style2 = document.defaultView.getComputedStyle(element, null);
+```
+
+返回的 style 是一个实时的 CSSStyleDeclaration 对象，当元素的样式更改时，它会自动更新本身。
+
+```html title="getComputedStyle() 示例"
+<style>
+  #elem-container {
+    position: absolute;
+    left: 100px;
+    top: 200px;
+    height: 100px;
+  }
+</style>
+
+<div id="elem-container">Hello World!</div>
+
+<script>
+  let elem = document.getElementById('elem-container');
+  let cssStyle1 = window.getComputedStyle(elem, null);
+
+  console.log(cssStyle1.getPropertyValue('height')); // 100px
+
+  let cssStyle2 = document.defaultView.getComputedStyle(elem, null);
+  console.log(cssStyle2.getPropertyValue('top')); // 200px
+</script>
+```
+
+`getComputedStyle` 可以从伪元素拉取样式信息 (比如，::after, ::before, ::marker, ::line-marker)
+
+```html
+<style>
+  h3::after {
+    content: 'rocks!';
+  }
+</style>
+
+<h3>generated content</h3>
+
+<script>
+  let h3 = document.querySelector('h3'),
+    result = getComputedStyle(h3, '::after').content;
+  console.log(`the generated content is: ${result}`);
+  // the generated content is: "rocks!"
+</script>
+```
+
+返回的对象与从元素的 style 属性返回的对象具有相同的类型;然而，两个对象具有不同的目的。从 `getComputedStyle` 返回的对象是只读的，可以用于检查元素的样式（包括由一个 `<style>` 元素或一个外部样式表设置的那些样式）.
+
+在许多在线的演示代码中，`getComputedStyle` 是通过 `document.defaultView` 对象来调用的。大部分情况下，这是不需要的，因为可以直接通过 `window` 对象调用。但有一种情况，你必需要使用 `defaultView`, 那是在 firefox3.6 上访问子框架内的样式。
+
+### 操作样式表
+
+CSSStyleSheet 类型表示 CSS 样式表，包括使用 `<link>` 元素和通过 `<style>` 元素定义的样式表。注意，这两个元素本身分别是 HTMLLinkElement 和 HTMLStyleElement。CSSStyleSheet 类型是一个通用样式表类型，可以表示以任何方式在 HTML 中定义的样式表。另外，元素特定的类型允许修改HTML 属性，而 CSSStyleSheet 类型的实例则是一个只读对象（只有一个属性例外 `disable`）。
+
+CSSStyleSheet 接口代表一个 CSS 样式表，并允许检查和编辑样式表中的规则列表。它从父类型 StyleSheet 继承属性和方法。
+
+- [ ] `disabled`: 表示样式表是否被禁用 (唯一可读写的属性)。
+- [ ] `href`: 返回样式表的 URL，或者在未使用 `<link>` 标签包含时返回 `null`。
+- [ ] `media`: 包含样式表支持的媒体类型的 MediaList 对象。
+- [ ] `ownerNode`: 指向拥有当前样式表的节点，可以是 `<link>` 或 `<style>` 元素。
+- [ ] `title`: ownerNode 的 title 属性。
+- [ ] `parentStyleSheet`: 指向导入当前样式表的样式表。
+- [ ] `type`: 表示样式表的类型，对于 CSS 样式表是 "text/css"。
+- [ ] `cssRules`: 包含当前样式表的所有样式规则的集合。
+- [ ] `ownerRule`: 指向导入当前样式表的规则，如果不是通过 @import 导入的，则为 `null`。
+- [ ] `insertRule(rule, index)`: 在指定位置插入样式规则。
+- [ ] `deleteRule(index)`: 删除指定位置的样式规则。
+
+`document.styleSheets` 表示文档中可用的样式表集合。这个集合的 `length` 属性保存着文档中样式表的数量，而每个样式表都可以使用中括号或 `item()` 方法获取。
+
+```js
+for (const css of document.styleSheets) {
+  console.log(css); // CSSStyleSheet {}
+}
+
+console.log(document.styleSheets[0]); // CSSStyleSheet {}
+console.log(document.styleSheets.item(0)); // CSSStyleSheet {}
+console.log(document.styleSheets[0] === document.styleSheets.item(0)); // true
+```
+
+#### 1.CSS规则
+
+CSSRule 类型表示样式表中的一条规则。这个类型也是一个通用基类，很多类型都继承它，但其中最常用的是表示样式信息的 CSSStyleRule（其他 CSS 规则还有 `@import`、`@font-face`、`@page` 和 `@charset` 等，不过这些规则很少需要使用脚本来操作）。以下是 CSSStyleRule 对象上可用的属性。
+
+- [ ] `cssText`: 返回整条规则的文本，可能与样式表中实际的文本不同(因为浏览器内部处理样式表的方式可能不同)。
+- [ ] `parentRule`: 如果这条规则被其他规则（如@media）包含，则指向包含规则，否则为 `null`。
+- [ ] `parentStyleSheet`: 包含当前规则的样式表。
+- [ ] `selectorText`: 返回规则的选择符文本，可能与实际文本不同(因为浏览器内部处理样式表的方式可能不同)。
+- [ ] `style`: 返回 CSSStyleDeclaration 对象，可设置和获取当前规则中的样式。
+- [ ] `type`: 表示规则类型的数值常量，对于样式规则始终为 1。
+
+在这些属性中，使用最多的是 `cssText`、`selectorText` 和 `style`。`cssText` 属性与 `style.cssText`类似，不过并不完全一样。前者包含选择符文本和环绕样式声明的大括号，而后者则只包含样式声明（类似于元素上的 `style.cssText`）。此外，`cssText` 是只读的，而 `style.cssText` 可以被重写。
+
+多数情况下，使用 style 属性就可以实现操作样式规则的任务了。这个对象可以像每个元素上的 style 对象一样，用来读取或修改规则的样式。
+
+```html title="示例"
+<style>
+  div.box {
+    background-color: blue;
+    width: 100px;
+    height: 200px;
+  }
+</style>
+
+<script>
+  let sheet = document.styleSheets[0];
+  let rules = sheet.cssRules; // 取得规则集合
+  let rule = rules[0]; // 取得第一条规则
+
+  console.log(rule.selectorText); // div .box
+
+  // 两者之间的差异
+  console.log(rule.style.cssText); // background-color: blue; width: 100px; height: 200px;
+  console.log(rule.cssText); // div.box { background-color: blue; width: 100px; height: 200px; }
+
+  console.log(rule.style.backgroundColor); // "blue"
+</script>
+```
+
+使用这些接口，可以像确定元素 style 对象中包含的样式一样，确定一条样式规则的样式信息。与元素的场景一样，也可以修改规则中的样式，如下所示：
+
+```js
+let sheet = document.styleSheets[0];
+let rules = sheet.cssRules;
+let rule = rules[0]; // 取得第一条规则
+
+// highlight-next-line
+rule.style.backgroundColor = 'red';
+```
+
+#### 2.创建规则
+
+`CSSStyleSheet.insertRule()` 方法用来给当前样式表插入新的样式规则（CSS rule），并且包含一些限制。
+
+```js title="insertRule() 语法"
+/**
+* rule 一个包含了将要插入的规则的 DOMString。规则字符串必须包含的内容取决于它的类型：
+*   - rule-set 类型（普通带有选择器的规则），需要选择器和样式声明；
+*   - at-rule 类型（以 @ 开头的规则，如 @import, @media 等），需要 at-identifier 和规则内容。
+* index 可选, 一个小于或等于 stylesheet.cssRules.length 的正整数，表示新插入的规则在CSSStyleSheet.cssRules 中的位置。默认值是 0。
+*/
+stylesheet.insertRule(rule [, index])
+```
+
+```js title="insertRule() 示例"
+stylesheet.insertRule('body { background-color: silver }', 0); // 使用 DOM 方法
+```
+
+#### 3.删除规则
+
+`CSSStyleSheet.deleteRule()` 方法用来从当前样式表对象中删除指定的样式规则。
+
+```js title="deleteRule() 语法"
+/**
+ * index: 是一个数字，用来指定删除样式规则的位置
+ */
+stylesheet.deleteRule(index);
+```
+
+与添加规则一样，删除规则并不是 Web 开发中常见的做法。考虑到可能影响 CSS 层叠的效果，删除规则时要慎重。
+
+### 元素尺寸
+
+本节介绍的属性和方法并不是 DOM2 Style 规范中定义的，但与 HTML 元素的样式有关。DOM 一直缺乏页面中元素实际尺寸的规定。IE 率先增加了一些属性，向开发者暴露元素的尺寸信息。这些属性现在已经得到所有主流浏览器支持。
+
+#### 1.偏移尺寸
+
+第一组属性涉及偏移尺寸（offset dimensions），包含元素在屏幕上占用的所有视觉空间。元素在页面上的视觉空间由其高度和宽度决定，包括所有内边距、滚动条和边框（但不包含外边距）。以下 4 个属性用于取得元素的偏移尺寸。
+
+- [ ] `offsetHeight`: 元素在垂直方向上占用的像素尺寸，包括它的高度、水平滚动条高度（如果可见）和上、下边框的高度。
+- [ ] `offsetLeft`: 元素左边框外侧距离包含元素左边框内侧的像素数。
+- [ ] `offsetTop`: 元素上边框外侧距离包含元素上边框内侧的像素数。
+- [ ] `offsetWidth`: 元素在水平方向上占用的像素尺寸，包括它的宽度、垂直滚动条宽度（如果可见）和左、右边框的宽度。
+
+其中，`offsetLeft` 和 `offsetTop` 是相对于包含元素的，包含元素保存在 `offsetParent` 属性中。`offsetParent` 不一定是 `parentNode`。比如，`<td>` 元素的 `offsetParent` 是作为其祖先的 `<table>`元素，因为 `<table>` 是节点层级中第一个提供尺寸的元素。
+
+![16-1](@site/static/doc-imgs/16-1.png)
+
+要确定一个元素在页面中的偏移量，可以把它的 offsetLeft 和 offsetTop 属性分别与 offsetParent的相同属性相加，一直加到根元素。
+
+```js title="示例"
+function getElementLeft(element) {
+  let actualLeft = element.offsetLeft;
+  let current = element.offsetParent;
+
+  while (current !== null) {
+    actualLeft += current.offsetLeft;
+    current = current.offsetParent;
+  }
+  return actualLeft;
+}
+
+function getElementTop(element) {
+  let actualTop = element.offsetTop;
+  let current = element.offsetParent;
+
+  while (current !== null) {
+    actualTop += current.offsetTop;
+    current = current.offsetParent;
+  }
+  return actualTop;
+}
+```
+
+这两个函数使用 offsetParent 在 DOM 树中逐级上溯，将每一级的偏移属性相加，最终得到元素的实际偏移量。对于使用 CSS 布局的简单页面，这两个函数是很精确的。而对于使用表格和内嵌窗格的页面布局，它们返回的值会因浏览器不同而有所差异，因为浏览器实现这些元素的方式不同。一般来说，包含在 `<div>` 元素中所有元素都以 `<body>` 为其 `offsetParent`，因此 `getElementLeft()`和 `getElementTop()` 返回的值与 `offsetLeft` 和 `offsetTop` 返回的值相同。
+
+```js title="重构函数(升级版)"
+/**
+ * @param element: 元素节点
+ * @param direction: offsetTop | offsetLeft
+ */
+function getElementOffset(element, direction) {
+  let actualLeft = element[direction];
+  let current = element.offsetParent;
+
+  while (current !== null) {
+    actualLeft += current[direction];
+    current = current.offsetParent;
+  }
+  return actualLeft;
+}
+```
+
+#### 2.客户端尺寸
+
+元素的客户端尺寸（client dimensions）包含元素内容及其内边距所占用的空间。客户端尺寸只有两个相关属性：`clientWidth` 和 `clientHeight`。其中，`clientWidth` 是内容区宽度加左、右内边距宽度，`clientHeight` 是内容区高度加上、下内边距高度。
+
+![16-2](@site/static/doc-imgs/16-2.png)
+
+客户端尺寸实际上就是元素内部的空间，因此不包含滚动条占用的空间。这两个属性最常用于确定浏览器视口尺寸，即检测 `document.documentElement` 的 `clientWidth` 和 `clientHeight`。这两个属性表示视口（ `<html>` 或 `<body>` 元素）的尺寸。
+
+#### 3. 滚动尺寸
+
+滚动尺寸（scroll dimensions），提供了元素内容滚动距离的信息。有些元素，比如 `<html>` 无须任何代码就可以自动滚动，而其他元素则需要使用 CSS 的 `overflow` 属性令其滚动。滚动尺寸相关的属性有如下 4 个。
+
+- [ ] `scrollHeight`: 没有滚动条出现时，元素内容的总高度。
+- [ ] `scrollLeft`: 内容区左侧隐藏的像素数，设置这个属性可以改变元素的滚动位置。
+- [ ] `scrollTop`: 内容区顶部隐藏的像素数，设置这个属性可以改变元素的滚动位置。
+- [ ] `scrollWidth`: 没有滚动条出现时，元素内容的总宽度。
+
+![16-3](@site/static/doc-imgs/16-3.png)
+
+`scrollWidth` 和 `scrollHeight` 可以用来确定给定元素内容的实际尺寸。例如，`<html>`元素是浏览器中滚动视口的元素。因此，`document.documentElement.scrollHeight` 就是整个页面垂直方向的总高度。
+
+`scrollWidth` 和 `scrollHeight` 与 `clientWidth` 和 `clientHeight` 之间的关系在不需要滚动的文档上是分不清的。如果文档尺寸超过视口尺寸，则在所有主流浏览器中这两对属性都不相等，`scrollWidth` 和 `scrollHeight` 等于文档内容的宽度，而 `clientWidth` 和 `clientHeight` 等于视口的大小。
+
+`scrollLeft` 和 `scrollTop` 属性可以用于确定当前元素滚动的位置，或者用于设置它们的滚动位置。元素在未滚动时，这两个属性都等于 0。如果元素在垂直方向上滚动，则 `scrollTop` 会大于 0，表示元素顶部不可见区域的高度。如果元素在水平方向上滚动，则 `scrollLeft` 会大于 0，表示元素左侧不可见区域的宽度。因为这两个属性也是可写的，所以把它们都设置为 0 就可以重置元素的滚动位置。
+
+下面这个函数检测元素是不是位于顶部，如果不是则把它滚动回顶部：
+
+```js
+function scrollToTop(element) {
+  // 这个函数使用 scrollTop 获取并设置值。
+  if (element.scrollTop != 0) {
+    element.scrollTop = 0;
+  }
+}
+```
+
+#### 4. 确定元素尺寸
+
+浏览器在每个元素上都暴露了 `getBoundingClientRect()` 方法，返回一个 DOMRect 对象，包含 6 个属性：`left`、`top`、`right`、`bottom`、`height` 和 `width`。这些属性给出了元素在页面中相对于视口的位置。
+![16-4](@site/static/doc-imgs/16-4.png)
+
+## 遍历
+
+DOM2 Traversal and Range 模块定义了两个类型用于辅助顺序遍历 DOM 结构。这两个类型 NodeIterator 和 TreeWalker——从某个起点开始执行对 DOM 结构的深度优先遍 如前所述，DOM 遍历是对 DOM 结构的深度优先遍历，至少允许朝两个方向移动（取决于类型 遍历以给定节点为根，不能在 DOM 中向上超越这个根节点。
+
+```html title="示例"
+<!doctype html>
+<html>
+  <head>
+    <title>Example</title>
+  </head>
+  <body>
+    <p><b>Hello</b> world!</p>
+  </body>
+</html>
+```
+
+这段代码构成的 DOM 树如图:
+
+![16-5](@site/static/doc-imgs/16-5.png)
+
+其中的任何节点都可以成为遍历的根节点。比如，假设以 `<body>` 元素作为遍历的根节点，那么接下来是 `<p>` 元素、`<b>` 元素和两个文本节点（都是 `<body>` 元素的后代）。但这个遍历不会到达 `<html>` 元素、`<head>` 元素，或者其他不属于 `<body>` 元素子树的元素。而以 `document` 为根节点的遍历，则可以访问到文档中的所有节点。
+
+如图展示了以 `document` 为根节点的深度优先遍历。
+
+![16-6](@site/static/doc-imgs/16-6.png)
+
+从 `document` 开始，然后循序移动，第一个节点是 `document`，最后一个节点是包含" world!"的文本节点。到达文档末尾最后那个文本节点后，遍历会在 DOM 树中反向回溯。此时，第一个访问的节点就是包含" world!"的文本节点，而最后一个是 `document` 节点本身。NodeIterator 和 TreeWalker 都以这种方式进行遍历。
+
+### NodeIterator
+
+NodeIterator 类型是两个类型中比较简单的，`document.createNodeIterator()` 是一个用于创建节点迭代器（NodeIterator）的方法。它接受三个参数，并返回一个新的节点迭代器对象，该对象可以用于遍历文档中的节点。
+
+:::warning
+`document.createNodeIterator() `方法在某些浏览器中可以接受四个参数.第四个参数 `entityReferenceExpansion` 是一个可选参数，用于控制是否扩展实体引用。并非所有浏览器都支持 entityReferenceExpansion 参数。例如，Chrome 和 Firefox 支持该参数，而 Safari 和 Edge 则不支持。
+:::
+
+- [ ] `root`: 作为遍历根节点的节点。
+- [ ] <code data-type="optional">filter</code>
+
+一个回调函数或一个具有 `acceptNode()` 方法的对象。从根节点开始到子树中的每个节点都会调用一次该函数或方法，哪些节点需要进入迭代节点列表等待调用则取决于 `whatToShow` 标志。该方法需要返回下列常量之一：`NodeFilter.FILTER_ACCEPT`、`NodeFilter.FILTER_REJECT` 或 `NodeFilter.FILTER_SKIP`。
+
+- [ ] <code data-type="optional">whatToShow</code>
+
+参数是一个位掩码，通过应用一个或多个过滤器来指定访问哪些节点。这个参数对应的常量是在 NodeFilter 类型中定义的。
+
+| 常数                                     | 数值                                    | 描述                              |
+| ---------------------------------------- | --------------------------------------- | --------------------------------- |
+| `NodeFilter.SHOW_ALL`                    | `4294967295` (即unsigned long 的最大值) | 显示所有节点。                    |
+| `NodeFilter.SHOW_COMMENT`                | `128`                                   | 显示 Comment 节点。               |
+| `NodeFilter.SHOW_DOCUMENT`               | `256`                                   | 显示 Document 节点。              |
+| `NodeFilter.SHOW_DOCUMENT_FRAGMENT`      | `1024`                                  | 显示 DocumentFragment 节点。      |
+| `NodeFilter.SHOW_DOCUMENT_TYPE`          | `512`                                   | 显示 DocumentType 节点。。        |
+| `NodeFilter.SHOW_ELEMENT`                | `1`                                     | 显示 Element 节点。               |
+| `NodeFilter.SHOW_PROCESSING_INSTRUCTION` | `64`                                    | 显示 ProcessingInstruction 节点。 |
+| `NodeFilter.SHOW_TEXT`                   | `4`                                     | 显示 Text 节点。                  |
+
+这些值除了 `NodeFilter.SHOW_ALL` 之外，都可以组合使用。比如，可以像下面这样使用按位或操作组合多个选项：
+
+```js title="示例"
+const nodeIterator = document.createNodeIterator(
+  document.body,
+  NodeFilter.SHOW_ELEMENT,
+  node =>
+    node.nodeName.toLowerCase() === 'p'
+      ? NodeFilter.FILTER_ACCEPT
+      : NodeFilter.FILTER_REJECT,
+);
+const pars = [];
+let currentNode;
+
+while ((currentNode = nodeIterator.nextNode())) {
+  pars.push(currentNode);
+}
+```
+
+```js title="相同，但使用具有 acceptNode() 方法的对象"
+const nodeIterator = document.createNodeIterator(
+  document.body,
+  NodeFilter.SHOW_ELEMENT,
+  {
+    acceptNode(node) {
+      return node.nodeName.toLowerCase() === 'p'
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT;
+    },
+  },
+);
+const pars = [];
+let currentNode;
+
+while ((currentNode = nodeIterator.nextNode())) {
+  pars.push(currentNode);
+}
+```
+
+NodeIterator 的两个主要方法是 `nextNode()` 和 `previousNode()`。`nextNode()` 方法在 DOM子树中以深度优先方式进前一步，而 `previousNode()` 则是在遍历中后退一步。创建 NodeIterator对象的时候，会有一个内部指针指向根节点，因此第一次调用 `nextNode()` 返回的是根节点。当遍历到达 DOM 树最后一个节点时，`nextNode()` 返回 `null`。`previousNode()` 方法也是类似的。当遍历到达DOM 树最后一个节点时，调用 `previousNode()` 返回遍历的根节点后，再次调用也会返回 `null`。
+
+```html title="nextNode() 示例"
+<div id="div1">
+  <p><b>Hello</b> world!</p>
+  <ul>
+    <li>List item 1</li>
+    <li>List item 2</li>
+    <li>List item 3</li>
+  </ul>
+</div>
+
+<script>
+  let div = document.getElementById('div1');
+  let iterator = document.createNodeIterator(div, NodeFilter.SHOW_ELEMENT);
+  let node = iterator.nextNode();
+  while (node !== null) {
+    console.log(node.tagName); // 输出标签名
+    node = iterator.nextNode();
+  }
+</script>
+<!--
+DIV
+P
+B
+UL
+LI
+LI
+LI
+-->
+```
+
+如果只想遍历 `<li>` 元素，可以传入一个过滤器，比如：
+
+```js
+let div = document.getElementById('div1');
+let filter = function (node) {
+  return node.tagName.toLowerCase() == 'li'
+    ? NodeFilter.FILTER_ACCEPT
+    : NodeFilter.FILTER_SKIP;
+};
+
+let iterator = document.createNodeIterator(
+  div,
+  NodeFilter.SHOW_ELEMENT,
+  filter,
+);
+
+let node = iterator.nextNode();
+while (node !== null) {
+  console.log(node.tagName); // 输出标签名
+  node = iterator.nextNode();
+}
+```
+
+`nextNode()` 和 `previousNode()` 方法共同维护 NodeIterator 对 DOM 结构的内部指针，因此修改 DOM 结构也会体现在遍历中。
+
+### TreeWalker
+
+TreeWalker 是 NodeIterator 的高级版。除了包含同样的 `nextNode()`、`previousNode()` 方法，TreeWalker 还添加了如下在 DOM 结构中向不同方向遍历的方法。
+
+- [ ] `parentNode()`: 遍历到当前节点的父节点。
+- [ ] `firstChild()`: 遍历到当前节点的第一个子节点。
+- [ ] `lastChild()`: 遍历到当前节点的最后一个子节点。
+- [ ] `nextSibling()`: 遍历到当前节点的下一个同胞节点。
+- [ ] `previousSibling()`: 遍历到当前节点的上一个同胞节点。
+
+TreeWalker 对象要调用 `document.createTreeWalker()` 方法来创建，这个方法接收与 `document.createNodeIterator()` 同样的参数. 因为两者很类似，所以 TreeWalker 通常可以取代 NodeIterator.
+
+`document.createTreeWalker()` 参数 `whatToShow `, 比 `document.createNodeIterator()` 方法多两个参数,其它一样,如下:
+
+| 常数                            | 数值  | 描述                   |
+| ------------------------------- | ----- | ---------------------- |
+| `NodeFilter.SHOW_ATTRIBUTE`     | `0x2` | 显示 Attr 节点。       |
+| `NodeFilter.SHOW_CDATA_SECTION` | `0x8` | 显示 CDATASection 节点 |
+
+```html title="示例"
+<div id="div1">
+  <p><b>Hello</b> world!</p>
+  <ul>
+    <li>List item 1</li>
+    <li>List item 2</li>
+    <li>List item 3</li>
+  </ul>
+</div>
+
+<script>
+  let div = document.getElementById('div1');
+  let filter = function (node) {
+    return node.tagName.toLowerCase() == 'li'
+      ? NodeFilter.FILTER_ACCEPT
+      : NodeFilter.FILTER_SKIP;
+  };
+
+  let walker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT, filter);
+
+  let node = walker.nextNode();
+
+  while (node !== null) {
+    console.log(node.tagName); // 输出标签名
+    node = walker.nextNode();
+  }
+</script>
+```
+
+不同的是，节点过滤器（filter）除了可以返回 NodeFilter.FILTER_ACCEPT 和 NodeFilter.FILTER_SKIP，还可以返回 NodeFilter.FILTER_REJECT。在使用 NodeIterator 时，NodeFilter.FILTER_SKIP 和 NodeFilter.FILTER_REJECT 是一样的。但在使用 TreeWalker 时，NodeFilter.FILTER_SKIP 表示跳过节点，访问子树中的下一个节点，而 NodeFilter.FILTER_REJECT 则表示跳过该节点以及该节点的整个子树。
+
+如果把前面示例中的过滤器函数改为返回 NodeFilter.FILTER_REJECT（而不是 NodeFilter.FILTER_SKIP），则会导致遍历立即返回，不会访问任何节点。这是因为第一个返回的元素是 `<div>`，其中标签名不是"li"，因此过滤函数返回 NodeFilter.FILTER_REJECT，表示要跳过整个子树。因为 `<div>` 本身就是遍历的根节点，所以遍历会就此结束。
+
+当然，TreeWalker 真正的威力是可以在 DOM 结构中四处游走。如果不使用过滤器，单纯使用 TreeWalker 的漫游能力同样可以在 DOM 树中访问 `<li>` 元素，比如：
+
+```js
+let div = document.getElementById('div1');
+let walker = document.createTreeWalker(div, NodeFilter.SHOW_ELEMENT);
+
+walker.firstChild(); // 前往<p>
+walker.nextSibling(); // 前往<ul>
+
+let node = walker.firstChild(); // 前往第一个<li>
+while (node !== null) {
+  console.log(node.tagName);
+  node = walker.nextSibling();
+}
+```
+
+TreeWalker 类型也有一个名为 `currentNode` 的属性，表示遍历过程中上一次返回的节点（无论使用的是哪个遍历方法）。可以通过修改这个属性来影响接下来遍历的起点，如下面的例子所示：
+
+```js
+let node = walker.nextNode();
+console.log(node === walker.currentNode); // true
+walker.currentNode = document.body; // 修改起点
+```
+
+相比于 NodeIterator，TreeWalker 类型为遍历 DOM 提供了更大的灵活性。
+
+## 范围
+
+为了支持对页面更细致的控制，DOM2 Traversal and Range 模块定义了范围接口。范围可用于在文档中选择内容，而不用考虑节点之间的界限。（选择在后台发生，用户是看不到的。）范围在常规 DOM操作的粒度不够时可以发挥作用。
+
+### DOM 范围
+
+DOM2 在 Document 类型上定义了一个 `createRange()` 方法，暴露在 `document` 对象上。使用这个方法可以创建一个 DOM 范围对象，如下所示：
+
+```js
+let range = document.createRange();
+```
+
+与节点类似，这个新创建的范围对象是与创建它的文档关联的，不能在其他文档中使用。然后可以使用这个范围在后台选择文档特定的部分。创建范围并指定它的位置之后，可以对范围的内容执行一些操作，从而实现对底层 DOM 树更精细的控制。
+
+每个范围都是 Range 类型的实例，拥有相应的属性和方法。下面的属性提供了与范围在文档中位置相关的信息。
+
+- [ ] `startContainer`: 范围起点所在的节点（选区中第一个子节点的父节点）。
+- [ ] `startOffset`
+
+范围起点在 `startContainer` 中的偏移量。如果 `startContainer` 是文本节点、注释节点或 CData 区块节点，则 `startOffset` 指范围起点之前跳过的字符数；否则，表示范围中第一个节点的索引。
+
+- [ ] `endContainer`: 范围终点所在的节点（选区中最后一个子节点的父节点）。
+- [ ] `endOffset`: 范围起点在 `startContainer` 中的偏移量（与 `startOffset` 中偏移量的含义相同）。
+- [ ] `commonAncestorContainer`: 文档中以 `startContainer` 和 `endContainer` 为后代的最深的节点。
+
+这些属性会在范围被放到文档中特定位置时获得相应的值。
+
+```js title="示例"
+const range = document.createRange();
+
+range.setStart(startNode, startOffset);
+range.setEnd(endNode, endOffset);
+```
+
+一旦建立了 Range 对象，在使用它的大多数方法之前需要设置它的边界点。
+
+### 简单选择
+
+通过范围选择文档中某个部分最简单的方式，就是使用 `selectNode()` 或 `selectNodeContents()`方法。这两个方法都接收一个节点作为参数，并将该节点的信息添加到调用它的范围。`selectNode()` 方法选择整个节点，包括其后代节点，而 `selectNodeContents()` 只选择节点的后代。
+
+```html title="selectNode() 和 selectNodeContents() 示例"
+<p id="p1"><b>Hello</b> world!</p>
+
+<script>
+  // 获取要选择的节点
+  let p1 = document.getElementById('p1');
+  // 创建一个 Range 对象
+  let range = document.createRange();
+  // 使用 selectNode 方法选择节点
+  let range1 = range.selectNode(p1);
+  let range2 = range.selectNodeContents(p1);
+</script>
+```
+
+例子中的这两个范围包含文档的不同部分。range1 包含 `<p>` 元素及其所有后代，而 range2 包含 `<b>` 元素、文本节点"Hello"和文本节点" world!"，
+
+调用 `selectNode()` 时，`startContainer`、`endContainer` 和 `commonAncestorContainer` 都等于传入节点的父节点。在这个例子中，这几个属性都等于 `document.body`。`startOffset` 属性等于传入节点在其父节点 `childNodes` 集合中的索引（在这个例子中，`startOffset` 等于 1，因为 DOM的合规实现把空格当成文本节点），而 `endOffset` 等于 `startOffset` 加 1（因为只选择了一个节点）。
+
+```js
+let p1 = document.getElementById('p1');
+let range = document.createRange();
+
+range.selectNode(p1);
+
+console.log(range.startContainer); // body
+console.log(range.endContainer); // body
+console.log(range.commonAncestorContainer); // body
+
+console.log(range.startOffset); // 1
+console.log(range.endOffset); // 2
+```
+
+在调用 `selectNodeContents()` 时，`startContainer`、`endContainer` 和 `commonAncestorContainer` 属性就是传入的节点，在这个例子中是 `<p>` 元素。`startOffset` 属性始终为 0，因为范围从传入节点的第一个子节点开始，而 `endOffset` 等于传入节点的子节点数量（node.childNodes.length），在这个例子中等于 2。
+
+```js
+let p1 = document.getElementById('p1');
+let range = document.createRange();
+
+range.selectNodeContents(p1);
+
+console.log(range.startContainer); // p
+console.log(range.endContainer); // p
+console.log(range.commonAncestorContainer); // p
+
+console.log(range.startOffset); // 0
+console.log(range.endOffset); // 2
+```
+
+在像上面这样选定节点或节点后代之后，还可以在范围上调用相应的方法，实现对范围中选区的更精细控制。
+
+- [ ] `setStartBefore(refNode)`
+
+把范围的起点设置到 refNode 之前，从而让 refNode 成为选区的第一个子节点。`startContainer` 属性被设置为 `refNode.parentNode`，而 `startOffset`属性被设置为 refNode 在其父节点 childNodes 集合中的索引。
+
+- [ ] `setStartAfter(refNode)`
+
+把范围的起点设置到 refNode 之后，从而将 refNode 排除在选区之外，让其下一个同胞节点成为选区的第一个子节点。`startContainer` 属性被设置为`refNode.parentNode`，`startOffset` 属性被设置为 refNode 在其父节点 childNodes 集合中的索引加 1。
+
+- [ ] `setEndBefore(refNode)`
+
+把范围的终点设置到 refNode 之前，从而将 refNode 排除在选区之外、让其上一个同胞节点成为选区的最后一个子节点。endContainer 属性被设置为 `refNode.parentNode`，`endOffset` 属性被设置为 refNode 在其父节点 childNodes 集合中的索引。
+
+- [ ] `setEndAfter(refNode)`
+
+把范围的终点设置到 refNode 之后，从而让 refNode 成为选区的最后一个子节点。`endContainer` 属性被设置为 `refNode.parentNode`，`endOffset` 属性被设置为 refNode 在其父节点 childNodes 集合中的索引加 1。
+
+调用这些方法时，所有属性都会自动重新赋值。不过，为了实现复杂的选区，也可以直接修改这些属性的值。
+
+### 复杂选择
+
+要创建复杂的范围，需要使用 `setStart()` 和 `setEnd()` 方法。这两个方法都接收两个参数：参照节点
+和偏移量。对 `setStart()` 来说，参照节点会成为 `startContainer`，而偏移量会赋值给 `startOffset`。
+对 `setEnd()` 而言，参照节点会成为 `endContainer`，而偏移量会赋值给 `endOffset`。
+
+### 操作范围
+
+### 范围插入
+
+### 范围折叠
+
+### 范围比较
+
+### 复制范围
+
+调用范围的 `cloneRange()` 方法可以复制范围。这个方法会创建调用它的范围的副本：
+
+```js
+let newRange = range.cloneRange();
+```
+
+新范围包含与原始范围一样的属性，修改其边界点不会影响原始范围。
+
+### 清理
+
+在使用完范围之后，最好调用 `detach()` 方法把范围从创建它的文档中剥离。调用 `detach()` 之后，就可以放心解除对范围的引用，以便垃圾回收程序释放它所占用的内存。
+
+```js
+range.detach(); // 从文档中剥离范围
+range = null; // 解除引用
+```
+
+这两步是最合理的结束使用范围的方式。剥离之后的范围就不能再使用了。
